@@ -4,8 +4,8 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-int width = 1280, height = 720;
-const char *title = "Guardian's Awakening: The Mending of the Sky";
+static int width = 1280, height = 720;
+static const char *title = "Guardian's Awakening: The Mending of the Sky";
 
 GLFWwindow *initGLFW() {
     glfwInit();
