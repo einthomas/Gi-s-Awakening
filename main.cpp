@@ -3,6 +3,9 @@
 #include <iostream>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+
+#include "Cube.h"
 
 static int width = 1280, height = 720;
 static const char *title = "Guardian's Awakening: The Mending of the Sky";
@@ -55,9 +58,18 @@ int main(void) {
     }
 
     glViewport(0, 0, width, height);
+	glm::mat4 projectionMatrix = glm::ortho(0.0f, (float) width, 0.0f, (float) height);
+
+	Cube::init();
+
+	Shader testShader("shaders/vert.glsl", "shaders/frag.glsl");
+	Cube cube(testShader, glm::vec3(0.7f), projectionMatrix, glm::vec3(100.0f, 100.0f, 1.0f), glm::vec3(100.0f, 100.0f, 1.0f));
 
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT);
+
+		cube.draw();
+
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
