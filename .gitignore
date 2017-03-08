@@ -3,6 +3,9 @@
 !*.cpp
 !*.h
 
+!*.frag
+!*.vert
+
 !*.png
 !*.blend
 
