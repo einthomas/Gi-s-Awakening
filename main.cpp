@@ -55,6 +55,9 @@ int main(void) {
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
 
+    // activate v-sync
+    glfwSwapInterval(1);
+
     if (!initGLEW()) {
         return 0;
     }
@@ -76,6 +79,7 @@ int main(void) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         cube.rotation.y += 1;
+        cube.rotation.x += 1;
         cube.updateModelMatrix();
 		cube.draw();
 
