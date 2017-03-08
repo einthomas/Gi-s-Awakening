@@ -16,7 +16,7 @@ GLFWwindow *initGLFW() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
-    //glfwWindowHint(GLFW_SAMPLES, 4);
+    glfwWindowHint(GLFW_SAMPLES, 4);
 
     GLFWwindow *window = glfwCreateWindow(width, height, title, nullptr, nullptr);
     glfwMakeContextCurrent(window);
@@ -70,7 +70,7 @@ int main(void) {
 	Cube::init();
 
 	Shader testShader("shaders/shader.vert", "shaders/shader.frag");
-    Cube cube(testShader, glm::vec3(0.7f), projectionMatrix, glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.25f, 0.25f, 0.25f));
+    Cube cube(testShader, glm::vec3(0.7f), projectionMatrix, glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.5f, 0.5f, 0.5f));
 
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
