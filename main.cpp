@@ -66,7 +66,7 @@ int main(void) {
 	Cube cube(testShader, glm::vec3(0.7f), projectionMatrix, glm::vec3(100.0f, 100.0f, 1.0f), glm::vec3(100.0f, 100.0f, 1.0f));
 
     while (!glfwWindowShouldClose(window)) {
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		cube.draw();
 
