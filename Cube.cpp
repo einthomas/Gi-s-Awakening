@@ -4,8 +4,40 @@ GLuint Cube::VAO;
 GLuint Cube::VBO;
 GLuint Cube::EBO;
 
+static GLfloat vertices[] = {
+    -1,-1,-1,
+     1,-1,-1,
+    -1, 1,-1,
+     1, 1,-1,
+
+    -1,-1, 1,
+     1,-1, 1,
+    -1, 1, 1,
+     1, 1, 1,
+};
+
+static GLuint indices[] = {
+    0, 3, 1,
+    0, 2, 3,
+
+    4, 5, 7,
+    4, 7, 6,
+
+    0, 1, 5,
+    0, 5, 4,
+
+    2, 7, 3,
+    2, 6, 7,
+
+    0, 6, 2,
+    0, 4, 6,
+
+    1, 3, 7,
+    1, 7, 5,
+};
+
 Cube::Cube(Shader shader, glm::vec3 color, glm::mat4 projectionMatrix, glm::vec3 position, glm::vec3 scale, glm::vec3 rotation) :
-	shader(shader), color(color), projectionMatrix(projectionMatrix), position(position), scale(scale), rotation(rotation)
+    position(position), scale(scale), rotation(rotation), color(color), projectionMatrix(projectionMatrix), shader(shader)
 {
 	updateModelMatrix();
 }
@@ -17,7 +49,7 @@ void Cube::draw() {
 	shader.setVector3f("color", color);
 
 	glBindVertexArray(VAO);
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, sizeof(indices), GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
 }
 
@@ -31,18 +63,6 @@ void Cube::updateModelMatrix() {
 }
 
 void Cube::init() {
-	GLfloat vertices[] = {
-		0.5f,  0.5f, 0.0f,
-		0.5f, -0.5f, 0.0f,
-		-0.5f, -0.5f, 0.0f,
-		-0.5f,  0.5f, 0.0f
-	};
-
-	GLuint indices[] = {
-		0, 1, 3,
-		1, 2, 3
-	};
-
 	// create and bind VAO
 	glGenVertexArrays(1, &VAO);
 	glBindVertexArray(VAO);

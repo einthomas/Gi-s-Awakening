@@ -8,11 +8,12 @@ public:
 	static void init();
 	void draw();
 
+    glm::vec3 position, scale, rotation, color;
+    glm::mat4 projectionMatrix, modelMatrix;
+
+    void updateModelMatrix();
+
 private:
 	static GLuint VAO, VBO, EBO;
-	Shader shader;
-	glm::vec3 position, scale, rotation, color;
-	glm::mat4 projectionMatrix, modelMatrix;
-
-	void updateModelMatrix();
+    Shader shader;
 };

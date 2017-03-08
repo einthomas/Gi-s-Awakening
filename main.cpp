@@ -52,22 +52,31 @@ int main(void) {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_MULTISAMPLE);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
 
     if (!initGLEW()) {
         return 0;
     }
 
     glViewport(0, 0, width, height);
-	glm::mat4 projectionMatrix = glm::ortho(0.0f, (float) width, 0.0f, (float) height);
+    glm::mat4 projectionMatrix = glm::perspectiveFov(
+        glm::radians(90.0f),
+        static_cast<float>(width),
+        static_cast<float>(height),
+        0.1f, 100.0f
+    );
 
 	Cube::init();
 
 	Shader testShader("shaders/shader.vert", "shaders/shader.frag");
-	Cube cube(testShader, glm::vec3(0.7f), projectionMatrix, glm::vec3(100.0f, 100.0f, 1.0f), glm::vec3(100.0f, 100.0f, 1.0f));
+    Cube cube(testShader, glm::vec3(0.7f), projectionMatrix, glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.25f, 0.25f, 0.25f));
 
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        cube.rotation.y += 1;
+        cube.updateModelMatrix();
 		cube.draw();
 
         glfwSwapBuffers(window);
