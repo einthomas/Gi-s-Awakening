@@ -48,7 +48,6 @@ int main(void) {
     }
 
     // Set OpenGL options
-    glEnable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_MULTISAMPLE);
@@ -76,6 +75,7 @@ int main(void) {
     Cube cube(testShader, glm::vec3(0.7f), projectionMatrix, glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.5f, 0.5f, 0.5f));
 
     while (!glfwWindowShouldClose(window)) {
+		glEnable(GL_DEPTH_TEST);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         cube.rotation.y += 1;
