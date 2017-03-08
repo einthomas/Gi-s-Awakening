@@ -1,15 +1,19 @@
 #include "Shader.h"
 
 #include <iostream>
+#include <streambuf>
+#include <sstream>
 
 Shader::Shader() { }
 
 Shader::Shader(std::string vertexShaderPath, std::string fragmentShaderPath) {
-	std::string vertexSource((std::istreambuf_iterator<char>(std::ifstream(vertexShaderPath))), std::istreambuf_iterator<char>());
-	std::string fragmentSource((std::istreambuf_iterator<char>(std::ifstream(fragmentShaderPath))), std::istreambuf_iterator<char>());
+    std::ifstream vertexFile(vertexShaderPath);
+    std::string vertexSource((std::istreambuf_iterator<char>(vertexFile)), std::istreambuf_iterator<char>());
+    std::ifstream fragmentFile(fragmentShaderPath);
+    std::string fragmentSource((std::istreambuf_iterator<char>(fragmentFile)), std::istreambuf_iterator<char>());
 
-	GLuint vertexShader = loadShader(GL_VERTEX_SHADER, vertexSource);
-	GLuint fragmentShader = loadShader(GL_FRAGMENT_SHADER, fragmentSource);
+    GLuint vertexShader = loadShader(GL_VERTEX_SHADER, vertexSource);
+    GLuint fragmentShader = loadShader(GL_FRAGMENT_SHADER, fragmentSource);
 
 	program = glCreateProgram();
 	glAttachShader(program, vertexShader);
@@ -19,10 +23,13 @@ Shader::Shader(std::string vertexShaderPath, std::string fragmentShaderPath) {
 	glDeleteShader(fragmentShader);
 
 	GLint success;
-	GLchar infoLog[GL_INFO_LOG_LENGTH];
+    GLchar *infoLog;
+    GLint infoLogLength = 0;
+    glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infoLogLength);
+    infoLog = new GLchar[infoLogLength];
 	glGetProgramiv(program, GL_LINK_STATUS, &success);
 	if (!success) {
-		glGetProgramInfoLog(program, GL_INFO_LOG_LENGTH, NULL, infoLog);
+        glGetProgramInfoLog(program, infoLogLength, NULL, infoLog);
 		std::cout << "ERROR::SHADERPROGRAM::LINKING\n" << infoLog << std::endl;
 	}
 }
