@@ -12,7 +12,7 @@ out vec3 vertColor;
 out vec3 vertNormal;
 
 void main() {
-    gl_Position = projection * model * vec4(position, 1.0f);
+    gl_Position = projection * view * model * vec4(position, 1.0f);
     vertColor = color;
     vertNormal = normalize(vec3(model * vec4(normal, 0.0f)).xyz);
 }

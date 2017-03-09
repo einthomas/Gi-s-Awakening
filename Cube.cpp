@@ -55,9 +55,10 @@ Cube::Cube(Shader shader, glm::vec3 color, glm::mat4 projectionMatrix, glm::vec3
 	updateModelMatrix();
 }
 
-void Cube::draw() {
+void Cube::draw(glm::mat4 viewMatrix) {
 	shader.use();
 	shader.setMatrix4("model", modelMatrix);
+    shader.setMatrix4("view", viewMatrix);
 	shader.setMatrix4("projection", projectionMatrix);
 	shader.setVector3f("color", color);
 

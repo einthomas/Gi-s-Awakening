@@ -6,6 +6,7 @@
 #include <glm/glm.hpp>
 
 #include "Cube.h"
+#include "Camera.h"
 
 static int width = 1280, height = 720;
 static const char *title = "Guardian's Awakening: The Mending of the Sky";
@@ -71,19 +72,31 @@ int main(void) {
         0.1f, 100.0f
     );
 
-	Cube::init();
+    Camera camera(glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(30.0f, 0.0f, 0.0f));
 
-	Shader testShader("shaders/shader.vert", "shaders/shader.frag");
-    Cube cube(testShader, glm::vec3(0.7f), projectionMatrix, glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.5f, 0.5f, 0.5f));
+    Cube::init();
+
+    Shader testShader("shaders/shader.vert", "shaders/shader.frag");
+    Cube cube(testShader, glm::vec3(0.7f), projectionMatrix, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(5.0f, 5.0f, 0.5f));
+
+    int centerX = width / 2, centerY = height / 2;
+    glfwSetCursorPos(window, centerX, centerY);
 
     while (!glfwWindowShouldClose(window)) {
-		glEnable(GL_DEPTH_TEST);
+        float delta = 0.1; // TODO: calculate me
+
+        double mouseX, mouseY;
+        glfwGetCursorPos(window, &mouseX, &mouseY);
+        glfwSetCursorPos(window, centerX, centerY);
+
+        camera.rotation.z -= (mouseX - centerX) * 2 * delta;
+        camera.rotation.x -= (mouseY - centerY) * 2 * delta;
+
+        glEnable(GL_DEPTH_TEST);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        cube.rotation.y += 1;
-        cube.rotation.x += 1;
         cube.updateModelMatrix();
-		cube.draw();
+        cube.draw(camera.getMatrix());
 
         glfwSwapBuffers(window);
         glfwPollEvents();
