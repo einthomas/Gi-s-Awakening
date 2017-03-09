@@ -61,6 +61,8 @@ int main(void) {
         return 0;
     }
 
+    glClearColor(0.2f, 0.6f, 0.8f, 1.0f);
+
     glViewport(0, 0, width, height);
     glm::mat4 projectionMatrix = glm::perspectiveFov(
         glm::radians(90.0f),
