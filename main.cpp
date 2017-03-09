@@ -66,7 +66,7 @@ int main(void) {
 
     glViewport(0, 0, width, height);
     glm::mat4 projectionMatrix = glm::perspectiveFov(
-        glm::radians(90.0f),
+        glm::radians(45.0f),
         static_cast<float>(width),
         static_cast<float>(height),
         0.1f, 100.0f
@@ -77,7 +77,11 @@ int main(void) {
     Cube::init();
 
     Shader testShader("shaders/shader.vert", "shaders/shader.frag");
-    Cube cube(testShader, glm::vec3(0.7f), projectionMatrix, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(5.0f, 5.0f, 0.5f));
+    Cube cube(
+        testShader, glm::vec3(0.7f), projectionMatrix,
+        glm::vec3(2.0f, 2.0f, 1.0f),
+        glm::vec3(1.0f, 1.0f, 1.0f)
+    );
 
     int centerX = width / 2, centerY = height / 2;
     glfwSetCursorPos(window, centerX, centerY);
@@ -85,6 +89,25 @@ int main(void) {
     while (!glfwWindowShouldClose(window)) {
         float delta = 0.1; // TODO: calculate me
 
+        // movement
+        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+            camera.position.x -= std::sin(glm::radians(camera.rotation.z)) * delta;
+            camera.position.y += std::cos(glm::radians(camera.rotation.z)) * delta;
+        }
+        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+            camera.position.x -= std::cos(glm::radians(camera.rotation.z)) * delta;
+            camera.position.y -= std::sin(glm::radians(camera.rotation.z)) * delta;
+        }
+        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+            camera.position.x += std::sin(glm::radians(camera.rotation.z)) * delta;
+            camera.position.y -= std::cos(glm::radians(camera.rotation.z)) * delta;
+        }
+        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+            camera.position.x += std::cos(glm::radians(camera.rotation.z)) * delta;
+            camera.position.y += std::sin(glm::radians(camera.rotation.z)) * delta;
+        }
+
+        // mouse look
         double mouseX, mouseY;
         glfwGetCursorPos(window, &mouseX, &mouseY);
         glfwSetCursorPos(window, centerX, centerY);
