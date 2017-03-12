@@ -7,6 +7,7 @@
 
 #include "Cube.h"
 #include "Camera.h"
+#include "Level.h"
 
 static int width = 1280, height = 720;
 static const char *title = "Guardian's Awakening: The Mending of the Sky";
@@ -77,11 +78,26 @@ int main(void) {
     Cube::init();
 
     Shader testShader("shaders/shader.vert", "shaders/shader.frag");
-    Cube cube(
+
+    Level level;
+
+    level.cubes.push_back({
         testShader, glm::vec3(0.7f), projectionMatrix,
-        glm::vec3(2.0f, 2.0f, 1.0f),
-        glm::vec3(1.0f, 1.0f, 1.0f)
-    );
+        glm::vec3(0.0f, 0.0f, 0.0f),
+        glm::vec3(2.0f, 2.0f, 1.0f)
+    });
+
+    level.cubes.push_back({
+        testShader, glm::vec3(0.7f), projectionMatrix,
+        glm::vec3(0.0f, 4.0f, 0.0f),
+        glm::vec3(2.0f, 2.0f, 1.0f)
+    });
+
+    level.cubes.push_back({
+        testShader, glm::vec3(0.7f), projectionMatrix,
+        glm::vec3(0.0f, 8.0f, 0.0f),
+        glm::vec3(2.0f, 2.0f, 1.0f)
+    });
 
     int centerX = width / 2, centerY = height / 2;
     glfwSetCursorPos(window, centerX, centerY);
@@ -118,8 +134,7 @@ int main(void) {
         glEnable(GL_DEPTH_TEST);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        cube.updateModelMatrix();
-        cube.draw(camera.getMatrix());
+        level.draw(camera.getMatrix());
 
         glfwSwapBuffers(window);
         glfwPollEvents();
