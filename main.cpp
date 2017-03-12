@@ -102,6 +102,11 @@ int main(void) {
     int centerX = width / 2, centerY = height / 2;
     glfwSetCursorPos(window, centerX, centerY);
 
+	float velocityZ = 0.0f;
+	float gravity = 1.6f;
+	bool onGround = true;
+	float playerHeight = 2.0f;
+
     while (!glfwWindowShouldClose(window)) {
         float delta = 0.1; // TODO: calculate me
 
@@ -122,6 +127,17 @@ int main(void) {
             camera.position.x += std::cos(glm::radians(camera.rotation.z)) * delta;
             camera.position.y += std::sin(glm::radians(camera.rotation.z)) * delta;
         }
+		if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && onGround) {
+			onGround = false;
+			velocityZ = -3.0f;
+		}
+
+		velocityZ += gravity * delta;
+		camera.position.z -= velocityZ * delta;
+		if (camera.position.z < playerHeight) {
+			camera.position.z = playerHeight;
+			onGround = true;
+		}
 
         // mouse look
         double mouseX, mouseY;
