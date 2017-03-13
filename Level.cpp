@@ -2,8 +2,8 @@
 
 #include <algorithm>
 
-void Level::draw(const glm::mat4 &viewMatrix) {
+void Level::draw(const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix) {
     std::for_each(cubes.begin(), cubes.end(), [=](Cube &cube) {
-        cube.draw(viewMatrix);
+        cube.draw(viewMatrix, projectionMatrix);
     });
 }

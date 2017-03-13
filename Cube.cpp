@@ -49,13 +49,13 @@ static GLfloat vertices[] = {
     -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,        0.0f,  1.0f,  0.0f,
 };
 
-Cube::Cube(Shader shader, glm::vec3 color, glm::mat4 projectionMatrix, glm::vec3 position, glm::vec3 scale, glm::vec3 rotation) :
-    position(position), scale(scale), rotation(rotation), color(color), projectionMatrix(projectionMatrix), shader(shader)
+Cube::Cube(Shader shader, glm::vec3 color, glm::vec3 position, glm::vec3 scale, glm::vec3 rotation) :
+    position(position), scale(scale), rotation(rotation), color(color), shader(shader)
 {
 	updateModelMatrix();
 }
 
-void Cube::draw(const glm::mat4 &viewMatrix) {
+void Cube::draw(const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix) {
 	shader.use();
 	shader.setMatrix4("model", modelMatrix);
     shader.setMatrix4("view", viewMatrix);

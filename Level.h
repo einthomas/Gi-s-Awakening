@@ -9,5 +9,5 @@ class Level {
 public:
     std::vector<Cube> cubes;
 
-    void draw(const glm::mat4 &viewMatrix);
+    void draw(const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix);
 };

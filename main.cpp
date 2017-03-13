@@ -1,6 +1,8 @@
 #define GLEW_STATIC
 
 #include <iostream>
+#include <chrono>
+
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
@@ -67,13 +69,13 @@ int main(void) {
 
     glViewport(0, 0, width, height);
     glm::mat4 projectionMatrix = glm::perspectiveFov(
-        glm::radians(45.0f),
+        glm::radians(70.0f),
         static_cast<float>(width),
         static_cast<float>(height),
         0.1f, 100.0f
     );
 
-    Camera camera(glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(30.0f, 0.0f, 0.0f));
+    Camera camera(glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(90.0f, 0.0f, 0.0f));
 
     Cube::init();
 
@@ -82,19 +84,19 @@ int main(void) {
     Level level;
 
     level.cubes.push_back({
-        testShader, glm::vec3(0.7f), projectionMatrix,
+        testShader, glm::vec3(0.7f),
         glm::vec3(0.0f, 0.0f, 0.0f),
         glm::vec3(2.0f, 2.0f, 1.0f)
     });
 
     level.cubes.push_back({
-        testShader, glm::vec3(0.7f), projectionMatrix,
+        testShader, glm::vec3(0.7f),
         glm::vec3(0.0f, 4.0f, 0.0f),
         glm::vec3(2.0f, 2.0f, 1.0f)
     });
 
     level.cubes.push_back({
-        testShader, glm::vec3(0.7f), projectionMatrix,
+        testShader, glm::vec3(0.7f),
         glm::vec3(0.0f, 8.0f, 0.0f),
         glm::vec3(2.0f, 2.0f, 1.0f)
     });
@@ -103,37 +105,47 @@ int main(void) {
     glfwSetCursorPos(window, centerX, centerY);
 
 	float velocityZ = 0.0f;
-	float gravity = 1.6f;
+    float gravity = 16.0f;
 	bool onGround = true;
 	float playerHeight = 2.0f;
+    float movementSpeed = 4.0f;
+    float rotationSpeed = 14.0f;
+    float jumpSpeed = 8.0f;
+
+    std::chrono::steady_clock clock;
+    std::chrono::steady_clock::time_point previousTime;
 
     while (!glfwWindowShouldClose(window)) {
-        float delta = 0.1; // TODO: calculate me
+        auto currentTime = clock.now();
+        float delta = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - previousTime).count() * 0.001f;
+        previousTime = currentTime;
 
         // movement
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-            camera.position.x -= std::sin(glm::radians(camera.rotation.z)) * delta;
-            camera.position.y += std::cos(glm::radians(camera.rotation.z)) * delta;
+            camera.position.x -= std::sin(glm::radians(camera.rotation.z)) * delta * movementSpeed;
+            camera.position.y += std::cos(glm::radians(camera.rotation.z)) * delta * movementSpeed;
         }
         if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-            camera.position.x -= std::cos(glm::radians(camera.rotation.z)) * delta;
-            camera.position.y -= std::sin(glm::radians(camera.rotation.z)) * delta;
+            camera.position.x -= std::cos(glm::radians(camera.rotation.z)) * delta * movementSpeed;
+            camera.position.y -= std::sin(glm::radians(camera.rotation.z)) * delta * movementSpeed;
         }
         if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-            camera.position.x += std::sin(glm::radians(camera.rotation.z)) * delta;
-            camera.position.y -= std::cos(glm::radians(camera.rotation.z)) * delta;
+            camera.position.x += std::sin(glm::radians(camera.rotation.z)) * delta * movementSpeed;
+            camera.position.y -= std::cos(glm::radians(camera.rotation.z)) * delta * movementSpeed;
         }
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-            camera.position.x += std::cos(glm::radians(camera.rotation.z)) * delta;
-            camera.position.y += std::sin(glm::radians(camera.rotation.z)) * delta;
+            camera.position.x += std::cos(glm::radians(camera.rotation.z)) * delta * movementSpeed;
+            camera.position.y += std::sin(glm::radians(camera.rotation.z)) * delta * movementSpeed;
         }
+
+        // jumping
 		if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && onGround) {
 			onGround = false;
-			velocityZ = -3.0f;
+            velocityZ = jumpSpeed;
 		}
 
-		velocityZ += gravity * delta;
-		camera.position.z -= velocityZ * delta;
+        velocityZ -= gravity * delta;
+        camera.position.z += velocityZ * delta;
 		if (camera.position.z < playerHeight) {
 			camera.position.z = playerHeight;
 			onGround = true;
@@ -144,13 +156,13 @@ int main(void) {
         glfwGetCursorPos(window, &mouseX, &mouseY);
         glfwSetCursorPos(window, centerX, centerY);
 
-        camera.rotation.z -= (mouseX - centerX) * 2 * delta;
-        camera.rotation.x -= (mouseY - centerY) * 2 * delta;
+        camera.rotation.z -= (mouseX - centerX) * rotationSpeed * delta;
+        camera.rotation.x -= (mouseY - centerY) * rotationSpeed * delta;
 
         glEnable(GL_DEPTH_TEST);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        level.draw(camera.getMatrix());
+        level.draw(camera.getMatrix(), projectionMatrix);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
