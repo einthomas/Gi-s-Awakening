@@ -3,11 +3,11 @@
 #include <vector>
 #include <glm/glm.hpp>
 
-#include "Cube.h"
+#include "Object3D.h"
 
 class Level {
 public:
-    std::vector<Cube> cubes;
+    std::vector<Object3D> objects;
 
     void draw(const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix);
 };

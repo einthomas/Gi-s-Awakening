@@ -1,7 +1,6 @@
-#define GLEW_STATIC
-
 #include <iostream>
 #include <chrono>
+#include <memory>
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -10,6 +9,8 @@
 #include "Cube.h"
 #include "Camera.h"
 #include "Level.h"
+#include "Object3D.h"
+#include "BlinnMaterial.h"
 
 static int width = 1280, height = 720;
 static const char *title = "Guardian's Awakening: The Mending of the Sky";
@@ -77,29 +78,28 @@ int main(void) {
 
     Camera camera(glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(90.0f, 0.0f, 0.0f));
 
-    Cube::init();
-
-    Shader testShader("shaders/shader.vert", "shaders/shader.frag");
+    BlinnMaterial::init();
+    std::unique_ptr<BlinnMaterial> material(new BlinnMaterial(glm::vec3(1.0f), glm::vec3(0.0f), 0.0f));
 
     Level level;
 
-    level.cubes.push_back({
-        testShader, glm::vec3(0.7f),
+    level.objects.push_back(Object3D::makeCube(
+        material.get(),
         glm::vec3(0.0f, 0.0f, 0.0f),
         glm::vec3(2.0f, 2.0f, 1.0f)
-    });
+    ));
 
-    level.cubes.push_back({
-        testShader, glm::vec3(0.7f),
+    level.objects.push_back(Object3D::makeCube(
+        material.get(),
         glm::vec3(0.0f, 4.0f, 0.0f),
         glm::vec3(2.0f, 2.0f, 1.0f)
-    });
+    ));
 
-    level.cubes.push_back({
-        testShader, glm::vec3(0.7f),
+    level.objects.push_back(Object3D::makeCube(
+        material.get(),
         glm::vec3(0.0f, 8.0f, 0.0f),
         glm::vec3(2.0f, 2.0f, 1.0f)
-    });
+    ));
 
     int centerX = width / 2, centerY = height / 2;
     glfwSetCursorPos(window, centerX, centerY);

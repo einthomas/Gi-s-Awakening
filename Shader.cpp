@@ -20,7 +20,7 @@ Shader::Shader(std::string vertexShaderPath, std::string fragmentShaderPath) {
 	glAttachShader(program, fragmentShader);
 	glLinkProgram(program);
 	glDeleteShader(vertexShader);
-	glDeleteShader(fragmentShader);
+    glDeleteShader(fragmentShader);
 
 	GLint success;
     GLchar *infoLog;
