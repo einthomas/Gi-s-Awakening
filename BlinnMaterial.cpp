@@ -6,9 +6,9 @@ void BlinnMaterial::init() {
     shader = Shader("shaders/shader.vert", "shaders/shader.frag");
 }
 
-BlinnMaterial::BlinnMaterial(
-    const glm::vec3 &diffuseColor, const glm::vec3 &specularColor, float glossyness
-) : diffuseColor(diffuseColor), specularColor(specularColor), glossyness(glossyness) {
+BlinnMaterial::BlinnMaterial(const glm::vec3 &diffuseColor, const glm::vec3 &specularColor, float glossyness) :
+	diffuseColor(diffuseColor), specularColor(specularColor), glossyness(glossyness)
+{
 }
 
 void BlinnMaterial::bind(const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix, const glm::mat4 &modelMatrix) {

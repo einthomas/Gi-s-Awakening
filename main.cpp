@@ -13,7 +13,7 @@
 #include "BlinnMaterial.h"
 
 static int width = 1280, height = 720;
-static const char *title = "Guardian's Awakening: The Mending of the Sky";
+static const char *title = "Gi's Awakening: The Mending of the Sky";
 
 GLFWwindow *initGLFW() {
     glfwInit();
@@ -83,21 +83,52 @@ int main(void) {
 
     Level level;
 
+    // ground 1
     level.objects.push_back(Object3D::makeCube(
         material.get(),
         glm::vec3(0.0f, 0.0f, 0.0f),
         glm::vec3(2.0f, 2.0f, 1.0f)
     ));
 
+    // ground 2
     level.objects.push_back(Object3D::makeCube(
         material.get(),
-        glm::vec3(0.0f, 4.0f, 0.0f),
+        glm::vec3(0.0f, 7.0f, 0.0f),
         glm::vec3(2.0f, 2.0f, 1.0f)
     ));
 
+    // ground 3
     level.objects.push_back(Object3D::makeCube(
         material.get(),
-        glm::vec3(0.0f, 8.0f, 0.0f),
+        glm::vec3(0.0f, 14.0f, 0.0f),
+        glm::vec3(2.0f, 2.0f, 1.0f)
+    ));
+
+    // stair 1
+    level.objects.push_back(Object3D::makeCube(
+        material.get(),
+        glm::vec3(0.0f, 21.0f, 1.0f),
+        glm::vec3(2.0f, 2.0f, 1.0f)
+    ));
+
+    // wall 1
+    level.objects.push_back(Object3D::makeCube(
+        material.get(),
+        glm::vec3(2.0f, 0.0f, 1.0f),
+        glm::vec3(2.0f, 2.0f, 1.0f)
+    ));
+
+    // wall 2
+    level.objects.push_back(Object3D::makeCube(
+        material.get(),
+        glm::vec3(-2.0f, 0.0f, 1.0f),
+        glm::vec3(2.0f, 2.0f, 1.0f)
+    ));
+
+    // wall 3
+    level.objects.push_back(Object3D::makeCube(
+        material.get(),
+        glm::vec3(0.0f, -2.0f, 1.0f),
         glm::vec3(2.0f, 2.0f, 1.0f)
     ));
 
@@ -107,13 +138,15 @@ int main(void) {
 	float velocityZ = 0.0f;
     float gravity = 16.0f;
 	bool onGround = true;
-	float playerHeight = 2.0f;
     float movementSpeed = 4.0f;
     float rotationSpeed = 14.0f;
     float jumpSpeed = 8.0f;
+    glm::vec3 playerSize = glm::vec3(0.5f, 0.5f, 2.0f);
 
     std::chrono::steady_clock clock;
     std::chrono::steady_clock::time_point previousTime;
+
+    camera.position.z = playerSize.z + 3.0f;
 
     while (!glfwWindowShouldClose(window)) {
         auto currentTime = clock.now();
@@ -121,21 +154,48 @@ int main(void) {
         previousTime = currentTime;
 
         // movement
+        glm::vec3 potentialMovement;
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-            camera.position.x -= std::sin(glm::radians(camera.rotation.z)) * delta * movementSpeed;
-            camera.position.y += std::cos(glm::radians(camera.rotation.z)) * delta * movementSpeed;
+            potentialMovement.x -= std::sin(glm::radians(camera.rotation.z)) * delta * movementSpeed;
+            potentialMovement.y += std::cos(glm::radians(camera.rotation.z)) * delta * movementSpeed;
         }
         if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-            camera.position.x -= std::cos(glm::radians(camera.rotation.z)) * delta * movementSpeed;
-            camera.position.y -= std::sin(glm::radians(camera.rotation.z)) * delta * movementSpeed;
+            potentialMovement.x -= std::cos(glm::radians(camera.rotation.z)) * delta * movementSpeed;
+            potentialMovement.y -= std::sin(glm::radians(camera.rotation.z)) * delta * movementSpeed;
         }
         if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-            camera.position.x += std::sin(glm::radians(camera.rotation.z)) * delta * movementSpeed;
-            camera.position.y -= std::cos(glm::radians(camera.rotation.z)) * delta * movementSpeed;
+            potentialMovement.x += std::sin(glm::radians(camera.rotation.z)) * delta * movementSpeed;
+            potentialMovement.y -= std::cos(glm::radians(camera.rotation.z)) * delta * movementSpeed;
         }
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-            camera.position.x += std::cos(glm::radians(camera.rotation.z)) * delta * movementSpeed;
-            camera.position.y += std::sin(glm::radians(camera.rotation.z)) * delta * movementSpeed;
+            potentialMovement.x += std::cos(glm::radians(camera.rotation.z)) * delta * movementSpeed;
+            potentialMovement.y += std::sin(glm::radians(camera.rotation.z)) * delta * movementSpeed;
+        }
+
+        bool intersectionX = false;
+        bool intersectionY = false;
+        onGround = false;
+        for (Object3D object : level.objects) {
+            if (object.intersects(camera.position + glm::vec3(0.0f, 0.0f, 0.1f) + glm::vec3(potentialMovement.x, 0.0f, 0.0f), playerSize)) {
+                intersectionX = true;
+            }
+            if (object.intersects(camera.position + glm::vec3(0.0f, 0.0f, 0.1f) + glm::vec3(0.0f, potentialMovement.y, 0.0f), playerSize)) {
+                intersectionY = true;
+            }
+            if (!onGround) {
+                if (object.intersects(camera.position, playerSize)) {
+                    onGround = true;
+                }
+                else {
+                    onGround = false;
+                }
+            }
+        }
+        if (!intersectionX) {
+            camera.position.x += potentialMovement.x;
+        }
+        if (!intersectionY) {
+            camera.position.y += potentialMovement.y;
         }
 
         // jumping
@@ -144,13 +204,23 @@ int main(void) {
             velocityZ = jumpSpeed;
 		}
 
-        velocityZ -= gravity * delta;
-        camera.position.z += velocityZ * delta;
-		if (camera.position.z < playerHeight) {
-			camera.position.z = playerHeight;
-			onGround = true;
-		}
+        if (!onGround) {
+            velocityZ -= gravity * 0.01f;
+            camera.position.z += velocityZ * 0.01f;
+        } else {
+            velocityZ = 0;
+        }
 
+		for (Object3D object : level.objects) {
+            if (object.intersects(camera.position, playerSize)) {
+                onGround = true;
+                break;
+            }
+            else {
+                onGround = false;
+            }
+		}
+        
         // mouse look
         double mouseX, mouseY;
         glfwGetCursorPos(window, &mouseX, &mouseY);
