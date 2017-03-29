@@ -31,7 +31,7 @@ GLFWwindow *initGLFW() {
         return window;
     }
 
-    //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     return window;
 }
