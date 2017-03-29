@@ -146,7 +146,8 @@ int main(void) {
     std::chrono::steady_clock clock;
     std::chrono::steady_clock::time_point previousTime;
 
-    camera.position.z = playerSize.z + 3.0f;
+    //camera.position.z = playerSize.z + 3.0f;
+    // TODO: have a separate player position variable
 
     while (!glfwWindowShouldClose(window)) {
         auto currentTime = clock.now();
@@ -154,7 +155,7 @@ int main(void) {
         previousTime = currentTime;
 
         // movement
-        glm::vec3 potentialMovement;
+        glm::vec3 potentialMovement = glm::vec3(0);
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
             potentialMovement.x -= std::sin(glm::radians(camera.rotation.z)) * delta * movementSpeed;
             potentialMovement.y += std::cos(glm::radians(camera.rotation.z)) * delta * movementSpeed;
@@ -172,31 +173,7 @@ int main(void) {
             potentialMovement.y += std::sin(glm::radians(camera.rotation.z)) * delta * movementSpeed;
         }
 
-        bool intersectionX = false;
-        bool intersectionY = false;
-        onGround = false;
-        for (Object3D object : level.objects) {
-            if (object.intersects(camera.position + glm::vec3(0.0f, 0.0f, 0.1f) + glm::vec3(potentialMovement.x, 0.0f, 0.0f), playerSize)) {
-                intersectionX = true;
-            }
-            if (object.intersects(camera.position + glm::vec3(0.0f, 0.0f, 0.1f) + glm::vec3(0.0f, potentialMovement.y, 0.0f), playerSize)) {
-                intersectionY = true;
-            }
-            if (!onGround) {
-                if (object.intersects(camera.position, playerSize)) {
-                    onGround = true;
-                }
-                else {
-                    onGround = false;
-                }
-            }
-        }
-        if (!intersectionX) {
-            camera.position.x += potentialMovement.x;
-        }
-        if (!intersectionY) {
-            camera.position.y += potentialMovement.y;
-        }
+        camera.position += potentialMovement;
 
         // jumping
 		if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && onGround) {
@@ -208,18 +185,13 @@ int main(void) {
             velocityZ -= gravity * 0.01f;
             camera.position.z += velocityZ * 0.01f;
         } else {
-            velocityZ = 0;
+            velocityZ = std::max(0.f, velocityZ);
         }
 
-		for (Object3D object : level.objects) {
-            if (object.intersects(camera.position, playerSize)) {
-                onGround = true;
-                break;
-            }
-            else {
-                onGround = false;
-            }
-		}
+        onGround = false;
+        for (Object3D object : level.objects) {
+            camera.position = object.solveCollision(camera.position, playerSize, onGround);
+        }
         
         // mouse look
         double mouseX, mouseY;

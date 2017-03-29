@@ -1,5 +1,6 @@
 #include "Object3D.h"
 
+#include <iostream>
 #include <glm/gtc/matrix_transform.hpp>
 
 GLuint Object3D::cubeVAO = static_cast<GLuint>(-1);
@@ -95,4 +96,44 @@ bool Object3D::intersects(glm::vec3 position, glm::vec3 scale) {
     }
 
     return false;
+}
+
+glm::vec3 Object3D::solveCollision(glm::vec3 position, const glm::vec3 &scale, bool &onGround) const {
+    // colliding two boxes is equivalent to
+    // colliding a point with a box of the size of both boxes combined
+    glm::vec3 sumSize = (scale + this->scale) * 0.5f;
+    glm::vec3 delta = position - this->position;
+
+    // signed distance from point to closest surface
+    glm::vec3 distance = glm::abs(delta) - sumSize;
+
+    // find dimension with largest distance
+    int dimension;
+    if (distance.x > distance.y) {
+        if (distance.x > distance.z) {
+            dimension = 0;
+        } else {
+            dimension = 2;
+        }
+    } else {
+        if (distance.y > distance.z) {
+            dimension = 1;
+        } else {
+            dimension = 2;
+        }
+    }
+
+    if (distance[dimension] < 0) {
+        // fix intersection
+        if (dimension == 2) {
+            onGround = true;
+        }
+        if (delta[dimension] > 0) {
+            position[dimension] -= distance[dimension];
+        } else {
+            position[dimension] += distance[dimension];
+        }
+    }
+
+    return position;
 }
