@@ -143,6 +143,7 @@ int main(void) {
     float rotationSpeed = 14.0f;
     float jumpSpeed = 8.0f;
     glm::vec3 playerSize = glm::vec3(0.5f, 0.5f, 2.0f);
+    glm::vec3 playerPosition = glm::vec3(0.0f, 0.0f, 2.0f);
 
     std::chrono::steady_clock clock;
     std::chrono::steady_clock::time_point previousTime;
@@ -174,7 +175,7 @@ int main(void) {
             potentialMovement.y += std::sin(glm::radians(camera.rotation.z)) * delta * movementSpeed;
         }
 
-        camera.position += potentialMovement;
+        playerPosition += potentialMovement;
 
         // jumping
 		if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && onGround) {
@@ -184,15 +185,17 @@ int main(void) {
 
         if (!onGround) {
             velocityZ -= gravity * 0.01f;
-            camera.position.z += velocityZ * 0.01f;
+            playerPosition.z += velocityZ * 0.01f;
         } else {
             velocityZ = std::max(0.f, velocityZ);
         }
 
         onGround = false;
         for (Object3D object : level.objects) {
-            camera.position = object.solveCollision(camera.position, playerSize, onGround);
+            playerPosition = object.solveCollision(playerPosition, playerSize, onGround);
         }
+
+        camera.position = playerPosition + glm::vec3(0.f, 0.f, 0.5f);
         
         // mouse look
         double mouseX, mouseY;
