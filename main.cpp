@@ -106,6 +106,13 @@ int main(void) {
         glm::vec3(2.0f, 2.0f, 1.0f)
     ));
 
+    // ceiling
+    level.objects.push_back(Object3D::makeCube(
+        material.get(),
+        glm::vec3(0.0f, 0.0f, 4.5f),
+        glm::vec3(2.0f, 2.0f, 1.0f)
+    ));
+
     // stair 1
     level.objects.push_back(Object3D::makeCube(
         material.get(),
@@ -138,19 +145,26 @@ int main(void) {
     glfwSetCursorPos(window, centerX, centerY);
 
 	float velocityZ = 0.0f;
-    float gravity = 16.0f;
-	bool onGround = true;
+    float gravity = 12.0f;
     float movementSpeed = 4.0f;
     float rotationSpeed = 14.0f;
-    float jumpSpeed = 8.0f;
     float projectileSpeed = 12.0f;
+    float jumpSpeed = 5.0f;
+    float maxJumpAccelerationDuration = 0.3f;
+    float jumpAccelerationDuration = 0.f;
+
+    enum struct JumpState {
+        GROUNDED, JUMPING, FALLING
+    } jumpState = JumpState::FALLING;
+    bool releasedJumpButton = true; // don't allow continues jumping by keeping the key down
+
     glm::vec3 playerSize = glm::vec3(0.5f, 0.5f, 2.0f);
     glm::vec3 playerPosition = glm::vec3(0.0f, 0.0f, 2.0f);
 
     std::chrono::steady_clock clock;
-    std::chrono::steady_clock::time_point previousTime;
 
     // TODO: have a separate player position variable
+    auto previousTime = clock.now();
 
     std::vector<Projectile> projectiles;
     bool mousePressed = false;
@@ -199,21 +213,45 @@ int main(void) {
         }
 
         // jumping
-		if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && onGround) {
-			onGround = false;
-            velocityZ = jumpSpeed;
-		}
-
-        if (!onGround) {
-            velocityZ -= gravity * 0.01f;
-            playerPosition.z += velocityZ * 0.01f;
+        if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+            // TODO: should use the fraction of delta at which maxJumpAccelerationDuration is reached
+            if (jumpState == JumpState::GROUNDED && releasedJumpButton) {
+                releasedJumpButton = false;
+                jumpState = JumpState::JUMPING;
+                velocityZ = jumpSpeed;
+                playerPosition.z += jumpSpeed * delta;
+                jumpAccelerationDuration = 0;
+            } else if (jumpState == JumpState::JUMPING) {
+                playerPosition.z += jumpSpeed * delta;
+                jumpAccelerationDuration += delta;
+                if (jumpAccelerationDuration > maxJumpAccelerationDuration) {
+                    jumpState = JumpState::FALLING;
+                }
+            }
         } else {
-            velocityZ = std::max(0.f, velocityZ);
+            releasedJumpButton = true;
+            if (jumpState == JumpState::GROUNDED) {
+                velocityZ = 0;
+            } else if (jumpState == JumpState::JUMPING) {
+                jumpState = JumpState::FALLING;
+            }
         }
 
-        onGround = false;
+        if (jumpState == JumpState::FALLING) {
+            // frame-rate intependent position calculation
+            playerPosition.z += velocityZ * delta - 0.5 * gravity * delta * delta;
+            velocityZ -= gravity * delta;
+        }
+
+        bool onGround = false;
         for (Object3D object : level.objects) {
             playerPosition = object.solveCollision(playerPosition, playerSize, onGround);
+        }
+        if (onGround) {
+            jumpState = JumpState::GROUNDED;
+        } else if (jumpState == JumpState::GROUNDED) {
+            // there's probably a better way to do this
+            jumpState = JumpState::FALLING;
         }
 
         camera.position = playerPosition + glm::vec3(0.f, 0.f, 0.5f);

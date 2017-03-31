@@ -125,10 +125,10 @@ glm::vec3 Object3D::solveCollision(glm::vec3 position, const glm::vec3 &scale, b
 
     if (distance[dimension] < 0) {
         // fix intersection
-        if (dimension == 2) {
-            onGround = true;
-        }
         if (delta[dimension] > 0) {
+            if (dimension == 2) {
+                onGround = true;
+            }
             position[dimension] -= distance[dimension];
         } else {
             position[dimension] += distance[dimension];
