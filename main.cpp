@@ -12,6 +12,7 @@
 #include "Level.h"
 #include "Object3D.h"
 #include "BlinnMaterial.h"
+#include "Projectile.h"
 
 static int width = 1280, height = 720;
 static const char *title = "Gi's Awakening: The Mending of the Sky";
@@ -142,15 +143,17 @@ int main(void) {
     float movementSpeed = 4.0f;
     float rotationSpeed = 14.0f;
     float jumpSpeed = 8.0f;
+    float projectileSpeed = 12.0f;
     glm::vec3 playerSize = glm::vec3(0.5f, 0.5f, 2.0f);
     glm::vec3 playerPosition = glm::vec3(0.0f, 0.0f, 2.0f);
 
     std::chrono::steady_clock clock;
     std::chrono::steady_clock::time_point previousTime;
 
-    //camera.position.z = playerSize.z + 3.0f;
     // TODO: have a separate player position variable
 
+    std::vector<Projectile> projectiles;
+    bool mousePressed = false;
     while (!glfwWindowShouldClose(window)) {
         auto currentTime = clock.now();
         float delta = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - previousTime).count() * 0.001f;
@@ -174,8 +177,26 @@ int main(void) {
             potentialMovement.x += std::cos(glm::radians(camera.rotation.z)) * delta * movementSpeed;
             potentialMovement.y += std::sin(glm::radians(camera.rotation.z)) * delta * movementSpeed;
         }
-
         playerPosition += potentialMovement;
+
+        // shooting
+        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+            mousePressed = true;
+        }
+        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE) {
+            if (mousePressed) {
+                mousePressed = false;
+                glm::vec3 cameraDirection = camera.getDirection();
+                projectiles.push_back(Projectile(
+                    material.get(),
+                    playerPosition + playerSize / 4.0f + cameraDirection * 0.5f,
+                    cameraDirection * projectileSpeed
+                ));
+            }
+        }
+        for (int i = 0; i < projectiles.size(); i++) {
+            projectiles[i].update(delta);
+        }
 
         // jumping
 		if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && onGround) {
@@ -208,6 +229,9 @@ int main(void) {
         glEnable(GL_DEPTH_TEST);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        for (Projectile projectile : projectiles) {
+            projectile.draw(camera.getMatrix(), projectionMatrix);
+        }
         level.draw(camera.getMatrix(), projectionMatrix);
 
         glfwSwapBuffers(window);
