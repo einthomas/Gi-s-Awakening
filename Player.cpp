@@ -5,7 +5,8 @@ Player::Player(glm::vec3 position, glm::vec3 size) {
     this->size = size;
 }
 
-void Player::update(float delta, const Level &level) {
+void Player::update(float delta, float gravity, const Level &level) {
+    // update projectiles
     for (int i = 0; i < projectiles.size(); i++) {
         if (glm::length(projectiles[i].object3D.position - position) > Projectile::DESPAWN_DISTANCE) {
             projectiles.erase(projectiles.begin() + i);
@@ -23,6 +24,25 @@ void Player::update(float delta, const Level &level) {
             }
         }
     }
+
+    // jump
+    if (jumpState == JumpState::FALLING) {
+        // frame-rate intependent position calculation
+        position.z += velocityZ * delta - 0.5 * gravity * delta * delta;
+        velocityZ -= gravity * delta;
+    }
+
+    // check for and handle player intersection
+    onGround = false;
+    for (Object3D object : level.objects) {
+        position = object.solveCollision(position, size, onGround);
+    }
+    if (onGround) {
+        jumpState = JumpState::GROUNDED;
+    } else if (jumpState == JumpState::GROUNDED) {
+        // there's probably a better way to do this
+        jumpState = JumpState::FALLING;
+    }
 }
 
 void Player::draw(const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix) {
@@ -35,3 +55,30 @@ void Player::shoot(const Projectile &projectile) {
     projectiles.push_back(projectile);
 }
 
+void Player::jumpPressed(float delta) {
+    // TODO: should use the fraction of delta at which maxJumpAccelerationDuration is reached
+    if (jumpState == JumpState::GROUNDED && releasedJumpButton) {
+        releasedJumpButton = false;
+        jumpState = JumpState::JUMPING;
+        velocityZ = jumpSpeed;
+        position.z += jumpSpeed * delta;
+        jumpAccelerationDuration = 0;
+    }
+    else if (jumpState == JumpState::JUMPING) {
+        position.z += jumpSpeed * delta;
+        jumpAccelerationDuration += delta;
+        if (jumpAccelerationDuration > maxJumpAccelerationDuration) {
+            jumpState = JumpState::FALLING;
+        }
+    }
+}
+
+void Player::jumpReleased() {
+    releasedJumpButton = true;
+    if (jumpState == JumpState::GROUNDED) {
+        velocityZ = 0;
+    }
+    else if (jumpState == JumpState::JUMPING) {
+        jumpState = JumpState::FALLING;
+    }
+}
