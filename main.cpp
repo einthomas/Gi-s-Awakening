@@ -81,64 +81,8 @@ int main(void) {
     Camera camera(glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(90.0f, 0.0f, 0.0f));
     BlinnMaterial::init();
     std::unique_ptr<BlinnMaterial> material(new BlinnMaterial(glm::vec3(1.0f), glm::vec3(0.0f), 0.0f));
-    Player player(camera.position, glm::vec3(0.5f, 0.5f, 2.0f));
-    Level level;
-
-    // ground 1
-    level.objects.push_back(Object3D::makeCube(
-        material.get(),
-        glm::vec3(0.0f, 0.0f, 0.0f),
-        glm::vec3(2.0f, 2.0f, 1.0f)
-    ));
-
-    // ground 2
-    level.objects.push_back(Object3D::makeCube(
-        material.get(),
-        glm::vec3(0.0f, 7.0f, 0.0f),
-        glm::vec3(2.0f, 2.0f, 1.0f)
-    ));
-
-    // ground 3
-    level.objects.push_back(Object3D::makeCube(
-        material.get(),
-        glm::vec3(0.0f, 14.0f, 0.0f),
-        glm::vec3(2.0f, 2.0f, 1.0f)
-    ));
-
-    // ceiling
-    level.objects.push_back(Object3D::makeCube(
-        material.get(),
-        glm::vec3(0.0f, 0.0f, 4.5f),
-        glm::vec3(2.0f, 2.0f, 1.0f)
-    ));
-
-    // stair 1
-    level.objects.push_back(Object3D::makeCube(
-        material.get(),
-        glm::vec3(0.0f, 21.0f, 1.0f),
-        glm::vec3(2.0f, 2.0f, 1.0f)
-    ));
-
-    // wall 1
-    level.objects.push_back(Object3D::makeCube(
-        material.get(),
-        glm::vec3(2.0f, 0.0f, 1.0f),
-        glm::vec3(2.0f, 2.0f, 1.0f)
-    ));
-
-    // wall 2
-    level.objects.push_back(Object3D::makeCube(
-        material.get(),
-        glm::vec3(-2.0f, 0.0f, 1.0f),
-        glm::vec3(2.0f, 2.0f, 1.0f)
-    ));
-
-    // wall 3
-    level.objects.push_back(Object3D::makeCube(
-        material.get(),
-        glm::vec3(0.0f, -2.0f, 1.0f),
-        glm::vec3(2.0f, 2.0f, 1.0f)
-    ));
+    Level level = Level::fromFile("levels/level0.gil", material.get());
+    Player player(level.start + glm::vec3(0.f, 0.f, 1.f), glm::vec3(0.5f, 0.5f, 2.0f));
 
     int centerX = width / 2, centerY = height / 2;
     glfwSetCursorPos(window, centerX, centerY);

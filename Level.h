@@ -8,6 +8,9 @@
 class Level {
 public:
     std::vector<Object3D> objects;
+    glm::vec3 start, end;
 
     void draw(const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix);
+
+    static Level fromFile(const char *filename, Material *material);
 };
