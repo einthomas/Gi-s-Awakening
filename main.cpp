@@ -82,7 +82,6 @@ int main(void) {
     BlinnMaterial::init();
     std::unique_ptr<BlinnMaterial> material(new BlinnMaterial(glm::vec3(1.0f), glm::vec3(0.0f), 0.0f));
     Level level = Level::fromFile("levels/level0.gil", material.get());
-    level.objects.push_back(Object3D::makeCube(material.get(), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(7.0f, 7.0f, 1.0f)));
     Player player(level.start + glm::vec3(0.f, 0.f, 1.f), glm::vec3(0.5f, 0.5f, 2.0f));
 
     int centerX = width / 2, centerY = height / 2;
