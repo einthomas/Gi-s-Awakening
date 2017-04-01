@@ -82,20 +82,23 @@ int main(void) {
     BlinnMaterial::init();
     std::unique_ptr<BlinnMaterial> material(new BlinnMaterial(glm::vec3(1.0f), glm::vec3(0.0f), 0.0f));
     Level level = Level::fromFile("levels/level0.gil", material.get());
+    level.objects.push_back(Object3D::makeCube(material.get(), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(7.0f, 7.0f, 1.0f)));
     Player player(level.start + glm::vec3(0.f, 0.f, 1.f), glm::vec3(0.5f, 0.5f, 2.0f));
 
     int centerX = width / 2, centerY = height / 2;
     glfwSetCursorPos(window, centerX, centerY);
 
     float gravity = 12.0f;
-    float movementSpeed = 4.0f;
+    float movementSpeed = 1.0f;
     float rotationSpeed = 14.0f;
     float projectileSpeed = 12.0f;
+    float movementMomentum = 0.01f;
 
     std::chrono::steady_clock clock;
     auto previousTime = clock.now();
 
     bool mousePressed = false;
+    glm::vec3 potentialMovement;
     while (!glfwWindowShouldClose(window)) {
         auto currentTime = clock.now();
         float delta = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - previousTime).count() * 0.001f;
@@ -103,21 +106,25 @@ int main(void) {
 
         // movement
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-            player.position.x -= std::sin(glm::radians(camera.rotation.z)) * delta * movementSpeed;
-            player.position.y += std::cos(glm::radians(camera.rotation.z)) * delta * movementSpeed;
+            potentialMovement.x -= std::sin(glm::radians(camera.rotation.z)) * delta * movementSpeed;
+            potentialMovement.y += std::cos(glm::radians(camera.rotation.z)) * delta * movementSpeed;
         }
         if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-            player.position.x -= std::cos(glm::radians(camera.rotation.z)) * delta * movementSpeed;
-            player.position.y -= std::sin(glm::radians(camera.rotation.z)) * delta * movementSpeed;
+            potentialMovement.x -= std::cos(glm::radians(camera.rotation.z)) * delta * movementSpeed;
+            potentialMovement.y -= std::sin(glm::radians(camera.rotation.z)) * delta * movementSpeed;
         }
         if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-            player.position.x += std::sin(glm::radians(camera.rotation.z)) * delta * movementSpeed;
-            player.position.y -= std::cos(glm::radians(camera.rotation.z)) * delta * movementSpeed;
+            potentialMovement.x += std::sin(glm::radians(camera.rotation.z)) * delta * movementSpeed;
+            potentialMovement.y -= std::cos(glm::radians(camera.rotation.z)) * delta * movementSpeed;
         }
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-            player.position.x += std::cos(glm::radians(camera.rotation.z)) * delta * movementSpeed;
-            player.position.y += std::sin(glm::radians(camera.rotation.z)) * delta * movementSpeed;
+            potentialMovement.x += std::cos(glm::radians(camera.rotation.z)) * delta * movementSpeed;
+            potentialMovement.y += std::sin(glm::radians(camera.rotation.z)) * delta * movementSpeed;
         }
+        potentialMovement.x *= 0.8f;
+        potentialMovement.y *= 0.8f;
+        player.position.x += potentialMovement.x;
+        player.position.y += potentialMovement.y;
 
         // shooting
         if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
