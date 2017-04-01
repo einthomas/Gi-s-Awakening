@@ -5,13 +5,11 @@
 #include <json/json.hpp>
 
 namespace glm {
-// overloads for json
-// here because json is only used for levels right now
-
-void from_json(const nlohmann::json &j, vec3 &v) {
-    v = vec3(j[0], j[1], j[2]);
-}
-
+    // overloads for json
+    // here because json is only used for levels right now
+    void from_json(const nlohmann::json &j, vec3 &v) {
+        v = vec3(j[0], j[1], j[2]);
+    }
 }
 
 void Level::draw(const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix) {
