@@ -159,6 +159,7 @@ int main(void) {
 
         camera.rotation.z -= (mouseX - centerX) * rotationSpeed * delta;
         camera.rotation.x -= (mouseY - centerY) * rotationSpeed * delta;
+        camera.rotation.x = glm::clamp(camera.rotation.x, 0.f, 180.f);
 
         glEnable(GL_DEPTH_TEST);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
