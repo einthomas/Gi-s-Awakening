@@ -13,6 +13,7 @@
 #include "Object3D.h"
 #include "BlinnMaterial.h"
 #include "Projectile.h"
+#include "Player.h"
 
 static int width = 1280, height = 720;
 static const char *title = "Gi's Awakening: The Mending of the Sky";
@@ -82,6 +83,8 @@ int main(void) {
 
     BlinnMaterial::init();
     std::unique_ptr<BlinnMaterial> material(new BlinnMaterial(glm::vec3(1.0f), glm::vec3(0.0f), 0.0f));
+
+    Player player(camera.position, glm::vec3(0.5f, 0.5f, 2.0f));
 
     Level level;
 
@@ -158,9 +161,6 @@ int main(void) {
     } jumpState = JumpState::FALLING;
     bool releasedJumpButton = true; // don't allow continues jumping by keeping the key down
 
-    glm::vec3 playerSize = glm::vec3(0.5f, 0.5f, 2.0f);
-    glm::vec3 playerPosition = glm::vec3(0.0f, 0.0f, 2.0f);
-
     std::chrono::steady_clock clock;
 
     // TODO: have a separate player position variable
@@ -174,24 +174,22 @@ int main(void) {
         previousTime = currentTime;
 
         // movement
-        glm::vec3 potentialMovement = glm::vec3(0);
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-            potentialMovement.x -= std::sin(glm::radians(camera.rotation.z)) * delta * movementSpeed;
-            potentialMovement.y += std::cos(glm::radians(camera.rotation.z)) * delta * movementSpeed;
+            player.position.x -= std::sin(glm::radians(camera.rotation.z)) * delta * movementSpeed;
+            player.position.y += std::cos(glm::radians(camera.rotation.z)) * delta * movementSpeed;
         }
         if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-            potentialMovement.x -= std::cos(glm::radians(camera.rotation.z)) * delta * movementSpeed;
-            potentialMovement.y -= std::sin(glm::radians(camera.rotation.z)) * delta * movementSpeed;
+            player.position.x -= std::cos(glm::radians(camera.rotation.z)) * delta * movementSpeed;
+            player.position.y -= std::sin(glm::radians(camera.rotation.z)) * delta * movementSpeed;
         }
         if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-            potentialMovement.x += std::sin(glm::radians(camera.rotation.z)) * delta * movementSpeed;
-            potentialMovement.y -= std::cos(glm::radians(camera.rotation.z)) * delta * movementSpeed;
+            player.position.x += std::sin(glm::radians(camera.rotation.z)) * delta * movementSpeed;
+            player.position.y -= std::cos(glm::radians(camera.rotation.z)) * delta * movementSpeed;
         }
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-            potentialMovement.x += std::cos(glm::radians(camera.rotation.z)) * delta * movementSpeed;
-            potentialMovement.y += std::sin(glm::radians(camera.rotation.z)) * delta * movementSpeed;
+            player.position.x += std::cos(glm::radians(camera.rotation.z)) * delta * movementSpeed;
+            player.position.y += std::sin(glm::radians(camera.rotation.z)) * delta * movementSpeed;
         }
-        playerPosition += potentialMovement;
 
         // shooting
         if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
@@ -201,16 +199,14 @@ int main(void) {
             if (mousePressed) {
                 mousePressed = false;
                 glm::vec3 cameraDirection = camera.getDirection();
-                projectiles.push_back(Projectile(
+                player.shoot(Projectile(
                     material.get(),
-                    playerPosition + playerSize / 4.0f + cameraDirection * 0.5f,
+                    player.position + player.size / 4.0f + cameraDirection * 0.5f,
                     cameraDirection * projectileSpeed
                 ));
             }
         }
-        for (int i = 0; i < projectiles.size(); i++) {
-            projectiles[i].update(delta);
-        }
+        player.update(delta, level);
 
         // jumping
         if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
@@ -219,10 +215,10 @@ int main(void) {
                 releasedJumpButton = false;
                 jumpState = JumpState::JUMPING;
                 velocityZ = jumpSpeed;
-                playerPosition.z += jumpSpeed * delta;
+                player.position.z += jumpSpeed * delta;
                 jumpAccelerationDuration = 0;
             } else if (jumpState == JumpState::JUMPING) {
-                playerPosition.z += jumpSpeed * delta;
+                player.position.z += jumpSpeed * delta;
                 jumpAccelerationDuration += delta;
                 if (jumpAccelerationDuration > maxJumpAccelerationDuration) {
                     jumpState = JumpState::FALLING;
@@ -239,13 +235,13 @@ int main(void) {
 
         if (jumpState == JumpState::FALLING) {
             // frame-rate intependent position calculation
-            playerPosition.z += velocityZ * delta - 0.5 * gravity * delta * delta;
+            player.position.z += velocityZ * delta - 0.5 * gravity * delta * delta;
             velocityZ -= gravity * delta;
         }
 
         bool onGround = false;
         for (Object3D object : level.objects) {
-            playerPosition = object.solveCollision(playerPosition, playerSize, onGround);
+            player.position = object.solveCollision(player.position, player.size, onGround);
         }
         if (onGround) {
             jumpState = JumpState::GROUNDED;
@@ -254,7 +250,7 @@ int main(void) {
             jumpState = JumpState::FALLING;
         }
 
-        camera.position = playerPosition + glm::vec3(0.f, 0.f, 0.5f);
+        camera.position = player.position + glm::vec3(0.f, 0.f, 0.5f);
         
         // mouse look
         double mouseX, mouseY;
@@ -267,9 +263,7 @@ int main(void) {
         glEnable(GL_DEPTH_TEST);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        for (Projectile projectile : projectiles) {
-            projectile.draw(camera.getMatrix(), projectionMatrix);
-        }
+        player.draw(camera.getMatrix(), projectionMatrix);
         level.draw(camera.getMatrix(), projectionMatrix);
 
         glfwSwapBuffers(window);

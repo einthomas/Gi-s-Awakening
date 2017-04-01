@@ -1,5 +1,7 @@
 #include "Projectile.h"
 
+const int Projectile::DESPAWN_DISTANCE;
+
 Projectile::Projectile(Material *material, glm::vec3 position, glm::vec3 movementVector) {
     this->movementVector = movementVector;
 
