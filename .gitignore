@@ -8,7 +8,10 @@
 
 !*.png
 !*.blend
+!*.py
 
 !*.md
 
 !*.gil
+
+!.gitattributes
