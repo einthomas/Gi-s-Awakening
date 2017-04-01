@@ -78,7 +78,7 @@ int main(void) {
         0.1f, 100.0f
     );
 
-    Camera camera(glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(90.0f, 0.0f, 0.0f));
+    Camera camera(glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(glm::radians(90.0f), 0.0f, 0.0f));
     BlinnMaterial::init();
     std::unique_ptr<BlinnMaterial> material(new BlinnMaterial(glm::vec3(1.0f), glm::vec3(0.0f), 0.0f));
     Level level = Level::fromFile("levels/level0.gil", material.get());
@@ -89,7 +89,7 @@ int main(void) {
 
     float gravity = 12.0f;
     float movementSpeed = 1.0f;
-    float rotationSpeed = 14.0f;
+    float rotationSpeed = glm::radians(14.0f);
     float projectileSpeed = 12.0f;
     float movementMomentum = 0.01f;
 
@@ -105,20 +105,20 @@ int main(void) {
 
         // movement
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-            potentialMovement.x -= std::sin(glm::radians(camera.rotation.z)) * delta * movementSpeed;
-            potentialMovement.y += std::cos(glm::radians(camera.rotation.z)) * delta * movementSpeed;
+            potentialMovement.x -= std::sin(camera.rotation.z) * delta * movementSpeed;
+            potentialMovement.y += std::cos(camera.rotation.z) * delta * movementSpeed;
         }
         if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-            potentialMovement.x -= std::cos(glm::radians(camera.rotation.z)) * delta * movementSpeed;
-            potentialMovement.y -= std::sin(glm::radians(camera.rotation.z)) * delta * movementSpeed;
+            potentialMovement.x -= std::cos(camera.rotation.z) * delta * movementSpeed;
+            potentialMovement.y -= std::sin(camera.rotation.z) * delta * movementSpeed;
         }
         if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-            potentialMovement.x += std::sin(glm::radians(camera.rotation.z)) * delta * movementSpeed;
-            potentialMovement.y -= std::cos(glm::radians(camera.rotation.z)) * delta * movementSpeed;
+            potentialMovement.x += std::sin(camera.rotation.z) * delta * movementSpeed;
+            potentialMovement.y -= std::cos(camera.rotation.z) * delta * movementSpeed;
         }
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-            potentialMovement.x += std::cos(glm::radians(camera.rotation.z)) * delta * movementSpeed;
-            potentialMovement.y += std::sin(glm::radians(camera.rotation.z)) * delta * movementSpeed;
+            potentialMovement.x += std::cos(camera.rotation.z) * delta * movementSpeed;
+            potentialMovement.y += std::sin(camera.rotation.z) * delta * movementSpeed;
         }
         potentialMovement.x *= 0.8f;
         potentialMovement.y *= 0.8f;
@@ -159,7 +159,7 @@ int main(void) {
 
         camera.rotation.z -= (mouseX - centerX) * rotationSpeed * delta;
         camera.rotation.x -= (mouseY - centerY) * rotationSpeed * delta;
-        camera.rotation.x = glm::clamp(camera.rotation.x, 0.f, 180.f);
+        camera.rotation.x = glm::clamp(camera.rotation.x, 0.f, glm::pi<float>());
 
         glEnable(GL_DEPTH_TEST);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
