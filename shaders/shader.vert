@@ -10,9 +10,12 @@ uniform vec3 diffuseColor;
 
 out vec3 vertColor;
 out vec3 vertNormal;
+out vec3 vertCameraVector;
 
 void main() {
-    gl_Position = projection * view * model * vec4(position, 1.0f);
+    vec4 worldPosition = model * vec4(position, 1.0f);
+    gl_Position = projection * view * worldPosition;
     vertColor = diffuseColor;
     vertNormal = normalize(vec3(model * vec4(normal, 0.0f)).xyz);
+    vertCameraVector = -normalize(worldPosition.xyz - inverse(view)[3].xyz);
 }
