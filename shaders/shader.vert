@@ -17,5 +17,5 @@ void main() {
     gl_Position = projection * view * worldPosition;
     vertColor = diffuseColor;
     vertNormal = normalize(vec3(model * vec4(normal, 0.0f)).xyz);
-    vertCameraVector = -normalize(worldPosition.xyz - inverse(view)[3].xyz);
+    vertCameraVector = -worldPosition.xyz + inverse(view)[3].xyz;
 }
