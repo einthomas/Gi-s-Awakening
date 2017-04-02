@@ -91,7 +91,6 @@ int main(void) {
     float movementSpeed = 1.0f;
     float rotationSpeed = glm::radians(14.0f);
     float projectileSpeed = 12.0f;
-    float movementMomentum = 0.01f;
 
     std::chrono::steady_clock clock;
     auto previousTime = clock.now();
