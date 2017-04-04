@@ -13,6 +13,7 @@
 #include "Object3D.h"
 #include "BlinnMaterial.h"
 #include "Player.h"
+#include "TextRenderer.h"
 
 static int width = 1280, height = 720;
 static const char *title = "Gi's Awakening: The Mending of the Sky";
@@ -83,6 +84,8 @@ int main(void) {
     std::unique_ptr<BlinnMaterial> material(new BlinnMaterial(glm::vec3(1.0f), glm::vec3(0.0f), 0.0f));
     Level level = Level::fromFile("levels/level0.gil", material.get());
     Player player(level.start + glm::vec3(0.f, 0.f, 1.f), glm::vec3(0.5f, 0.5f, 2.0f));
+    Shader textShader = Shader("shaders/textShader.vert", "shaders/textShader.frag");
+    TextRenderer::init(width, height, "fonts/Gidole-Regular.ttf", textShader);
 
     int centerX = width / 2, centerY = height / 2;
     glfwSetCursorPos(window, centerX, centerY);
