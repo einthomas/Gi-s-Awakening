@@ -20,6 +20,6 @@ public:
 
     bool intersects(glm::vec3 position, glm::vec3 scale);
 
-    glm::vec3 solveCollision(glm::vec3 position, const glm::vec3 &scale, bool &onGround) const;
+    void solveCollision(glm::vec3 &position, glm::vec3 &velocity, const glm::vec3 &scale, bool &onGround) const;
 };
 

@@ -84,21 +84,26 @@ void Object3D::draw(const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatr
     material->bind(viewMatrix, projectionMatrix, modelMatrix);
 
     glBindVertexArray(VAO);
-    glDrawArrays(GL_TRIANGLES, 0, elementCount);
+    glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(elementCount));
     glBindVertexArray(0);
 }
 
 bool Object3D::intersects(glm::vec3 position, glm::vec3 scale) {
-    if (position.x + scale.x / 2.0f > this->position.x - this->scale.x / 2.0f && position.x - scale.x / 2.0f < this->position.x + this->scale.x / 2.0f &&
-            position.y + scale.y / 2.0f > this->position.y - this->scale.y / 2.0f && position.y - scale.y / 2.0f < this->position.y + this->scale.y / 2.0f &&
-            position.z + scale.z / 2.0f > this->position.z - this->scale.z / 2.0f && position.z - scale.z / 2.0f < this->position.z + this->scale.z / 2.0f) {
+    if (
+        position.x + scale.x / 2.0f > this->position.x - this->scale.x / 2.0f &&
+        position.x - scale.x / 2.0f < this->position.x + this->scale.x / 2.0f &&
+        position.y + scale.y / 2.0f > this->position.y - this->scale.y / 2.0f &&
+        position.y - scale.y / 2.0f < this->position.y + this->scale.y / 2.0f &&
+        position.z + scale.z / 2.0f > this->position.z - this->scale.z / 2.0f &&
+        position.z - scale.z / 2.0f < this->position.z + this->scale.z / 2.0f
+    ) {
         return true;
     }
 
     return false;
 }
 
-glm::vec3 Object3D::solveCollision(glm::vec3 position, const glm::vec3 &scale, bool &onGround) const {
+void Object3D::solveCollision(glm::vec3 &position, glm::vec3 &velocity, const glm::vec3 &scale, bool &onGround) const {
     // colliding two boxes is equivalent to
     // colliding a point with a box of the size of both boxes combined
     glm::vec3 sumSize = (scale + this->scale) * 0.5f;
@@ -130,10 +135,10 @@ glm::vec3 Object3D::solveCollision(glm::vec3 position, const glm::vec3 &scale, b
                 onGround = true;
             }
             position[dimension] -= distance[dimension];
+            velocity[dimension] = std::max(velocity[dimension], 0.f);
         } else {
             position[dimension] += distance[dimension];
+            velocity[dimension] = std::min(velocity[dimension], 0.f);
         }
     }
-
-    return position;
 }

@@ -91,7 +91,6 @@ int main(void) {
     glfwSetCursorPos(window, centerX, centerY);
 
     float gravity = 12.0f;
-    float movementSpeed = 1.0f;
     float rotationSpeed = glm::radians(14.0f);
     float projectileSpeed = 12.0f;
 
@@ -99,33 +98,29 @@ int main(void) {
     auto previousTime = clock.now();
 
     bool mousePressed = false;
-    glm::vec3 potentialMovement;
     while (!glfwWindowShouldClose(window)) {
         auto currentTime = clock.now();
         float delta = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - previousTime).count() * 0.001f;
         previousTime = currentTime;
 
         // movement
+        glm::vec2 movement(0);
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-            potentialMovement.x -= std::sin(camera.rotation.z) * delta * movementSpeed;
-            potentialMovement.y += std::cos(camera.rotation.z) * delta * movementSpeed;
+            movement.x -= std::sin(camera.rotation.z);
+            movement.y += std::cos(camera.rotation.z);
         }
         if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-            potentialMovement.x -= std::cos(camera.rotation.z) * delta * movementSpeed;
-            potentialMovement.y -= std::sin(camera.rotation.z) * delta * movementSpeed;
+            movement.x -= std::cos(camera.rotation.z);
+            movement.y -= std::sin(camera.rotation.z);
         }
         if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-            potentialMovement.x += std::sin(camera.rotation.z) * delta * movementSpeed;
-            potentialMovement.y -= std::cos(camera.rotation.z) * delta * movementSpeed;
+            movement.x += std::sin(camera.rotation.z);
+            movement.y -= std::cos(camera.rotation.z);
         }
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-            potentialMovement.x += std::cos(camera.rotation.z) * delta * movementSpeed;
-            potentialMovement.y += std::sin(camera.rotation.z) * delta * movementSpeed;
+            movement.x += std::cos(camera.rotation.z);
+            movement.y += std::sin(camera.rotation.z);
         }
-        potentialMovement.x *= 0.8f;
-        potentialMovement.y *= 0.8f;
-        player.position.x += potentialMovement.x;
-        player.position.y += potentialMovement.y;
 
         // shooting
         if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
@@ -150,7 +145,7 @@ int main(void) {
             player.jumpReleased();
         }
 
-        player.update(delta, gravity, level);
+        player.update(delta, gravity, movement, level);
 
         camera.position = player.position + glm::vec3(0.f, 0.f, 0.5f);
         

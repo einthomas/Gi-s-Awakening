@@ -5,7 +5,7 @@ Player::Player(glm::vec3 position, glm::vec3 size) {
     this->size = size;
 }
 
-void Player::update(float delta, float gravity, const Level &level) {
+void Player::update(float delta, float gravity, glm::vec2 movement, const Level &level) {
     // update projectiles
     for (unsigned short i = 0; i < projectiles.size(); i++) {
         if (glm::length(projectiles[i].object3D.position - position) > Projectile::DESPAWN_DISTANCE) {
@@ -27,9 +27,9 @@ void Player::update(float delta, float gravity, const Level &level) {
 
     // jump
     if (jumpState == JumpState::FALLING) {
-        // frame-rate intependent position calculation
-        position.z += velocityZ * delta - 0.5 * gravity * delta * delta;
-        velocityZ -= gravity * delta;
+        // integral of a * x = a * x^2 / 2
+        position.z += velocity.z * delta - 0.5 * gravity * delta * delta;
+        velocity.z -= gravity * delta;
     }
 
     // check whether player fell out of map
@@ -37,10 +37,19 @@ void Player::update(float delta, float gravity, const Level &level) {
         position = level.start + glm::vec3(0.f, 0.f, 1.f);
     }
 
+    // movement
+    // exact velocity calculation deemed unnecessary
+    velocity += glm::vec3(movement, 0) * movementSpeed * delta;
+    // integral of a^x = (a^x-1)/log(a)
+    position.x += velocity.x * (std::pow(movementDampening, delta) - 1) * movementDampeningFactor;
+    position.y += velocity.y * (std::pow(movementDampening, delta) - 1) * movementDampeningFactor;
+    velocity.x *= std::pow(movementDampening, delta);
+    velocity.y *= std::pow(movementDampening, delta);
+
     // check for and handle player intersection
     onGround = false;
     for (Object3D object : level.objects) {
-        position = object.solveCollision(position, size, onGround);
+        object.solveCollision(position, velocity, size, onGround);
     }
     if (onGround) {
         jumpState = JumpState::GROUNDED;
@@ -65,7 +74,7 @@ void Player::jumpPressed(float delta) {
     if (jumpState == JumpState::GROUNDED && releasedJumpButton) {
         releasedJumpButton = false;
         jumpState = JumpState::JUMPING;
-        velocityZ = jumpSpeed;
+        velocity.z = jumpSpeed;
         position.z += jumpSpeed * delta;
         jumpAccelerationDuration = 0;
     }
@@ -81,7 +90,7 @@ void Player::jumpPressed(float delta) {
 void Player::jumpReleased() {
     releasedJumpButton = true;
     if (jumpState == JumpState::GROUNDED) {
-        velocityZ = 0;
+        velocity.z = 0;
     }
     else if (jumpState == JumpState::JUMPING) {
         jumpState = JumpState::FALLING;
