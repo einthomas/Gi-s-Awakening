@@ -18,6 +18,7 @@ def write_gi_level(context, filepath, level_name):
     
     platforms = []
     start = [0, 0, 0]
+    start_orientation = 0
     end = [0, 0, 0]
 
     for object in bpy.context.scene.objects:
@@ -33,6 +34,7 @@ def write_gi_level(context, filepath, level_name):
                 }]
             elif start_property is not None:
                 start = object.location[:]
+                start_orientation = object.rotation_euler[2]
             elif end_property is not None:
                 end = object.location[:]
                 
@@ -43,6 +45,7 @@ def write_gi_level(context, filepath, level_name):
         "name": level_name,
         "platforms": platforms,
         "start": start,
+        "startOrientation": start_orientation,
         "end": end
     }
     
@@ -61,7 +64,7 @@ from bpy.types import Operator
 
 class ExportGiLevel(Operator, ExportHelper):
     """Export to Gi Level file"""
-    bl_idname = "gi.level_export"
+    bl_idname = "gi.level_export"  # important since its how bpy.ops.import_test.some_data is constructed
     bl_label = "Export Gi Level"
 
     # ExportHelper mixin class uses this

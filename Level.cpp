@@ -27,6 +27,7 @@ Level Level::fromFile(const char *filename, Material *material) {
 
     level.start = json["start"];
     level.end = json["end"];
+    level.startOrientation = json["startOrientation"];
 
     auto platforms = json["platforms"];
     for (auto &platform : platforms) {

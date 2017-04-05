@@ -1,4 +1,5 @@
 {
+    "startOrientation": 0,
     "platforms": [
         {
             "size": [
@@ -66,7 +67,7 @@
         -4.0,
         4.5
     ],
-    "name": "Test Level 1",
+    "name": "",
     "start": [
         0.0,
         0.0,

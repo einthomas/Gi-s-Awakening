@@ -9,6 +9,7 @@ class Level {
 public:
     std::vector<Object3D> objects;
     glm::vec3 start, end;
+    float startOrientation;
 
     void draw(const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix);
 
