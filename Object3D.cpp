@@ -74,7 +74,7 @@ Object3D Object3D::makeCube(Material *material, const glm::vec3 &position, const
         glBindVertexArray(0);
     }
 
-    return { material, position, scale, cubeVAO, sizeof(vertices) };
+    return { material, position, scale, cubeVAO, sizeof(vertices) / 8 / 4 };
 }
 
 void Object3D::draw(const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix) {
