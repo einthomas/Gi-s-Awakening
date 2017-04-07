@@ -18,7 +18,6 @@
 static int width = 1280, height = 720;
 static const char *title = "Gi's Awakening: The Mending of the Sky";
 GLuint screenQuadVAO = 0;
-const int BLOOM_AMOUNT = 1;
 const int AA_SAMPLES = 4;
 
 GLFWwindow *initGLFW() {
@@ -250,24 +249,25 @@ int main(void) {
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
         }
 
-        int scaleFactor = 4;
+        const int scaledDownWidth = 256;
+        const int scaledDownHeight = 144;
         glBindFramebuffer(GL_FRAMEBUFFER, blurFBOs[0]);
         glDrawBuffer(GL_COLOR_ATTACHMENT0);
         glReadBuffer(GL_COLOR_ATTACHMENT0);
-        glBlitFramebuffer(0, 0, width, height, 0, 0, width / scaleFactor, height / scaleFactor, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+        glBlitFramebuffer(0, 0, width, height, 0, 0, scaledDownWidth, scaledDownHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         glBindFramebuffer(GL_FRAMEBUFFER, blurFBOs[1]);
         glDrawBuffer(GL_COLOR_ATTACHMENT0);
         glReadBuffer(GL_COLOR_ATTACHMENT0);
-        glBlitFramebuffer(0, 0, width, height, 0, 0, width / scaleFactor, height / scaleFactor, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+        glBlitFramebuffer(0, 0, width, height, 0, 0, scaledDownWidth, scaledDownHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, blurFBOs[0]);
         glDrawBuffer(GL_COLOR_ATTACHMENT0);
         glBindFramebuffer(GL_READ_FRAMEBUFFER, multisampledFBO);
         glReadBuffer(GL_COLOR_ATTACHMENT1);
-        glBlitFramebuffer(0, 0, width, height, 0, 0, width / scaleFactor, height / scaleFactor, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+        glBlitFramebuffer(0, 0, width, height, 0, 0, scaledDownWidth, scaledDownHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         // gaussian blur
@@ -275,7 +275,7 @@ int main(void) {
         gaussianBlurShader.use();
         gaussianBlurShader.setInteger("imageHeight", height);
         gaussianBlurShader.setInteger("imageWidth", width);
-        for (int i = 0; i < BLOOM_AMOUNT * 2; i++) {
+        for (int i = 0; i < 2; i++) {
             glBindFramebuffer(GL_FRAMEBUFFER, blurFBOs[horizontalBlur]);
             gaussianBlurShader.setInteger("horizontalBlur", horizontalBlur);
             gaussianBlurShader.setTexture2D("image", GL_TEXTURE0, blurColorBuffers[!horizontalBlur], 0);
@@ -288,7 +288,7 @@ int main(void) {
         glReadBuffer(GL_COLOR_ATTACHMENT0);
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, multisampledFBO);
         glDrawBuffer(GL_COLOR_ATTACHMENT1);
-        glBlitFramebuffer(0, 0, width / scaleFactor, height / scaleFactor, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+        glBlitFramebuffer(0, 0, scaledDownWidth, scaledDownHeight, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         // post processing - combine the blurred and the main image
