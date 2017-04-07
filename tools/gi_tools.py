@@ -13,6 +13,68 @@ bl_info = {
 import bpy
 import json
 
+def write_vertex(vertex, offset):
+	pass
+	
+def write_object(object, offset, vbo):
+	matrix = object.matrix_world;
+    mesh = object.to_mesh(context.scene, True, 'RENDER')
+    for faceIndex in range(len(mesh.tessfaces)):
+        # TODO: read uv maps from mesh.tessface_uv_textures.keys()
+        
+        texture = mesh.tessface_uv_textures.active.data[faceIndex]
+        image = texture.image
+        
+        if image != None:
+            imageName = image.name
+            face = mesh.tessfaces[faceIndex]
+            vertices = mesh.vertices
+            uvs = texture.uv
+            
+            if imageName not in images:
+                images[imageName] = image
+                triangles[imageName] = []
+                distances[imageName] = 0
+                count[imageName] = 0
+            
+            distance = (matrix * face.center).length
+            distances[imageName] += distance
+            count[imageName] += 1
+            if len(face.vertices) == 3:
+                for i in range(3):
+                    vertexIndex = face.vertices[i]
+                    triangles[imageName] += [(
+                        struct.pack('fff', *(matrix * vertices[vertexIndex].co)) + struct.pack('ff', *uvs[i]), 
+                        distance
+                    )]
+            elif len(face.vertices) == 4:
+                for i in [0, 1, 2, 2, 3, 0]:
+                    vertexIndex = face.vertices[i]
+                    triangles[imageName] += [(
+                        struct.pack('fff', *(matrix * vertices[vertexIndex].co)) + struct.pack('ff', *uvs[i]), 
+                        distance
+                    )]
+            else:
+                print("Polygon is neither a triangle nor a square. Skipped.")
+	
+def write_group(group, directory): 
+	offset = group.dupli_offset
+	with open(path.join(directory, group.name + ".vbo"), "wb") as vbo:
+		for object in group.objects:
+			try:
+				if object.type == 'MESH':
+			        write_object(object, offset, vbo)
+			except:
+				print("Couldn't convert object {}. Skipped.".format(object.name))
+
+def write_gi_block(context, filepath, file_name):
+    directory = path.split(self.filepath)[0]
+    
+	for group in bpy.data.groups:
+		write_group(group, directory)
+
+	return {'FINISHED'}
+
 def write_gi_level(context, filepath, level_name):
     print("running write_gi_level...")
     
@@ -30,7 +92,8 @@ def write_gi_level(context, filepath, level_name):
             if size_property is not None:
                 platforms += [{
                     "size": size_property[:],
-                    "position": object.location[:]
+                    "position": object.location[:],
+                    "type": object.dupli_group.name
                 }]
             elif start_property is not None:
                 start = object.location[:]
@@ -53,7 +116,6 @@ def write_gi_level(context, filepath, level_name):
         json.dump(level, f, indent=4)
 
     return {'FINISHED'}
-
 
 # ExportHelper is a helper class, defines filename and
 # invoke() function which calls the file selector.
