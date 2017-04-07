@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <glm/gtc/matrix_transform.hpp>
+#include <algorithm>
 
 GLuint Object3D::cubeVAO = static_cast<GLuint>(-1);
 
