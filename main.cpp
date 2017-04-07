@@ -259,7 +259,7 @@ int main(void) {
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
         }
 
-        int scaleFactor = 8;
+        int scaleFactor = 4;
         glBindFramebuffer(GL_FRAMEBUFFER, blurFBOs[0]);
         glDrawBuffer(GL_COLOR_ATTACHMENT0);
         glReadBuffer(GL_COLOR_ATTACHMENT0);
@@ -287,7 +287,6 @@ int main(void) {
         for (int i = 0; i < BLOOM_AMOUNT * 2; i++) {
             glBindFramebuffer(GL_FRAMEBUFFER, blurFBOs[horizontalBlur]);
             gaussianBlurShader.setInteger("horizontalBlur", horizontalBlur);
-            //gaussianBlurShader.setTexture2D("image", GL_TEXTURE0, i == 0 ? multisampledColorBuffers[1] : blurColorBuffers[!horizontalBlur], 0);
             gaussianBlurShader.setTexture2D("image", GL_TEXTURE0, blurColorBuffers[!horizontalBlur], 0);
             horizontalBlur = !horizontalBlur;
             drawScreenQuad();
