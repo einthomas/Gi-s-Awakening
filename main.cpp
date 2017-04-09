@@ -20,37 +20,8 @@ static const char *title = "Gi's Awakening: The Mending of the Sky";
 GLuint screenQuadVAO = 0;
 const int AA_SAMPLES = 4;
 
-GLFWwindow *initGLFW() {
-    glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
-    glfwWindowHint(GLFW_SAMPLES, 4);
-
-    GLFWwindow *window = glfwCreateWindow(width, height, title, nullptr, nullptr);
-    glfwMakeContextCurrent(window);
-    if (window == NULL) {
-        std::cout << "Failed to create GLFW window" << std::endl;
-        glfwTerminate();
-        return window;
-    }
-
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
-    return window;
-}
-
-bool initGLEW() {
-    glewExperimental = GL_TRUE;
-    if (glewInit() != GLEW_OK) {
-        std::cout << "Failed to initialize GLEW" << std::endl;
-        return false;
-    }
-
-    return true;
-}
-
+bool initGLEW();
+GLFWwindow *initGLFW();
 void drawScreenQuad();
 
 int main(void) {
@@ -86,28 +57,28 @@ int main(void) {
 
 
     // setup framebuffer
-    GLuint FBO;
-    glGenFramebuffers(1, &FBO);
-    glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+    GLuint multisampledFBO;
+    glGenFramebuffers(1, &multisampledFBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, multisampledFBO);
 
     const GLuint COLOR_BUFFER_COUNT = 2;       // use two color buffers
-    GLuint colorBuffers[COLOR_BUFFER_COUNT];
-    glGenTextures(2, colorBuffers);
+    GLuint multisampledColorBuffers[COLOR_BUFFER_COUNT];
+    glGenTextures(2, multisampledColorBuffers);
     for (GLuint i = 0; i < COLOR_BUFFER_COUNT; i++) {
-        glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, colorBuffers[i]);
+        glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, multisampledColorBuffers[i]);
         glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, AA_SAMPLES, GL_RGBA8, width, height, GL_TRUE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D_MULTISAMPLE, colorBuffers[i], 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D_MULTISAMPLE, multisampledColorBuffers[i], 0);
     }
 
-    GLuint depthRBO;
-    glGenRenderbuffers(1, &depthRBO);
-    glBindRenderbuffer(GL_RENDERBUFFER, depthRBO);
+    GLuint multisampledDepthRBO;
+    glGenRenderbuffers(1, &multisampledDepthRBO);
+    glBindRenderbuffer(GL_RENDERBUFFER, multisampledDepthRBO);
     glRenderbufferStorageMultisample(GL_RENDERBUFFER, AA_SAMPLES, GL_DEPTH_COMPONENT, width, height);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRBO);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, multisampledDepthRBO);
 
     // tell OpenGL to draw to both color buffers
     GLuint colorAttachments[2] = {
@@ -119,20 +90,20 @@ int main(void) {
 
 
 
-    GLuint multisampledFBO;
-    glGenFramebuffers(1, &multisampledFBO);
-    glBindFramebuffer(GL_FRAMEBUFFER, multisampledFBO);
+    GLuint FBO;
+    glGenFramebuffers(1, &FBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, FBO);
 
-    GLuint multisampledColorBuffers[COLOR_BUFFER_COUNT];
-    glGenTextures(2, multisampledColorBuffers);
+    GLuint colorBuffers[COLOR_BUFFER_COUNT];
+    glGenTextures(2, colorBuffers);
     for (GLuint i = 0; i < COLOR_BUFFER_COUNT; i++) {
-        glBindTexture(GL_TEXTURE_2D, multisampledColorBuffers[i]);
+        glBindTexture(GL_TEXTURE_2D, colorBuffers[i]);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGBA, GL_FLOAT, NULL);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, multisampledColorBuffers[i], 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, colorBuffers[i], 0);
     }
     glDrawBuffers(2, colorAttachments);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -243,7 +214,7 @@ int main(void) {
         camera.rotation.x = glm::clamp(camera.rotation.x, 0.f, glm::pi<float>());
 
         // render to framebuffer
-        glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+        glBindFramebuffer(GL_FRAMEBUFFER, multisampledFBO);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         player.draw(camera.getMatrix(), projectionMatrix);
@@ -251,9 +222,9 @@ int main(void) {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         for (GLuint i = 0; i < COLOR_BUFFER_COUNT; i++) {
-            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, multisampledFBO);
+            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, FBO);
             glDrawBuffer(GL_COLOR_ATTACHMENT0 + i);
-            glBindFramebuffer(GL_READ_FRAMEBUFFER, FBO);
+            glBindFramebuffer(GL_READ_FRAMEBUFFER, multisampledFBO);
             glReadBuffer(GL_COLOR_ATTACHMENT0 + i);
             glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -275,7 +246,7 @@ int main(void) {
 
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, blurFBOs[0]);
         glDrawBuffer(GL_COLOR_ATTACHMENT0);
-        glBindFramebuffer(GL_READ_FRAMEBUFFER, multisampledFBO);
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, FBO);
         glReadBuffer(GL_COLOR_ATTACHMENT1);
         glBlitFramebuffer(0, 0, width, height, 0, 0, scaledDownWidth, scaledDownHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -296,7 +267,7 @@ int main(void) {
 
         glBindFramebuffer(GL_READ_FRAMEBUFFER, blurFBOs[0]);
         glReadBuffer(GL_COLOR_ATTACHMENT0);
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, multisampledFBO);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, FBO);
         glDrawBuffer(GL_COLOR_ATTACHMENT1);
         glBlitFramebuffer(0, 0, scaledDownWidth, scaledDownHeight, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -304,8 +275,8 @@ int main(void) {
         // post processing - combine the blurred and the main image
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         postProcessingShader.use();
-        postProcessingShader.setTexture2D("mainImage", GL_TEXTURE0, multisampledColorBuffers[0], 0);
-        postProcessingShader.setTexture2D("brightSpotsBloomImage", GL_TEXTURE1, multisampledColorBuffers[1], 1);
+        postProcessingShader.setTexture2D("mainImage", GL_TEXTURE0, colorBuffers[0], 0);
+        postProcessingShader.setTexture2D("brightSpotsBloomImage", GL_TEXTURE1, colorBuffers[1], 1);
         drawScreenQuad();
 
         glfwSwapBuffers(window);
@@ -351,4 +322,35 @@ void drawScreenQuad() {
     glBindVertexArray(screenQuadVAO);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     glBindVertexArray(0);
+}
+
+GLFWwindow *initGLFW() {
+    glfwInit();
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+    glfwWindowHint(GLFW_SAMPLES, 4);
+
+    GLFWwindow *window = glfwCreateWindow(width, height, title, nullptr, nullptr);
+    glfwMakeContextCurrent(window);
+    if (window == NULL) {
+        std::cout << "Failed to create GLFW window" << std::endl;
+        glfwTerminate();
+        return window;
+    }
+
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+    return window;
+}
+
+bool initGLEW() {
+    glewExperimental = GL_TRUE;
+    if (glewInit() != GLEW_OK) {
+        std::cout << "Failed to initialize GLEW" << std::endl;
+        return false;
+    }
+
+    return true;
 }
