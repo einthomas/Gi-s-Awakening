@@ -9,5 +9,3 @@ class Platform : public Object3D {
 public:
     Platform(PlatformType *type, glm::vec3 position);
 };
-
-#endif // PLATFORM_H

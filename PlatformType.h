@@ -2,7 +2,7 @@
 
 #include <string>
 #include <glm/glm.hpp>
-#include <gl.h>
+#include <GL/gl.h>
 
 class PlatformType {
 public:
@@ -12,5 +12,3 @@ public:
     glm::vec3 size;
     GLuint VAO;
 };
-
-#endif // PLATFORMTYPE_H
