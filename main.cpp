@@ -1,16 +1,13 @@
 #include <iostream>
 #include <chrono>
 #include <memory>
-#include <algorithm>
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 
-#include "Cube.h"
 #include "Camera.h"
 #include "Level.h"
-#include "Object3D.h"
 #include "BlinnMaterial.h"
 #include "Player.h"
 #include "TextRenderer.h"
@@ -23,6 +20,9 @@ const int AA_SAMPLES = 4;
 bool initGLEW();
 GLFWwindow *initGLFW();
 void drawScreenQuad();
+void generateFBO(GLuint &FBO, GLuint* colorBuffers, int numColorAttachments, bool isMultisampled, bool attachDepthRBO);
+void blitFramebuffer(GLuint srcFBO, GLuint destFBO, GLbitfield mask, GLenum readBuffer, GLenum drawBuffer,
+    GLuint srcWidth, GLuint srcHeight, GLuint destWidth, GLuint destHeight, GLenum filter);
 
 int main(void) {
     GLFWwindow* window = initGLFW();
@@ -55,77 +55,18 @@ int main(void) {
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
-
-    // setup framebuffer
     GLuint multisampledFBO;
-    glGenFramebuffers(1, &multisampledFBO);
-    glBindFramebuffer(GL_FRAMEBUFFER, multisampledFBO);
-
-    const GLuint COLOR_BUFFER_COUNT = 2;       // use two color buffers
-    GLuint multisampledColorBuffers[COLOR_BUFFER_COUNT];
-    glGenTextures(2, multisampledColorBuffers);
-    for (GLuint i = 0; i < COLOR_BUFFER_COUNT; i++) {
-        glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, multisampledColorBuffers[i]);
-        glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, AA_SAMPLES, GL_RGBA8, width, height, GL_TRUE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D_MULTISAMPLE, multisampledColorBuffers[i], 0);
-    }
-
-    GLuint multisampledDepthRBO;
-    glGenRenderbuffers(1, &multisampledDepthRBO);
-    glBindRenderbuffer(GL_RENDERBUFFER, multisampledDepthRBO);
-    glRenderbufferStorageMultisample(GL_RENDERBUFFER, AA_SAMPLES, GL_DEPTH_COMPONENT, width, height);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, multisampledDepthRBO);
-
-    // tell OpenGL to draw to both color buffers
-    GLuint colorAttachments[2] = {
-        GL_COLOR_ATTACHMENT0,
-        GL_COLOR_ATTACHMENT1
-    };
-    glDrawBuffers(2, colorAttachments);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-
+    GLuint multisampledColorBuffers[2];
+    generateFBO(multisampledFBO, multisampledColorBuffers, 2, true, true);
 
     GLuint FBO;
-    glGenFramebuffers(1, &FBO);
-    glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+    GLuint colorBuffers[2];
+    generateFBO(FBO, colorBuffers, 2, false, true);
 
-    GLuint colorBuffers[COLOR_BUFFER_COUNT];
-    glGenTextures(2, colorBuffers);
-    for (GLuint i = 0; i < COLOR_BUFFER_COUNT; i++) {
-        glBindTexture(GL_TEXTURE_2D, colorBuffers[i]);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGBA, GL_FLOAT, NULL);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, colorBuffers[i], 0);
-    }
-    glDrawBuffers(2, colorAttachments);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-
-
-    // setup gaussian blur buffers
     GLuint blurFBOs[2];
-    glGenFramebuffers(2, blurFBOs);
     GLuint blurColorBuffers[2];
-    glGenTextures(2, blurColorBuffers);
-    for (int i = 0; i < 2; i++) {
-        glBindFramebuffer(GL_FRAMEBUFFER, blurFBOs[i]);
-        glBindTexture(GL_TEXTURE_2D, blurColorBuffers[i]);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGBA, GL_FLOAT, NULL);
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, blurColorBuffers[i], 0);
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    }
+    generateFBO(blurFBOs[0], &blurColorBuffers[0], 1, false, false);
+    generateFBO(blurFBOs[1], &blurColorBuffers[1], 1, false, false);
 
     Camera camera(glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(glm::radians(90.0f), 0.0f, 0.0f));
     BlinnMaterial::init();
@@ -213,64 +154,63 @@ int main(void) {
         camera.rotation.x -= (mouseY - centerY) * rotationSpeed * delta;
         camera.rotation.x = glm::clamp(camera.rotation.x, 0.f, glm::pi<float>());
 
-        // render to framebuffer
+        // render to multisampled framebuffer
         glBindFramebuffer(GL_FRAMEBUFFER, multisampledFBO);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         player.draw(camera.getMatrix(), projectionMatrix);
         level.draw(camera.getMatrix(), projectionMatrix);
+
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-        for (GLuint i = 0; i < COLOR_BUFFER_COUNT; i++) {
-            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, FBO);
-            glDrawBuffer(GL_COLOR_ATTACHMENT0 + i);
-            glBindFramebuffer(GL_READ_FRAMEBUFFER, multisampledFBO);
-            glReadBuffer(GL_COLOR_ATTACHMENT0 + i);
-            glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        // copy multisampled FBO to non-multisampled FBO
+        for (GLuint i = 0; i < 2; i++) {
+            blitFramebuffer(
+                multisampledFBO, FBO, GL_COLOR_BUFFER_BIT, GL_COLOR_ATTACHMENT0 + i, GL_COLOR_ATTACHMENT0 + i,
+                width, height, width, height, GL_NEAREST
+            );
         }
 
+        // downscale FBOs used for blurring
         const int scaledDownWidth = 256;
         const int scaledDownHeight = 144;
-        glBindFramebuffer(GL_FRAMEBUFFER, blurFBOs[0]);
-        glDrawBuffer(GL_COLOR_ATTACHMENT0);
-        glReadBuffer(GL_COLOR_ATTACHMENT0);
-        glBlitFramebuffer(0, 0, width, height, 0, 0, scaledDownWidth, scaledDownHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        for (GLuint i = 0; i < 2; i++) {
+            blitFramebuffer(
+                blurFBOs[i], blurFBOs[i], GL_COLOR_BUFFER_BIT, GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT0,
+                width, height, scaledDownWidth, scaledDownHeight, GL_NEAREST
+            );
+        }
 
-        glBindFramebuffer(GL_FRAMEBUFFER, blurFBOs[1]);
-        glDrawBuffer(GL_COLOR_ATTACHMENT0);
-        glReadBuffer(GL_COLOR_ATTACHMENT0);
-        glBlitFramebuffer(0, 0, width, height, 0, 0, scaledDownWidth, scaledDownHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, blurFBOs[0]);
-        glDrawBuffer(GL_COLOR_ATTACHMENT0);
-        glBindFramebuffer(GL_READ_FRAMEBUFFER, FBO);
-        glReadBuffer(GL_COLOR_ATTACHMENT1);
-        glBlitFramebuffer(0, 0, width, height, 0, 0, scaledDownWidth, scaledDownHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        // copy color attachment 1 (bright parts of the image) to the first blur FBO
+        blitFramebuffer(
+            FBO, blurFBOs[0], GL_COLOR_BUFFER_BIT, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT0,
+            width, height, scaledDownWidth, scaledDownHeight, GL_NEAREST
+        );
 
         // gaussian blur
-        bool horizontalBlur = true;
         gaussianBlurShader.use();
         gaussianBlurShader.setInteger("imageHeight", height);
         gaussianBlurShader.setInteger("imageWidth", width);
-        for (int i = 0; i < 2; i++) {
-            glBindFramebuffer(GL_FRAMEBUFFER, blurFBOs[horizontalBlur]);
-            gaussianBlurShader.setInteger("horizontalBlur", horizontalBlur);
-            gaussianBlurShader.setTexture2D("image", GL_TEXTURE0, blurColorBuffers[!horizontalBlur], 0);
-            horizontalBlur = !horizontalBlur;
-            drawScreenQuad();
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        }
 
-        glBindFramebuffer(GL_READ_FRAMEBUFFER, blurFBOs[0]);
-        glReadBuffer(GL_COLOR_ATTACHMENT0);
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, FBO);
-        glDrawBuffer(GL_COLOR_ATTACHMENT1);
-        glBlitFramebuffer(0, 0, scaledDownWidth, scaledDownHeight, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+        // blur horizontally
+        glBindFramebuffer(GL_FRAMEBUFFER, blurFBOs[1]);
+        gaussianBlurShader.setInteger("horizontalBlur", 1);
+        gaussianBlurShader.setTexture2D("image", GL_TEXTURE0, blurColorBuffers[0], 0);
+        drawScreenQuad();
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        // blur vertically
+        glBindFramebuffer(GL_FRAMEBUFFER, blurFBOs[0]);
+        gaussianBlurShader.setInteger("horizontalBlur", 0);
+        gaussianBlurShader.setTexture2D("image", GL_TEXTURE0, blurColorBuffers[1], 0);
+        drawScreenQuad();
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        
+        // copy blurred FBO to FBO used for drawing to the screen
+        blitFramebuffer(
+            blurFBOs[0], FBO, GL_COLOR_BUFFER_BIT, GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1,
+            scaledDownWidth, scaledDownHeight, width, height, GL_LINEAR
+        );
 
         // post processing - combine the blurred and the main image
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -285,6 +225,59 @@ int main(void) {
 
     glfwTerminate();
     return 0;
+}
+
+void generateFBO(GLuint &FBO, GLuint* colorBuffers, int numColorAttachments, bool isMultisampled, bool attachDepthRBO) {
+    glGenFramebuffers(1, &FBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+    glGenTextures(numColorAttachments, colorBuffers);
+    GLuint *colorAttachments = new GLuint[numColorAttachments];
+    for (GLuint i = 0; i < numColorAttachments; i++) {
+        if (isMultisampled) {
+            glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, colorBuffers[i]);
+            glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, AA_SAMPLES, GL_RGBA8, width, height, GL_TRUE);
+        } else {
+            glBindTexture(GL_TEXTURE_2D, colorBuffers[i]);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGBA, GL_FLOAT, NULL);
+        }
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+        if (isMultisampled) {
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D_MULTISAMPLE, colorBuffers[i], 0);
+        } else {
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, colorBuffers[i], 0);
+        }
+
+        colorAttachments[i] = GL_COLOR_ATTACHMENT0 + i;
+    }
+
+    if (attachDepthRBO) {
+        GLuint depthRBO;
+        glGenRenderbuffers(1, &depthRBO);
+        glBindRenderbuffer(GL_RENDERBUFFER, depthRBO);
+        glRenderbufferStorageMultisample(GL_RENDERBUFFER, AA_SAMPLES, GL_DEPTH_COMPONENT, width, height);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRBO);
+    }
+
+    // tell OpenGL to draw to all color buffers
+    glDrawBuffers(numColorAttachments, colorAttachments);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void blitFramebuffer(GLuint srcFBO, GLuint destFBO,  GLbitfield mask, GLenum readBuffer, GLenum drawBuffer,
+    GLuint srcWidth, GLuint srcHeight, GLuint destWidth, GLuint destHeight, GLenum filter)
+{
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, destFBO);
+    glDrawBuffer(drawBuffer);
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, srcFBO);
+    glReadBuffer(readBuffer);
+    glBlitFramebuffer(0, 0, srcWidth, srcHeight, 0, 0, destWidth, destHeight, mask, filter);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void drawScreenQuad() {
