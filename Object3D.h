@@ -15,7 +15,7 @@ public:
     static GLuint cubeVAO;
 
     static Object3D makeCube(Material *material, const glm::vec3 &position, const glm::vec3 &scale);
-    static Object3D fromFile(Material *material, const glm::vec3 &position, const char *filename);
+    static Object3D fromFile(Material *material, const glm::vec3 &position, const glm::vec3 &scale, const char *filename);
 
     void draw(const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix);
 

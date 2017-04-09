@@ -79,8 +79,8 @@ Object3D Object3D::makeCube(Material *material, const glm::vec3 &position, const
     return { material, position, scale, cubeVAO, sizeof(vertices) / 8 / 4 };
 }
 
-Object3D Object3D::fromFile(Material *material, const glm::vec3 &position, const char *filename) {
-    std::ifstream vboFile(filename);
+Object3D Object3D::fromFile(Material *material, const glm::vec3 &position, const glm::vec3 &scale, const char *filename) {
+    std::ifstream vboFile(filename, std::ifstream::binary);
     std::vector<char> buffer((std::istreambuf_iterator<char>(vboFile)), std::istreambuf_iterator<char>());
 
     GLuint VAO, VBO;

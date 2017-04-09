@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <fstream>
+#include <string>
 #include <json/json.hpp>
 
 namespace glm {
@@ -32,7 +33,9 @@ Level Level::fromFile(const char *filename, Material *material) {
     auto platforms = json["platforms"];
     for (auto &platform : platforms) {
         level.objects.push_back(Object3D::fromFile(
-            material, platform["position"], "geometry/1x1.vbo"
+            material, platform["position"],
+            platform["size"],
+            ("geometry/" + platform["type"].get<std::string>() + ".vbo").c_str()
         ));
     }
 
