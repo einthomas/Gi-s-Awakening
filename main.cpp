@@ -74,6 +74,7 @@ int main(void) {
     }
 
     glViewport(0, 0, width, height);
+    glEnable(GL_DEPTH_TEST);
     glm::mat4 projectionMatrix = glm::perspectiveFov(
         glm::radians(70.0f),
         static_cast<float>(width),
@@ -81,7 +82,6 @@ int main(void) {
         0.1f, 100.0f
     );
 
-    //glClearColor(0.05f, 0.15f, 0.2f, 1.0f);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
 
@@ -95,13 +95,19 @@ int main(void) {
     glGenTextures(2, colorBuffers);
     for (GLuint i = 0; i < COLOR_BUFFER_COUNT; i++) {
         glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, colorBuffers[i]);
-        glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, AA_SAMPLES, GL_RGBA8, width, height, GL_FALSE);
+        glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, AA_SAMPLES, GL_RGBA8, width, height, GL_TRUE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D_MULTISAMPLE, colorBuffers[i], 0);
     }
+
+    GLuint depthRBO;
+    glGenRenderbuffers(1, &depthRBO);
+    glBindRenderbuffer(GL_RENDERBUFFER, depthRBO);
+    glRenderbufferStorageMultisample(GL_RENDERBUFFER, AA_SAMPLES, GL_DEPTH_COMPONENT, width, height);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRBO);
 
     // tell OpenGL to draw to both color buffers
     GLuint colorAttachments[2] = {
@@ -121,7 +127,7 @@ int main(void) {
     glGenTextures(2, multisampledColorBuffers);
     for (GLuint i = 0; i < COLOR_BUFFER_COUNT; i++) {
         glBindTexture(GL_TEXTURE_2D, multisampledColorBuffers[i]);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, NULL);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGBA, GL_FLOAT, NULL);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -141,7 +147,7 @@ int main(void) {
     for (int i = 0; i < 2; i++) {
         glBindFramebuffer(GL_FRAMEBUFFER, blurFBOs[i]);
         glBindTexture(GL_TEXTURE_2D, blurColorBuffers[i]);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, NULL);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGBA, GL_FLOAT, NULL);
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -238,7 +244,6 @@ int main(void) {
 
         // render to framebuffer
         glBindFramebuffer(GL_FRAMEBUFFER, FBO);
-        glEnable(GL_DEPTH_TEST);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         player.draw(camera.getMatrix(), projectionMatrix);
@@ -297,7 +302,6 @@ int main(void) {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         // post processing - combine the blurred and the main image
-        glEnable(GL_DEPTH_TEST);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         postProcessingShader.use();
         postProcessingShader.setTexture2D("mainImage", GL_TEXTURE0, multisampledColorBuffers[0], 0);

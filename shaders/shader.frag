@@ -19,7 +19,7 @@ void main() {
 
     vec3 color = vec3((diffuse + glossy) * 0.75);
     outColor = vec4(color, 1.0f);
-    if (color.r > 0.0f && color.g > 0.0f && color.b > 0.0f) {
+    if (color.r > 0.3f && color.g > 0.3f && color.b > 0.3f) {
         brightSpotColor = vec4(color * 0.3f, 1.0f);
     } else {
         brightSpotColor = vec4(0.0f, 0.0f, 0.0f, 0.0f);
