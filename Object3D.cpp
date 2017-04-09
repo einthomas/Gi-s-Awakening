@@ -1,6 +1,8 @@
 #include "Object3D.h"
 
 #include <iostream>
+#include <fstream>
+#include <vector>
 #include <glm/gtc/matrix_transform.hpp>
 
 GLuint Object3D::cubeVAO = static_cast<GLuint>(-1);
@@ -75,6 +77,29 @@ Object3D Object3D::makeCube(Material *material, const glm::vec3 &position, const
     }
 
     return { material, position, scale, cubeVAO, sizeof(vertices) / 8 / 4 };
+}
+
+Object3D Object3D::fromFile(Material *material, const glm::vec3 &position, const char *filename) {
+    std::ifstream vboFile(filename);
+    std::vector<char> buffer((std::istreambuf_iterator<char>(vboFile)), std::istreambuf_iterator<char>());
+
+    GLuint VAO, VBO;
+
+    glGenVertexArrays(1, &VAO);
+    glBindVertexArray(VAO);
+    glGenBuffers(1, &VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+    glBufferData(GL_ARRAY_BUFFER, buffer.size(), buffer.data(), GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(5 * sizeof(GLfloat)));
+    glEnableVertexAttribArray(1);
+
+    glBindVertexArray(0);
+
+    return { material, position, glm::vec3(1), VAO, buffer.size() / 8 / 4 };
 }
 
 void Object3D::draw(const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix) {

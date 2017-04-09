@@ -1,9 +1,9 @@
 bl_info = {
     "name": "Gi Level-Editing Tools",
     "author": "Felix Kugler",
-    "version": (0, 1),
+    "version": (0, 2),
     "blender": (2, 75, 0),
-    "location": "File > Export > Gi Level (.gil)",
+    "location": "File > Export",
     "description": "Provides Level Editing Tools for Gi's Awekening",
     "warning": "",
     "wiki_url": "",
@@ -12,68 +12,60 @@ bl_info = {
 
 import bpy
 import json
-
-def write_vertex(vertex, offset):
-	pass
-	
-def write_object(object, offset, vbo):
-	matrix = object.matrix_world;
-    mesh = object.to_mesh(context.scene, True, 'RENDER')
-    for faceIndex in range(len(mesh.tessfaces)):
-        # TODO: read uv maps from mesh.tessface_uv_textures.keys()
-        
-        texture = mesh.tessface_uv_textures.active.data[faceIndex]
-        image = texture.image
-        
-        if image != None:
-            imageName = image.name
-            face = mesh.tessfaces[faceIndex]
-            vertices = mesh.vertices
-            uvs = texture.uv
-            
-            if imageName not in images:
-                images[imageName] = image
-                triangles[imageName] = []
-                distances[imageName] = 0
-                count[imageName] = 0
-            
-            distance = (matrix * face.center).length
-            distances[imageName] += distance
-            count[imageName] += 1
-            if len(face.vertices) == 3:
-                for i in range(3):
-                    vertexIndex = face.vertices[i]
-                    triangles[imageName] += [(
-                        struct.pack('fff', *(matrix * vertices[vertexIndex].co)) + struct.pack('ff', *uvs[i]), 
-                        distance
-                    )]
-            elif len(face.vertices) == 4:
-                for i in [0, 1, 2, 2, 3, 0]:
-                    vertexIndex = face.vertices[i]
-                    triangles[imageName] += [(
-                        struct.pack('fff', *(matrix * vertices[vertexIndex].co)) + struct.pack('ff', *uvs[i]), 
-                        distance
-                    )]
-            else:
-                print("Polygon is neither a triangle nor a square. Skipped.")
-	
-def write_group(group, directory): 
-	offset = group.dupli_offset
-	with open(path.join(directory, group.name + ".vbo"), "wb") as vbo:
-		for object in group.objects:
-			try:
-				if object.type == 'MESH':
-			        write_object(object, offset, vbo)
-			except:
-				print("Couldn't convert object {}. Skipped.".format(object.name))
-
-def write_gi_block(context, filepath, file_name):
-    directory = path.split(self.filepath)[0]
+from os import path
+import struct
+from mathutils import Vector
     
-	for group in bpy.data.groups:
-		write_group(group, directory)
+def write_object(object, offset, vbo):
+    matrix = object.matrix_world;
+    mesh = object.to_mesh(bpy.context.scene, True, 'RENDER')
+        
+    vertices = mesh.vertices
+    
+    texture = mesh.tessface_uv_textures["Texture"]
+    light = mesh.tessface_uv_textures["Light"]
+    
+    for face_index in range(len(mesh.tessfaces)):
+        face = mesh.tessfaces[face_index]
+        
+        texture_face = texture.data[face_index]
+        #texture_path = texture.image
+        texture_uvs = texture_face.uv
+        
+        light_face = light.data[face_index]
+        light_uvs = light_face.uv
+        
+        vertex_indices = range(3)
+        if len(face.vertices) == 4:
+            vertex_indices = [0, 1, 2, 2, 3, 0]
+        
+        if len(face.vertices) in [3, 4]:
+            for i in vertex_indices:
+                vbo.write(
+                    struct.pack('fff', *(matrix * vertices[face.vertices[i]].co - offset)) + 
+                    struct.pack('ff', *texture_uvs[i]) +
+                    struct.pack('fff', *(matrix * Vector(vertices[face.vertices[i]].normal[:] + (0,)))[:3])
+                )
+        else:
+            print("Polygon is neither a triangle nor a square. Skipped.")
+    
+def write_group(group, directory): 
+    offset = group.dupli_offset
+    with open(path.join(directory, group.name + ".vbo"), "wb") as vbo:
+        for object in group.objects:
+            try:
+                if object.type == 'MESH':
+                    write_object(object, offset, vbo)
+            except Exception as e:
+                print("Couldn't convert object {} ({}). Skipped.".format(object.name, e))
 
-	return {'FINISHED'}
+def write_gi_block(context, filepath):
+    directory, filename = path.split(filepath)
+    
+    for group in bpy.data.groups:
+        write_group(group, directory)
+
+    return {'FINISHED'}
 
 def write_gi_level(context, filepath, level_name):
     print("running write_gi_level...")
@@ -148,19 +140,44 @@ class ExportGiLevel(Operator, ExportHelper):
     def execute(self, context):
         return write_gi_level(context, self.filepath, self.level_name)
 
+        
+    def menu_func_export(self, context):
+        self.layout.operator(bl_idname, text="Gi Level (.gil)")
+        
+class ExportGiBlock(Operator, ExportHelper):
+    """Export to Gi Block file"""
+    bl_idname = "gi.block_export"  # important since its how bpy.ops.import_test.some_data is constructed
+    bl_label = "Export Gi Block"
 
-def menu_func_export(self, context):
-    self.layout.operator(ExportGiLevel.bl_idname, text="Gi Level (.gil)")
+    # ExportHelper mixin class uses this
+    filename_ext = ".gib"
+
+    filter_glob = StringProperty(
+        default="*.gib",
+        options={'HIDDEN'},
+        maxlen=255,  # Max internal buffer length, longer would be clamped.
+    )
+
+    def execute(self, context):
+        return write_gi_block(context, self.filepath)
+
+        
+    def menu_func_export(self, context):
+        self.layout.operator(bl_idname, text="Gi Block (.gib)")
 
 
 def register():
     bpy.utils.register_class(ExportGiLevel)
-    bpy.types.INFO_MT_file_export.append(menu_func_export)
+    bpy.types.INFO_MT_file_export.append(ExportGiLevel.menu_func_export)
+    bpy.utils.register_class(ExportGiBlock)
+    bpy.types.INFO_MT_file_export.append(ExportGiBlock.menu_func_export)
 
 
 def unregister():
     bpy.utils.unregister_class(ExportGiLevel)
-    bpy.types.INFO_MT_file_export.remove(menu_func_export)
+    bpy.types.INFO_MT_file_export.remove(ExportGiLevel.menu_func_export)
+    bpy.utils.unregister_class(ExportGiBlock)
+    bpy.types.INFO_MT_file_export.remove(ExportGiBlock.menu_func_export)
 
 
 if __name__ == "__main__":

@@ -31,10 +31,8 @@ Level Level::fromFile(const char *filename, Material *material) {
 
     auto platforms = json["platforms"];
     for (auto &platform : platforms) {
-        level.objects.push_back(Object3D::makeCube(
-            material,
-            platform["position"],
-            platform["size"]
+        level.objects.push_back(Object3D::fromFile(
+            material, platform["position"], "geometry/1x1.vbo"
         ));
     }
 
