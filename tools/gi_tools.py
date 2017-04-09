@@ -51,19 +51,33 @@ def write_object(object, offset, vbo):
     
 def write_group(group, directory): 
     offset = group.dupli_offset
+    size = [0, 0, 0]
     with open(path.join(directory, group.name + ".vbo"), "wb") as vbo:
         for object in group.objects:
             try:
                 if object.type == 'MESH':
                     write_object(object, offset, vbo)
+                    
+                    size_property = object.get("size")
+                    if size_property is not None:
+                        size = size_property[:]
+                    
             except Exception as e:
                 print("Couldn't convert object {} ({}). Skipped.".format(object.name, e))
+            
+    return {"size": size, "name": group.name}
 
 def write_gi_block(context, filepath):
     directory, filename = path.split(filepath)
     
+    blocks = []
+    
     for group in bpy.data.groups:
-        write_group(group, directory)
+        if group.name not in ["Start", "End"]:
+            blocks += [write_group(group, directory)]
+        
+    with open(filepath, 'w', encoding='utf-8') as f:
+        json.dump(blocks, f, indent=4)
 
     return {'FINISHED'}
 
@@ -77,21 +91,18 @@ def write_gi_level(context, filepath, level_name):
 
     for object in bpy.context.scene.objects:
         try:
-            inner_object = object.dupli_group.objects[0]
-            size_property = inner_object.get("size")
-            start_property = inner_object.get("start")
-            end_property = inner_object.get("end")
-            if size_property is not None:
-                platforms += [{
-                    "size": size_property[:],
-                    "position": object.location[:],
-                    "type": object.dupli_group.name
-                }]
-            elif start_property is not None:
+            type = object.dupli_group.name
+            
+            if type == "Start":
                 start = object.location[:]
                 start_orientation = object.rotation_euler[2]
-            elif end_property is not None:
+            elif type == "End":
                 end = object.location[:]
+            else:
+                platforms += [{
+                    "position": object.location[:],
+                    "type": type
+                }]
                 
         except Exception as e:
             print(e)

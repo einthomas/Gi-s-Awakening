@@ -3,6 +3,8 @@
 #include <memory>
 #include <algorithm>
 
+#include <json/json.hpp>
+
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
@@ -59,6 +61,7 @@ int main(void) {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_MULTISAMPLE);
+    glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
 
@@ -81,7 +84,23 @@ int main(void) {
 
     BlinnMaterial::init();
     std::unique_ptr<BlinnMaterial> material(new BlinnMaterial(glm::vec3(1.0f), glm::vec3(0.0f), 0.0f));
-    Level level = Level::fromFile("levels/level0.gil", material.get());
+
+    std::map<std::string, PlatformType> platformTypes; // TODO
+    nlohmann::json platformTypesJson;
+    std::ifstream platformTypesFile("geometry/set1.gib");
+    platformTypesFile >> platformTypesJson;
+    for (auto &platformType : platformTypesJson) {
+        Object3D geometry = Object3D::fromFile(
+            material.get(), glm::vec3(0), glm::vec3(1),
+            ("geometry/" + platformType["name"].get<std::string>() + ".vbo").c_str()
+        );
+        platformTypes[platformType["name"]] = {
+            glm::vec3(platformType["size"][0], platformType["size"][1], platformType["size"][2]),
+            geometry.VAO, geometry.elementCount
+        };
+    }
+
+    Level level = Level::fromFile("levels/level0.gil", material.get(), platformTypes);
     Player player(level.start + glm::vec3(0.f, 0.f, 1.f), glm::vec3(0.5f, 0.5f, 2.0f));
     Camera camera(glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(glm::radians(90.0f), 0.0f, level.startOrientation));
     Shader textShader = Shader("shaders/textShader.vert", "shaders/textShader.frag");
@@ -158,7 +177,6 @@ int main(void) {
         camera.rotation.x -= (mouseY - centerY) * rotationSpeed * delta;
         camera.rotation.x = glm::clamp(camera.rotation.x, 0.f, glm::pi<float>());
 
-        glEnable(GL_DEPTH_TEST);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         player.draw(camera.getMatrix(), projectionMatrix);

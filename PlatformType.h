@@ -6,9 +6,6 @@
 
 class PlatformType {
 public:
-    PlatformType();
-
-    std::string name;
     glm::vec3 size;
-    GLuint VAO;
+    GLuint VAO, elementCount;
 };

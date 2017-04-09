@@ -12,7 +12,7 @@ void Player::update(float delta, float gravity, glm::vec2 movement, const Level 
             projectiles.erase(projectiles.begin() + i);
         } else {
             bool projectileIntersects = false;
-            for (Object3D levelObject : level.objects) {
+            for (Object3D levelObject : level.platforms) {
                 if (levelObject.intersects(projectiles[i].object3D.position, projectiles[i].object3D.scale)) {
                     projectileIntersects = true;
                     projectiles.erase(projectiles.begin() + i);
@@ -48,7 +48,7 @@ void Player::update(float delta, float gravity, glm::vec2 movement, const Level 
 
     // check for and handle player intersection
     onGround = false;
-    for (Object3D object : level.objects) {
+    for (Platform object : level.platforms) {
         object.solveCollision(position, velocity, size, onGround);
     }
     if (onGround) {

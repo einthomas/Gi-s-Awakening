@@ -4,8 +4,10 @@
 #include "PlatformType.h"
 
 class Platform : public Object3D {
-    PlatformType *type;
+    const PlatformType *type;
 
 public:
-    Platform(PlatformType *type, glm::vec3 position);
+    Platform(const PlatformType *type, Material *material, glm::vec3 position);
+
+    void solveCollision(glm::vec3 &position, glm::vec3 &velocity, const glm::vec3 &scale, bool &onGround) const;
 };

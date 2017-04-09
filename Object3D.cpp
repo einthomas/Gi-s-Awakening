@@ -90,11 +90,11 @@ Object3D Object3D::fromFile(Material *material, const glm::vec3 &position, const
     glGenBuffers(1, &VBO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
-    glBufferData(GL_ARRAY_BUFFER, buffer.size(), buffer.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizei>(buffer.size()), buffer.data(), GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), reinterpret_cast<GLvoid*>(0));
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(5 * sizeof(GLfloat)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), reinterpret_cast<GLvoid*>(5 * sizeof(GLfloat)));
     glEnableVertexAttribArray(1);
 
     glBindVertexArray(0);
@@ -126,44 +126,4 @@ bool Object3D::intersects(glm::vec3 position, glm::vec3 scale) {
     }
 
     return false;
-}
-
-void Object3D::solveCollision(glm::vec3 &position, glm::vec3 &velocity, const glm::vec3 &scale, bool &onGround) const {
-    // colliding two boxes is equivalent to
-    // colliding a point with a box of the size of both boxes combined
-    glm::vec3 sumSize = (scale + this->scale) * 0.5f;
-    glm::vec3 delta = position - this->position;
-
-    // signed distance from point to closest surface
-    glm::vec3 distance = glm::abs(delta) - sumSize;
-
-    // find dimension with largest distance
-    int dimension;
-    if (distance.x > distance.y) {
-        if (distance.x > distance.z) {
-            dimension = 0;
-        } else {
-            dimension = 2;
-        }
-    } else {
-        if (distance.y > distance.z) {
-            dimension = 1;
-        } else {
-            dimension = 2;
-        }
-    }
-
-    if (distance[dimension] < 0) {
-        // fix intersection
-        if (delta[dimension] > 0) {
-            if (dimension == 2) {
-                onGround = true;
-            }
-            position[dimension] -= distance[dimension];
-            velocity[dimension] = std::max(velocity[dimension], 0.f);
-        } else {
-            position[dimension] += distance[dimension];
-            velocity[dimension] = std::min(velocity[dimension], 0.f);
-        }
-    }
 }
