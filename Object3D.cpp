@@ -5,8 +5,9 @@
 #include <algorithm>
 
 GLuint Object3D::cubeVAO = static_cast<GLuint>(-1);
+GLuint Object3D::skyboxCubeVAO = static_cast<GLuint>(-1);
 
-static GLfloat vertices[] = {
+static GLfloat boxVertices[] = {
     // Positions          // Texture Coords // Normals
     -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,        0.0f,  0.0f, -1.0f,
      0.5f,  0.5f, -0.5f,  1.0f, 1.0f,        0.0f,  0.0f, -1.0f,
@@ -51,6 +52,51 @@ static GLfloat vertices[] = {
     -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,        0.0f,  1.0f,  0.0f,
 };
 
+static GLfloat skyboxVertices[] = {
+    // Positions
+    -0.5f, -0.5f, -0.5f,
+    -0.5f,  0.5f,  0.5f,
+    -0.5f, -0.5f,  0.5f,
+    -0.5f,  0.5f,  0.5f,
+    -0.5f, -0.5f, -0.5f,
+    -0.5f,  0.5f, -0.5f,
+
+     0.5f, -0.5f, -0.5f,
+     0.5f, -0.5f,  0.5f,
+     0.5f,  0.5f,  0.5f,
+     0.5f,  0.5f,  0.5f,
+     0.5f,  0.5f, -0.5f,
+     0.5f, -0.5f, -0.5f,
+
+     0.5f,  0.5f, -0.5f,
+    -0.5f,  0.5f, -0.5f,
+    -0.5f, -0.5f, -0.5f,
+    -0.5f, -0.5f, -0.5f,
+     0.5f, -0.5f, -0.5f,
+     0.5f,  0.5f, -0.5f,
+
+     0.5f,  0.5f,  0.5f,
+    -0.5f, -0.5f,  0.5f,
+    -0.5f,  0.5f,  0.5f,
+    -0.5f, -0.5f,  0.5f,
+     0.5f,  0.5f,  0.5f,
+     0.5f, -0.5f,  0.5f,
+
+    -0.5f, -0.5f, -0.5f,
+    -0.5f, -0.5f,  0.5f,
+     0.5f, -0.5f,  0.5f,
+     0.5f, -0.5f,  0.5f,
+     0.5f, -0.5f, -0.5f,
+    -0.5f, -0.5f, -0.5f,
+
+    -0.5f,  0.5f, -0.5f,
+     0.5f,  0.5f,  0.5f,
+    -0.5f,  0.5f,  0.5f,
+     0.5f,  0.5f,  0.5f,
+    -0.5f,  0.5f, -0.5f,
+     0.5f,  0.5f, -0.5f,
+};
+
 Object3D Object3D::makeCube(Material *material, const glm::vec3 &position, const glm::vec3 &scale) {
     if (cubeVAO == static_cast<GLuint>(-1)) {
         // create and bind VAO
@@ -63,7 +109,7 @@ Object3D Object3D::makeCube(Material *material, const glm::vec3 &position, const
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
         // copy vertices array to VBO
-        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(boxVertices), boxVertices, GL_STATIC_DRAW);
 
         // set vertex attribute pointers
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)0);
@@ -75,7 +121,32 @@ Object3D Object3D::makeCube(Material *material, const glm::vec3 &position, const
         glBindVertexArray(0);
     }
 
-    return { material, position, scale, cubeVAO, sizeof(vertices) / 8 / 4 };
+    return { material, position, scale, cubeVAO, sizeof(boxVertices) / 8 / 4 };
+}
+
+Object3D Object3D::makeSkyboxCube(Material *material, const glm::vec3 &position, const glm::vec3 &scale) {
+    if (skyboxCubeVAO == static_cast<GLuint>(-1)) {
+        // create and bind VAO
+        glGenVertexArrays(1, &skyboxCubeVAO);
+        glBindVertexArray(skyboxCubeVAO);
+
+        // create and bind VBO
+        GLuint VBO;
+        glGenBuffers(1, &VBO);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+        // copy vertices array to VBO
+        glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), skyboxVertices, GL_STATIC_DRAW);
+
+        // set vertex attribute pointers
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+        glEnableVertexAttribArray(0);
+
+        // unbind VAO
+        glBindVertexArray(0);
+    }
+
+    return { material, position, scale, skyboxCubeVAO, sizeof(skyboxVertices) / 3 / 4 };
 }
 
 void Object3D::draw(const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix) {

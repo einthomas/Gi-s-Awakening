@@ -6,6 +6,8 @@
 !*.frag
 !*.vert
 
+!*.jpeg
+!*.jpg
 !*.png
 !*.blend
 !*.py

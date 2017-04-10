@@ -12,6 +12,8 @@
 #include "BlinnMaterial.h"
 #include "Player.h"
 #include "TextRenderer.h"
+#include "Skybox.h"
+#include "SkyboxMaterial.h"
 
 static int width = 1280, height = 720;
 static const char *title = "Gi's Awakening: The Mending of the Sky";
@@ -24,7 +26,6 @@ void drawScreenQuad();
 void generateFBO(GLuint &FBO, GLuint* colorBuffers, int numColorAttachments, bool isMultisampled, bool attachDepthRBO);
 void blitFramebuffer(GLuint srcFBO, GLuint destFBO, GLbitfield mask, GLenum readBuffer, GLenum drawBuffer,
     GLuint srcWidth, GLuint srcHeight, GLuint destWidth, GLuint destHeight, GLenum filter);
-GLuint loadCubemap(const std::vector<std::string> &textures);
 
 int main(void) {
     GLFWwindow* window = initGLFW();
@@ -70,7 +71,17 @@ int main(void) {
     generateFBO(blurFBOs[0], &blurColorBuffers[0], 1, false, false);
     generateFBO(blurFBOs[1], &blurColorBuffers[1], 1, false, false);
 
+    std::vector<std::string> textures;
+    textures.push_back("textures/skybox/right.jpg");
+    textures.push_back("textures/skybox/left.jpg");
+    textures.push_back("textures/skybox/front.jpg");
+    textures.push_back("textures/skybox/back.jpg");
+    textures.push_back("textures/skybox/top.jpg");
+    textures.push_back("textures/skybox/bottom.jpg");
+    Skybox skybox(textures);
+
     BlinnMaterial::init();
+    SkyboxMaterial::init();
     std::unique_ptr<BlinnMaterial> material(new BlinnMaterial(glm::vec3(1.0f), glm::vec3(0.0f), 0.0f));
     Level level = Level::fromFile("levels/level0.gil", material.get());
     Player player(level.start + glm::vec3(0.f, 0.f, 1.f), glm::vec3(0.5f, 0.5f, 2.0f));
@@ -154,10 +165,11 @@ int main(void) {
         // render to multisampled framebuffer
         glBindFramebuffer(GL_FRAMEBUFFER, multisampledFBO);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+        glDepthMask(GL_FALSE);
+        skybox.draw(camera.getMatrix(), projectionMatrix);
+        glDepthMask(GL_TRUE);
         player.draw(camera.getMatrix(), projectionMatrix);
         level.draw(camera.getMatrix(), projectionMatrix);
-
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         // copy multisampled FBO to non-multisampled FBO
@@ -222,26 +234,6 @@ int main(void) {
 
     glfwTerminate();
     return 0;
-}
-
-GLuint loadCubemap(const std::vector<std::string> &textures) {
-    GLuint cubemapTexture;
-    glGenTextures(1, &cubemapTexture);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
-
-    int imageWidth, imageHeight;
-    for (int i = 0; i < textures.size(); i++) {
-        auto image = SOIL_load_image(textures[i].c_str(), &imageWidth, &imageHeight, 0, SOIL_LOAD_RGB);
-        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, imageWidth, imageHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
-
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-    }
-
-    return cubemapTexture;
 }
 
 void generateFBO(GLuint &FBO, GLuint* colorBuffers, int numColorAttachments, bool isMultisampled, bool attachDepthRBO) {
