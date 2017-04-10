@@ -1,7 +1,7 @@
 #include "Platform.h"
 
 Platform::Platform(const PlatformType *type, Material *material, glm::vec3 position) :
-    Object3D{material, position, glm::vec3(1), type->VAO, type->elementCount}, type(type)
+    Object3D{material, position, glm::vec3(1), type->mesh}, type(type)
 {
 }
 

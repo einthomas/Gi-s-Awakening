@@ -13,6 +13,7 @@
 #include "Camera.h"
 #include "Level.h"
 #include "Object3D.h"
+#include "Mesh.h"
 #include "BlinnMaterial.h"
 #include "Player.h"
 #include "TextRenderer.h"
@@ -89,15 +90,12 @@ int main(void) {
     nlohmann::json platformTypesJson;
     std::ifstream platformTypesFile("geometry/set1.gib");
     platformTypesFile >> platformTypesJson;
+
     for (auto &platformType : platformTypesJson) {
-        Object3D geometry = Object3D::fromFile(
-            material.get(), glm::vec3(0), glm::vec3(1),
-            ("geometry/" + platformType["name"].get<std::string>() + ".vbo").c_str()
-        );
-        platformTypes[platformType["name"]] = {
+        platformTypes.emplace(platformType["name"].get<std::string>(), PlatformType {
             glm::vec3(platformType["size"][0], platformType["size"][1], platformType["size"][2]),
-            geometry.VAO, geometry.elementCount
-        };
+            Mesh::fromFile(("geometry/" + platformType["name"].get<std::string>() + ".vbo").c_str())
+        });
     }
 
     Level level = Level::fromFile("levels/level0.gil", material.get(), platformTypes);

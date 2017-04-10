@@ -2,10 +2,11 @@
 
 #include <string>
 #include <glm/glm.hpp>
-#include <GL/gl.h>
+
+#include "Mesh.h"
 
 class PlatformType {
 public:
     glm::vec3 size;
-    GLuint VAO, elementCount;
+    Mesh mesh;
 };

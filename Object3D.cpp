@@ -68,39 +68,20 @@ Object3D Object3D::makeCube(Material *material, const glm::vec3 &position, const
         glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
         // set vertex attribute pointers
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), static_cast<GLvoid*>(0));
         glEnableVertexAttribArray(0);
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(5 * sizeof(GLfloat)));
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), reinterpret_cast<GLvoid*>(5 * sizeof(GLfloat)));
         glEnableVertexAttribArray(1);
 
         // unbind VAO
         glBindVertexArray(0);
     }
 
-    return { material, position, scale, cubeVAO, sizeof(vertices) / 8 / 4 };
+    return { material, position, scale, { cubeVAO, sizeof(vertices) / 8 / 4 } };
 }
 
 Object3D Object3D::fromFile(Material *material, const glm::vec3 &position, const glm::vec3 &scale, const char *filename) {
-    std::ifstream vboFile(filename, std::ifstream::binary);
-    std::vector<char> buffer((std::istreambuf_iterator<char>(vboFile)), std::istreambuf_iterator<char>());
-
-    GLuint VAO, VBO;
-
-    glGenVertexArrays(1, &VAO);
-    glBindVertexArray(VAO);
-    glGenBuffers(1, &VBO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
-    glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizei>(buffer.size()), buffer.data(), GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), reinterpret_cast<GLvoid*>(0));
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), reinterpret_cast<GLvoid*>(5 * sizeof(GLfloat)));
-    glEnableVertexAttribArray(1);
-
-    glBindVertexArray(0);
-
-    return { material, position, glm::vec3(1), VAO, buffer.size() / 8 / 4 };
+    return { material, position, scale, Mesh::fromFile(filename) };
 }
 
 void Object3D::draw(const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix) {
@@ -109,9 +90,7 @@ void Object3D::draw(const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatr
     modelMatrix = glm::scale(modelMatrix, scale);
     material->bind(viewMatrix, projectionMatrix, modelMatrix);
 
-    glBindVertexArray(VAO);
-    glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(elementCount));
-    glBindVertexArray(0);
+    mesh.draw();
 }
 
 bool Object3D::intersects(glm::vec3 position, glm::vec3 scale) {
