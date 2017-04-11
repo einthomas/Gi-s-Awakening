@@ -11,10 +11,11 @@ in vec3 vertCameraVector;
 void main() {
     // TODO: unhardcode this
     vec3 light = normalize(vec3(-0.5f, -0.3f, 1.0f));
+    vec3 camera = normalize(vertCameraVector);
 
     float diffuse = max(dot(vertNormal, light), 0.0f);
 
-    vec3 halfVector = normalize(light + vertCameraVector);
+    vec3 halfVector = normalize(light + camera);
     float glossy = pow(max(dot(vertNormal, halfVector), 0.0f), 100);
 
     vec3 color = vec3((diffuse + glossy + 0.3f) * 0.75);
