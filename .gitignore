@@ -7,6 +7,8 @@
 !*.vert
 !*.vbo
 
+!*.jpeg
+!*.jpg
 !*.png
 !*.blend
 !*.py

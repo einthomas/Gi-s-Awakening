@@ -88,3 +88,9 @@ void Shader::setTexture2D(std::string name, GLenum activeTexture, GLuint texture
 	glBindTexture(GL_TEXTURE_2D, texture);
 	glUniform1i(glGetUniformLocation(program, name.c_str()), loc);
 }
+
+void Shader::setTextureCubeMap(std::string name, GLenum activeTexture, GLuint texture, GLuint loc) {
+    glActiveTexture(activeTexture);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
+    glUniform1i(glGetUniformLocation(program, name.c_str()), loc);
+}
