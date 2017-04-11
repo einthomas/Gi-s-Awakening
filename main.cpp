@@ -261,10 +261,10 @@ void generateFBO(GLuint &FBO, GLuint* colorBuffers, int numColorAttachments, boo
     for (GLuint i = 0; i < numColorAttachments; i++) {
         if (isMultisampled) {
             glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, colorBuffers[i]);
-            glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, AA_SAMPLES, GL_RGBA8, width, height, GL_TRUE);
+            glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, AA_SAMPLES, GL_RGB8, width, height, GL_TRUE);
         } else {
             glBindTexture(GL_TEXTURE_2D, colorBuffers[i]);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGBA, GL_FLOAT, NULL);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, width, height, 0, GL_RGBA, GL_FLOAT, NULL);
         }
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
