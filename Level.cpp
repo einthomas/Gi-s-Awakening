@@ -13,12 +13,12 @@ namespace glm {
 }
 
 void Level::draw(const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix) {
-    for (Object3D &object : objects) {
+    for (Object3D &object : platforms) {
         object.draw(viewMatrix, projectionMatrix);
     }
 }
 
-Level Level::fromFile(const char *filename, Material *material) {
+Level Level::fromFile(const char *filename, Material *material, const std::map<std::string, PlatformType> &platformTypes) {
     // Note: this function will crash if the gil file is malformed.
     Level level;
     nlohmann::json json;
@@ -31,10 +31,8 @@ Level Level::fromFile(const char *filename, Material *material) {
 
     auto platforms = json["platforms"];
     for (auto &platform : platforms) {
-        level.objects.push_back(Object3D::makeCube(
-            material,
-            platform["position"],
-            platform["size"]
+        level.platforms.push_back(Platform(
+            &platformTypes.at(platform["type"]), material, platform["position"]
         ));
     }
 

@@ -2,6 +2,8 @@
 #include <chrono>
 #include <memory>
 
+#include <json/json.hpp>
+
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
@@ -9,6 +11,7 @@
 
 #include "Camera.h"
 #include "Level.h"
+#include "Mesh.h"
 #include "BlinnMaterial.h"
 #include "Player.h"
 #include "TextRenderer.h"
@@ -37,6 +40,7 @@ int main(void) {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_MULTISAMPLE);
+    glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
 
@@ -83,7 +87,20 @@ int main(void) {
     BlinnMaterial::init();
     SkyboxMaterial::init();
     std::unique_ptr<BlinnMaterial> material(new BlinnMaterial(glm::vec3(1.0f), glm::vec3(0.0f), 0.0f));
-    Level level = Level::fromFile("levels/level0.gil", material.get());
+
+    std::map<std::string, PlatformType> platformTypes; // TODO
+    nlohmann::json platformTypesJson;
+    std::ifstream platformTypesFile("geometry/set1.gib");
+    platformTypesFile >> platformTypesJson;
+
+    for (auto &platformType : platformTypesJson) {
+        platformTypes.emplace(platformType["name"].get<std::string>(), PlatformType {
+            glm::vec3(platformType["size"][0], platformType["size"][1], platformType["size"][2]),
+            Mesh::fromFile(("geometry/" + platformType["name"].get<std::string>() + ".vbo").c_str())
+        });
+    }
+
+    Level level = Level::fromFile("levels/level0.gil", material.get(), platformTypes);
     Player player(level.start + glm::vec3(0.f, 0.f, 1.f), glm::vec3(0.5f, 0.5f, 2.0f));
     Camera camera(glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(glm::radians(90.0f), 0.0f, level.startOrientation));
     Shader textShader = Shader("shaders/textShader.vert", "shaders/textShader.frag");

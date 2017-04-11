@@ -5,6 +5,7 @@
 
 !*.frag
 !*.vert
+!*.vbo
 
 !*.jpeg
 !*.jpg
@@ -15,5 +16,6 @@
 !*.md
 
 !*.gil
+!*.gib
 
 !.gitattributes
