@@ -98,13 +98,13 @@ int main(void) {
     float rotationSpeed = glm::radians(14.0f);
     float projectileSpeed = 12.0f;
 
-    std::chrono::steady_clock clock;
-    auto previousTime = clock.now();
+    double time = glfwGetTime();
+    double previousTime = time;
 
     bool mousePressed = false;
     while (!glfwWindowShouldClose(window)) {
-        auto currentTime = clock.now();
-        float delta = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - previousTime).count() * 0.001f;
+        double currentTime = glfwGetTime();
+        double delta = currentTime - previousTime;
         previousTime = currentTime;
 
         // movement
