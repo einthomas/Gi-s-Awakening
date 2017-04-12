@@ -16,11 +16,11 @@ void main() {
     float diffuse = max(dot(vertNormal, light), 0.0f);
 
     vec3 halfVector = normalize(light + camera);
-    float glossy = pow(max(dot(vertNormal, halfVector), 0.0f), 100);
+    float glossy = pow(max(dot(vertNormal, halfVector), 0.0f), 500.0f);
 
-    vec3 color = vec3((diffuse + glossy + 0.3f) * 0.75);
+    vec3 color = vec3(diffuse * 0.6 + glossy * 0.2 + 0.25f);
     outColor = vec4(color, 1.0f);
-    if (color.r > 0.5f && color.g > 0.5f && color.b > 0.5f) {
+    if (color.r > 0.8f && color.g > 0.8f && color.b > 0.8f) {
         brightSpotColor = vec4(color * 0.6f, 1.0f);
     } else {
         brightSpotColor = vec4(0.0f);
