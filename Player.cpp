@@ -1,8 +1,10 @@
 #include "Player.h"
+#include <time.h>       /* time */
 
 Player::Player(glm::vec3 position, glm::vec3 size) {
     this->position = position;
     this->size = size;
+    srand(time(NULL));
 }
 
 void Player::update(float delta, float gravity, glm::vec2 movement, const Level &level) {

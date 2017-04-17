@@ -71,7 +71,7 @@ void ParticleSystem::beginParticleGroup(const glm::vec3 &planeNormal) {
     }
 }
 
-void ParticleSystem::makeParticle(const glm::vec3 &position) { //, const glm::vec3 &speed, const glm::vec3 &planeNormalVector, const glm::vec3 &normal, const glm::vec4 &color, const glm::vec3 &perlinOffset) {
+void ParticleSystem::makeParticle(const glm::vec3 &position) {
     if (VAO == static_cast<GLuint>(-1)) {
         glGenVertexArrays(1, &VAO);
         glBindVertexArray(VAO);
@@ -106,7 +106,6 @@ void ParticleSystem::makeParticle(const glm::vec3 &position) { //, const glm::ve
     particle.originPosition = position;
     particle.color = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
     particle.perlinFlowField = currentPerlinFlowField;
-
     particles[bufferEnd] = particle;
     if (particleCount < MAX_PARTICLES) {
         particleCount++;
