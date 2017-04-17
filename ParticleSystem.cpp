@@ -60,7 +60,6 @@ void ParticleSystem::makeParticle(const glm::vec3 &position, const glm::vec3 &sp
     particle.normal = normal;
     particle.speed = speed * (((rand() % 20) / 10.0f) + 0.5f);
     particle.color = color;
-    particle.life = 4;
     particle.amplitude = 5.0f + (rand() % 20) / 5.0f;
     particle.frequency = (rand() % 90) / 1000.0f;
     particles[bufferEnd] = particle;
@@ -108,8 +107,8 @@ void ParticleSystem::update(float delta) {
         if (particles[i].color.a > 0.0f) {
             float dist = glm::length(particles[i].position - particles[i].originPosition);
             particles[i].position +=
-                particles[i].speed * delta +
-                particles[i].normal * sinf(dist * particles[i].amplitude) * particles[i].frequency;
+                (particles[i].speed +
+                particles[i].normal * sinf(dist * particles[i].amplitude) * particles[i].frequency * 100.0f) * delta;
 
             particlePositions[3 * k] = particles[i].position.x;
             particlePositions[3 * k + 1] = particles[i].position.y;
@@ -120,7 +119,7 @@ void ParticleSystem::update(float delta) {
             particleColors[4 * k + 2] = particles[i].color.z;
             particleColors[4 * k + 3] = particles[i].color.a;
 
-            particles[i].color.a -= 0.01f;
+            particles[i].color.a -= delta;
             if (particles[i].color.a <= 0.0f) {
                 particleCount--;
                 bufferStart++;
