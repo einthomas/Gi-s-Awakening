@@ -19,7 +19,6 @@ private:
         glm::vec3 normal;
         float amplitude, frequency;
         glm::vec4 color;
-        int life;
     };
 
     static const int MAX_PARTICLES = 1000;
