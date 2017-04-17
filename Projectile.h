@@ -6,6 +6,7 @@ class Projectile {
 public:
     static const int DESPAWN_DISTANCE = 30.0f;
     Object3D object3D;
+    glm::vec3 movementVector;
 
     Projectile(Material *material, glm::vec3 position, glm::vec3 movementVector);
 
@@ -24,6 +25,5 @@ public:
 
 private:
     const float GRAVITY = 6.0f;
-    glm::vec3 movementVector;
     float velocityZ;
 };

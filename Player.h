@@ -5,6 +5,7 @@
 
 #include "Projectile.h"
 #include "Level.h"
+#include "ParticleSystem.h"
 
 class Player {
 public:

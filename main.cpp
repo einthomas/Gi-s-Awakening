@@ -17,6 +17,7 @@
 #include "TextRenderer.h"
 #include "Skybox.h"
 #include "SkyboxMaterial.h"
+#include "ParticleSystem.h"
 
 static int width = 1280, height = 720;
 static const char *title = "Gi's Awakening: The Mending of the Sky";
@@ -111,6 +112,8 @@ int main(void) {
     TextRenderer::init(width, height, "fonts/Gidole-Regular.ttf", textShader);
     Shader gaussianBlurShader = Shader("shaders/gaussianBlur.vert", "shaders/gaussianBlur.frag");
     Shader postProcessingShader = Shader("shaders/postProcessing.vert", "shaders/postProcessing.frag");
+    ParticleSystem::init();
+    ParticleSystem particleSystem;
 
     glm::vec3 youDiedTextDimensions = TextRenderer::calcDimensions("You died", 1.0f);
 
@@ -161,6 +164,7 @@ int main(void) {
             if (mousePressed) {
                 mousePressed = false;
                 glm::vec3 cameraDirection = camera.getDirection();
+
                 player.shoot(Projectile(
                     material.get(),
                     player.position + player.size / 4.0f + cameraDirection * 0.5f,
@@ -177,6 +181,7 @@ int main(void) {
         }
 
         player.update(delta, gravity, movement, level);
+        ParticleSystem::update(delta);
 
         camera.position = player.position + glm::vec3(0.f, 0.f, 0.5f);
         
@@ -197,6 +202,7 @@ int main(void) {
         glDepthMask(GL_TRUE);
         player.draw(camera.getMatrix(), projectionMatrix);
         level.draw(camera.getMatrix(), projectionMatrix);
+        ParticleSystem::draw(delta, camera.getMatrix(), projectionMatrix);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         // copy multisampled FBO to non-multisampled FBO
