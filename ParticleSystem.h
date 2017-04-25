@@ -36,7 +36,6 @@ private:
     static int bufferStart;
     static int bufferEnd;
     static int currentPerlinFlowField;
-
     static Shader shader;
     static GLuint VAO;
     static GLuint VBO;
@@ -45,7 +44,6 @@ private:
     static std::vector<Particle> particles;
     static GLfloat particlePositions[];
     static GLfloat particleColors[];
-
     static std::vector<std::vector<std::vector<glm::vec3>>> perlinFlowFields;
     static std::vector<std::vector<std::vector<float>>> perlinAngles;
 };

@@ -104,16 +104,10 @@ void ParticleSystem::makeParticle(const glm::vec3 &position) {
     Particle particle;
     particle.position = position;
     particle.originPosition = position;
-<<<<<<< HEAD
     particle.color = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
     particle.perlinFlowField = currentPerlinFlowField;
-=======
-    particle.normal = normal;
-    particle.speed = speed * (((rand() % 20) / 10.0f) + 0.5f);
-    particle.color = color;
-    particle.amplitude = 5.0f + (rand() % 20) / 5.0f;
-    particle.frequency = (rand() % 90) / 1000.0f;
->>>>>>> Make particle movement frame time independent
+    particle.color = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+    particle.perlinFlowField = currentPerlinFlowField;
     particles[bufferEnd] = particle;
     if (particleCount < MAX_PARTICLES) {
         particleCount++;
