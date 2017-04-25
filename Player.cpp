@@ -1,10 +1,10 @@
 #include "Player.h"
-#include <time.h>       /* time */
+
+#include <iostream>
 
 Player::Player(glm::vec3 position, glm::vec3 size) {
     this->position = position;
     this->size = size;
-    srand(time(NULL));
 }
 
 void Player::update(float delta, float gravity, glm::vec2 movement, const Level &level) {
@@ -13,25 +13,28 @@ void Player::update(float delta, float gravity, glm::vec2 movement, const Level 
         if (glm::length(projectiles[i].object3D.position - position) > Projectile::DESPAWN_DISTANCE) {
             projectiles.erase(projectiles.begin() + i);
         } else {
+            const float PERLIN_STEP = 0.1f;
             bool projectileIntersects = false;
             for (const Platform &levelObject : level.platforms) {
                 if (levelObject.intersects(projectiles[i].object3D.position, projectiles[i].object3D.scale)) {
                     glm::vec3 planeNormalVector = -glm::normalize(projectiles[i].movementVector);
-                    for (int k = 0; k < 100; k++) {
-                        float x = 1.0f * planeNormalVector.x;
-                        float y = 1.0f * planeNormalVector.y;
-                        float z = (-x - y) / planeNormalVector.z;
-                        glm::vec3 randomPlaneVector(x, y, z);
+                    ParticleSystem::beginParticleGroup(planeNormalVector);
+                    
+                    float x = 1.0f * planeNormalVector.x;
+                    float y = 1.0f * planeNormalVector.y;
+                    float z = (-x - y) / planeNormalVector.z;
+                    const glm::vec3 vectorWithinPlane(x, y, z);
 
-                        glm::mat4 rotationMatrix = glm::rotate(glm::mat4(1.0f), ((rand() % 628) / 100.0f), planeNormalVector);
-                        randomPlaneVector = rotationMatrix * glm::vec4(randomPlaneVector, 1.0f);
-                        randomPlaneVector = glm::normalize(randomPlaneVector);
-
-                        glm::vec3 normal = glm::cross(planeNormalVector, randomPlaneVector);
-
-                        ParticleSystem::makeParticle(projectiles[i].object3D.position, randomPlaneVector, normal, glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+                    const float ANGLE_STEP = glm::pi<float>() / 30.0f;
+                    for (float angle = 0.0f; angle < glm::pi<float>() * 2.0f; angle += ANGLE_STEP) {
+                        glm::vec3 particleVector = vectorWithinPlane;
+                        glm::mat4 rotationMatrix = glm::rotate(glm::mat4(1.0f), angle, planeNormalVector);
+                        particleVector = rotationMatrix * glm::vec4(particleVector, 1.0f);
+                        particleVector = glm::normalize(particleVector) * 0.1f;
+                        ParticleSystem::makeParticle(projectiles[i].object3D.position + particleVector);
+                        particleVector = glm::normalize(particleVector) * 0.05f;
+                        ParticleSystem::makeParticle(projectiles[i].object3D.position + particleVector);
                     }
-
                     projectileIntersects = true;
                     projectiles.erase(projectiles.begin() + i);
                     break;
