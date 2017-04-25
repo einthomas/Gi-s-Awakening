@@ -6,6 +6,12 @@ Platform::Platform(const PlatformType *type, Material *material, glm::vec3 posit
 {
 }
 
+bool Platform::intersects(const glm::vec3 &position, const glm::vec3 &scale) const {
+    glm::vec3 sumSize = (scale + this->type->size) * 0.5f;
+    glm::vec3 delta = position - this->position;
+    return glm::all(glm::lessThan(glm::abs(delta), sumSize));
+}
+
 void Platform::solveCollision(glm::vec3 &position, glm::vec3 &velocity, const glm::vec3 &scale, bool &onGround) const {
     // colliding two boxes is equivalent to
     // colliding a point with a box of the size of both boxes combined
