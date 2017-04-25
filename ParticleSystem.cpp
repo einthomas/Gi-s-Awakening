@@ -1,9 +1,9 @@
 #include "ParticleSystem.h"
-#include <iostream>
 
 int ParticleSystem::particleCount = 0;
 int ParticleSystem::bufferStart = 0;
 int ParticleSystem::bufferEnd = 0;
+int ParticleSystem::currentPerlinFlowField = -1;
 Shader ParticleSystem::shader;
 GLuint ParticleSystem::VAO = static_cast<GLuint>(-1);
 GLuint ParticleSystem::VBO;
@@ -12,6 +12,8 @@ GLuint ParticleSystem::colorVBO;
 std::vector<ParticleSystem::Particle> ParticleSystem::particles(MAX_PARTICLES);
 GLfloat ParticleSystem::particlePositions[MAX_PARTICLES * 3 + 3];
 GLfloat ParticleSystem::particleColors[MAX_PARTICLES * 4 + 4];
+std::vector<std::vector<std::vector<glm::vec3>>> ParticleSystem::perlinFlowFields(MAX_PARTICLES / 20);
+std::vector<std::vector<std::vector<float>>> ParticleSystem::perlinAngles(PERLIN_FLOW_FIELDS);
 
 static GLfloat vertices[] = {
     -0.5f, -0.5f, 0.0f,
@@ -22,9 +24,54 @@ static GLfloat vertices[] = {
 
 void ParticleSystem::init() {
     shader = Shader("shaders/particle.vert", "shaders/particle.frag");
+
+    const float PERLIN_STEP = 0.1f;
+    glm::vec3 perlinOffset(0.0f);
+    for (int m = 0; m < PERLIN_FLOW_FIELDS; m++) {
+        perlinAngles[m] = std::vector<std::vector<float>>(PERLIN_FLOW_FIELD_SIZE);
+        perlinOffset.y = 0.0f;
+        for (int i = 0; i < PERLIN_FLOW_FIELD_SIZE; i++) {
+            perlinAngles[m][i] = std::vector<float>(PERLIN_FLOW_FIELD_SIZE);
+            for (int k = 0; k < PERLIN_FLOW_FIELD_SIZE; k++) {
+                perlinAngles[m][i][k] = glm::perlin<float>(perlinOffset) * glm::pi<float>() * 8.0f;
+                perlinOffset.x += PERLIN_STEP;
+            }
+            perlinOffset.x = 0.0f;
+            perlinOffset.y += PERLIN_STEP;
+        }
+        perlinOffset.z += 0.1f;
+    }
+
+    for (int m = 0; m < perlinFlowFields.size(); m++) {
+        for (int i = 0; i < PERLIN_FLOW_FIELD_SIZE; i++) {
+            perlinFlowFields[m].push_back(std::vector<glm::vec3>(PERLIN_FLOW_FIELD_SIZE));
+        }
+    }
 }
 
-void ParticleSystem::makeParticle(const glm::vec3 &position, const glm::vec3 &speed, const glm::vec3 &normal, const glm::vec4&color) {
+void ParticleSystem::beginParticleGroup(const glm::vec3 &planeNormal) {
+    currentPerlinFlowField++;
+    currentPerlinFlowField %= perlinFlowFields.size();
+
+    float x = 1.0f * planeNormal.x;
+    float y = 1.0f * planeNormal.y;
+    float z = (-x - y) / planeNormal.z;
+    const glm::vec3 vectorWithinPlane(x, y, z);
+    
+    for (int i = 0; i < PERLIN_FLOW_FIELD_SIZE; i++) {
+        for (int k = 0; k < PERLIN_FLOW_FIELD_SIZE; k++) {
+            float perlinAngle = perlinAngles[currentPerlinFlowField % 2][i][k];
+            glm::vec3 particleVector = vectorWithinPlane;
+            glm::mat4 rotationMatrix = glm::rotate(glm::mat4(1.0f), perlinAngle, planeNormal);
+            particleVector = rotationMatrix * glm::vec4(particleVector, 1.0f);
+
+            particleVector = glm::normalize(particleVector);
+            perlinFlowFields[currentPerlinFlowField][i][k] = particleVector;
+        }
+    }
+}
+
+void ParticleSystem::makeParticle(const glm::vec3 &position) { //, const glm::vec3 &speed, const glm::vec3 &planeNormalVector, const glm::vec3 &normal, const glm::vec4 &color, const glm::vec3 &perlinOffset) {
     if (VAO == static_cast<GLuint>(-1)) {
         glGenVertexArrays(1, &VAO);
         glBindVertexArray(VAO);
@@ -57,11 +104,9 @@ void ParticleSystem::makeParticle(const glm::vec3 &position, const glm::vec3 &sp
     Particle particle;
     particle.position = position;
     particle.originPosition = position;
-    particle.normal = normal;
-    particle.speed = speed * (((rand() % 20) / 10.0f) + 0.5f);
-    particle.color = color;
-    particle.amplitude = 5.0f + (rand() % 20) / 5.0f;
-    particle.frequency = (rand() % 90) / 1000.0f;
+    particle.color = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+    particle.perlinFlowField = currentPerlinFlowField;
+
     particles[bufferEnd] = particle;
     if (particleCount < MAX_PARTICLES) {
         particleCount++;
@@ -105,10 +150,15 @@ void ParticleSystem::update(float delta) {
             }
         }
         if (particles[i].color.a > 0.0f) {
-            float dist = glm::length(particles[i].position - particles[i].originPosition);
-            particles[i].position +=
-                (particles[i].speed +
-                particles[i].normal * sinf(dist * particles[i].amplitude) * particles[i].frequency * 100.0f) * delta;
+            int xIndex = floor(fmodf(particles[i].position.x * 20.0f, PERLIN_FLOW_FIELD_SIZE));
+            xIndex = xIndex < 0 ? PERLIN_FLOW_FIELD_SIZE + xIndex : xIndex;
+
+            int yIndex = floor(fmodf(particles[i].position.y * 20.0f, PERLIN_FLOW_FIELD_SIZE));
+            yIndex = yIndex < 0 ? PERLIN_FLOW_FIELD_SIZE + yIndex : yIndex;
+
+            particles[i].velocity += perlinFlowFields[currentPerlinFlowField][xIndex][yIndex] * 0.1f;
+            particles[i].velocity = MathUtil::limit(particles[i].velocity, 1.0f);
+            particles[i].position += particles[i].velocity * delta;
 
             particlePositions[3 * k] = particles[i].position.x;
             particlePositions[3 * k + 1] = particles[i].position.y;
@@ -119,7 +169,7 @@ void ParticleSystem::update(float delta) {
             particleColors[4 * k + 2] = particles[i].color.z;
             particleColors[4 * k + 3] = particles[i].color.a;
 
-            particles[i].color.a -= delta;
+            particles[i].color.a -= delta * 1.5f;
             if (particles[i].color.a <= 0.0f) {
                 particleCount--;
                 bufferStart++;
