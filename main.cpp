@@ -45,7 +45,7 @@ int main(void) {
     glCullFace(GL_BACK);
 
     // activate v-sync
-    glfwSwapInterval(1);
+    glfwSwapInterval(0);
 
     if (!initGLEW()) {
         return 0;
@@ -112,7 +112,7 @@ int main(void) {
     glfwSetCursorPos(window, centerX, centerY);
 
     float gravity = 12.0f;
-    float rotationSpeed = glm::radians(14.0f);
+    float rotationSpeed = glm::radians(0.25f);
     float projectileSpeed = 12.0f;
 
     double time = glfwGetTime();
@@ -175,8 +175,8 @@ int main(void) {
         glfwGetCursorPos(window, &mouseX, &mouseY);
         glfwSetCursorPos(window, centerX, centerY);
 
-        camera.rotation.z -= (mouseX - centerX) * rotationSpeed * delta;
-        camera.rotation.x -= (mouseY - centerY) * rotationSpeed * delta;
+        camera.rotation.z -= (mouseX - centerX) * rotationSpeed;
+        camera.rotation.x -= (mouseY - centerY) * rotationSpeed;
         camera.rotation.x = glm::clamp(camera.rotation.x, 0.f, glm::pi<float>());
 
         // render to multisampled framebuffer
