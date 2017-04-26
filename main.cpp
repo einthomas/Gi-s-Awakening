@@ -75,6 +75,10 @@ int main(void) {
     generateFBO(blurFBOs[0], &blurColorBuffers[0], 1, false, false);
     generateFBO(blurFBOs[1], &blurColorBuffers[1], 1, false, false);
 
+    GLuint hudFBO;
+    GLuint hudColorBuffer;
+    generateFBO(hudFBO, &hudColorBuffer, 1, false, false);
+
     std::vector<std::string> textures;
     textures.push_back("textures/skybox/right.jpg");
     textures.push_back("textures/skybox/left.jpg");
@@ -107,6 +111,8 @@ int main(void) {
     TextRenderer::init(width, height, "fonts/Gidole-Regular.ttf", textShader);
     Shader gaussianBlurShader = Shader("shaders/gaussianBlur.vert", "shaders/gaussianBlur.frag");
     Shader postProcessingShader = Shader("shaders/postProcessing.vert", "shaders/postProcessing.frag");
+
+    glm::vec3 youDiedTextDimensions = TextRenderer::calcDimensions("You died", 1.0f);
 
     int centerX = width / 2, centerY = height / 2;
     glfwSetCursorPos(window, centerX, centerY);
@@ -141,6 +147,10 @@ int main(void) {
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
             movement.x += std::cos(camera.rotation.z);
             movement.y += std::sin(camera.rotation.z);
+        }
+        if (player.isDead && glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_PRESS) {
+            player.isDead = false;
+            player.position = level.start + glm::vec3(0.f, 0.f, 2.f);
         }
 
         // shooting
@@ -240,9 +250,27 @@ int main(void) {
 
         // post processing - combine the blurred and the main image
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        if (player.isDead) {
+            glBindFramebuffer(GL_FRAMEBUFFER, hudFBO);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            TextRenderer::renderText(
+                "You died",
+                width / 2.0f - youDiedTextDimensions.x / 2.0f,
+                height / 2.0f - youDiedTextDimensions.y / 2.0f,
+                1.0f,
+                glm::vec3(0.8f));
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        } else {
+            glBindFramebuffer(GL_FRAMEBUFFER, hudFBO);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        }
+
         postProcessingShader.use();
         postProcessingShader.setTexture2D("mainImage", GL_TEXTURE0, colorBuffers[0], 0);
         postProcessingShader.setTexture2D("brightSpotsBloomImage", GL_TEXTURE1, colorBuffers[1], 1);
+        postProcessingShader.setTexture2D("hudTexture", GL_TEXTURE2, hudColorBuffer, 2);
         drawScreenQuad();
 
         glfwSwapBuffers(window);

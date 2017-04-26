@@ -34,7 +34,8 @@ void Player::update(float delta, float gravity, glm::vec2 movement, const Level 
 
     // check whether player fell out of map
     if (position.z < -10) { // TODO: unhardcode bottom of map
-        position = level.start + glm::vec3(0.f, 0.f, 1.f);
+        isDead = true;
+        //position = level.start + glm::vec3(0.f, 0.f, 1.f);
     }
 
     // movement

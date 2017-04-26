@@ -4,10 +4,12 @@ in vec2 vertTextureCoords;
 
 uniform sampler2D mainImage;
 uniform sampler2D brightSpotsBloomImage;
+uniform sampler2D hudTexture;
 out vec4 outColor;
 
 void main() {
-    vec3 color = texture(mainImage, vertTextureCoords).rgb + texture(brightSpotsBloomImage, vertTextureCoords).rgb;
+	vec3 color = texture(hudTexture, vertTextureCoords).rgb;
+	color += (texture(mainImage, vertTextureCoords).rgb + texture(brightSpotsBloomImage, vertTextureCoords).rgb) * (vec3(1.0) - color);
     
     // gamma-correct
     color = pow(color, vec3(1.0f / 2.2f));

@@ -6,7 +6,7 @@ GLuint TextRenderer::VBO, TextRenderer::VAO;
 Shader TextRenderer::shader;
 
 void TextRenderer::init(GLuint screenWidth, GLuint screenHeight, std::string fontFile, Shader shader) {
-    projection = glm::ortho(0.0f, (float)screenWidth, 0.0f, (float)screenHeight);
+    projection = glm::ortho(0.0f, static_cast<float>(screenWidth), 0.0f, static_cast<float>(screenHeight));
 
     FT_Library ft;
     if (FT_Init_FreeType(&ft)) {
@@ -22,7 +22,7 @@ void TextRenderer::init(GLuint screenWidth, GLuint screenHeight, std::string fon
         return;
     }
 
-    FT_Set_Pixel_Sizes(face, 0, 128);
+    FT_Set_Pixel_Sizes(face, 0, 256);
 
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // Disable byte-alignment restriction
 
