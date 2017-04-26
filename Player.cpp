@@ -7,19 +7,43 @@ Player::Player(glm::vec3 position, glm::vec3 size) {
 
 void Player::update(float delta, float gravity, glm::vec2 movement, const Level &level) {
     // update projectiles
-    for (unsigned short i = 0; i < projectiles.size(); i++) {
+    for (short i = projectiles.size() - 1; i >= 0; i--) {
         if (glm::length(projectiles[i].object3D.position - position) > Projectile::DESPAWN_DISTANCE) {
             projectiles.erase(projectiles.begin() + i);
         } else {
-            bool projectileIntersects = false;
-            for (const Platform &levelObject : level.platforms) {
-                if (levelObject.intersects(projectiles[i].object3D.position, projectiles[i].object3D.scale)) {
-                    projectileIntersects = true;
-                    projectiles.erase(projectiles.begin() + i);
-                    break;
+            bool projectileRemoved = false;
+            if (!projectiles[i].particlesSpawned && projectiles[i].isDying && !projectiles[i].isDead && projectiles[i].deathTimer < Projectile::DEATH_TIMER_START * 0.1f) {
+                glm::vec3 planeNormalVector = -glm::normalize(projectiles[i].movementVector);
+                ParticleSystem::beginParticleGroup(planeNormalVector);
+
+                float x = 1.0f * planeNormalVector.x;
+                float y = 1.0f * planeNormalVector.y;
+                float z = (-x - y) / planeNormalVector.z;
+                const glm::vec3 vectorWithinPlane(x, y, z);
+
+                const float ANGLE_STEP = glm::pi<float>() / 60.0f;
+                for (float angle = 0.0f; angle < glm::pi<float>() * 2.0f; angle += ANGLE_STEP) {
+                    glm::vec3 particleVector = vectorWithinPlane;
+                    glm::mat4 rotationMatrix = glm::rotate(glm::mat4(1.0f), angle, planeNormalVector);
+                    particleVector = rotationMatrix * glm::vec4(particleVector, 1.0f);
+                    particleVector = glm::normalize(particleVector) * 0.1f;
+                    ParticleSystem::makeParticle(projectiles[i].object3D.position + particleVector);
+                    particleVector = glm::normalize(particleVector) * 0.05f;
+                    ParticleSystem::makeParticle(projectiles[i].object3D.position + particleVector);
+                }
+                projectiles[i].particlesSpawned = true;
+            } else if (projectiles[i].isDead) {
+                projectileRemoved = true;
+                projectiles.erase(projectiles.begin() + i);
+            } else if (!projectiles[i].isDying) {
+                for (const Platform &levelObject : level.platforms) {
+                    if (levelObject.intersects(projectiles[i].object3D.position, projectiles[i].object3D.scale)) {
+                        projectiles[i].isDying = true;
+                        break;
+                    }
                 }
             }
-            if (!projectileIntersects) {
+            if (!projectileRemoved) {
                 projectiles[i].update(delta);
             }
         }

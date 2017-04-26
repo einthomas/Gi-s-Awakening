@@ -2,9 +2,11 @@
 
 #include <vector>
 #include <glm/glm.hpp>
+#include <glm/gtc/noise.hpp>
 
 #include "Projectile.h"
 #include "Level.h"
+#include "ParticleSystem.h"
 
 class Player {
 public:
