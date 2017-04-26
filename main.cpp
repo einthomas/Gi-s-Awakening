@@ -105,7 +105,7 @@ int main(void) {
         });
     }
 
-    Level level = Level::fromFile("levels/level0.gil", material.get(), platformTypes);
+    Level level = Level::fromFile("levels/level1.gil", material.get(), platformTypes);
     Player player(level.start + glm::vec3(0.f, 0.f, 1.f), glm::vec3(0.5f, 0.5f, 2.0f));
     Camera camera(glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(glm::radians(90.0f), 0.0f, level.startOrientation));
     Shader textShader = Shader("shaders/textShader.vert", "shaders/textShader.frag");
@@ -120,7 +120,7 @@ int main(void) {
     int centerX = width / 2, centerY = height / 2;
     glfwSetCursorPos(window, centerX, centerY);
 
-    float gravity = 12.0f;
+    float gravity = 8.5f;
     float rotationSpeed = glm::radians(0.25f);
     float projectileSpeed = 12.0f;
 

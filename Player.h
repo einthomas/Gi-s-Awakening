@@ -23,10 +23,10 @@ public:
     void jumpReleased();
 
 private:
-    const float movementSpeed = 48.0f;
-    const float jumpSpeed = 5.0f;
+    const float movementSpeed = 54.0f;
+    const float jumpSpeed = 3.5f;
     const float maxJumpAccelerationDuration = 0.3f;
-    const float movementDampening = 1.5e-6f;
+    const float movementDampening = 1.2e-6f;
     const float movementDampeningFactor = 1 / std::log(movementDampening);
 
     enum struct JumpState {
