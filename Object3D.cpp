@@ -163,18 +163,3 @@ void Object3D::draw(const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatr
 
     mesh.draw();
 }
-
-bool Object3D::intersects(glm::vec3 position, glm::vec3 scale) {
-    if (
-        position.x + scale.x / 2.0f > this->position.x - this->scale.x / 2.0f &&
-        position.x - scale.x / 2.0f < this->position.x + this->scale.x / 2.0f &&
-        position.y + scale.y / 2.0f > this->position.y - this->scale.y / 2.0f &&
-        position.y - scale.y / 2.0f < this->position.y + this->scale.y / 2.0f &&
-        position.z + scale.z / 2.0f > this->position.z - this->scale.z / 2.0f &&
-        position.z - scale.z / 2.0f < this->position.z + this->scale.z / 2.0f
-    ) {
-        return true;
-    }
-
-    return false;
-}
