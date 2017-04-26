@@ -149,15 +149,15 @@ void ParticleSystem::update(float delta) {
             }
         }
         if (particles[i].color.a > 0.0f) {
-            int xIndex = floor(fmodf(particles[i].position.x * 20.0f, PERLIN_FLOW_FIELD_SIZE));
+            int xIndex = floor(fmodf(particles[i].position.x * 30.0f, PERLIN_FLOW_FIELD_SIZE));
             xIndex = xIndex < 0 ? PERLIN_FLOW_FIELD_SIZE + xIndex : xIndex;
 
-            int yIndex = floor(fmodf(particles[i].position.y * 20.0f, PERLIN_FLOW_FIELD_SIZE));
+            int yIndex = floor(fmodf(particles[i].position.y * 30.0f, PERLIN_FLOW_FIELD_SIZE));
             yIndex = yIndex < 0 ? PERLIN_FLOW_FIELD_SIZE + yIndex : yIndex;
 
-            particles[i].velocity += perlinFlowFields[currentPerlinFlowField][xIndex][yIndex] * 0.1f;
-            particles[i].velocity = MathUtil::limit(particles[i].velocity, 1.0f);
-            particles[i].position += particles[i].velocity * delta;
+            particles[i].velocity += perlinFlowFields[currentPerlinFlowField][xIndex][yIndex] * 2.0f;
+            particles[i].velocity = MathUtil::limit(particles[i].velocity * delta, 0.1f);
+            particles[i].position += particles[i].velocity ;
 
             particlePositions[3 * k] = particles[i].position.x;
             particlePositions[3 * k + 1] = particles[i].position.y;
