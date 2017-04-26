@@ -106,8 +106,6 @@ void ParticleSystem::makeParticle(const glm::vec3 &position) {
     particle.originPosition = position;
     particle.color = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
     particle.perlinFlowField = currentPerlinFlowField;
-    particle.color = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-    particle.perlinFlowField = currentPerlinFlowField;
     particles[bufferEnd] = particle;
     if (particleCount < MAX_PARTICLES) {
         particleCount++;

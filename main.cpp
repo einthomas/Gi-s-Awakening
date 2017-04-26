@@ -65,7 +65,7 @@ int main(void) {
 
     GLuint multisampledFBO;
     GLuint multisampledColorBuffers[2];
-    generateFBO(multisampledFBO, multisampledColorBuffers, 2, true, true);
+    generateFBO(multisampledFBO, multisampledColorBuffers, 2, false, true);
 
     GLuint FBO;
     GLuint colorBuffers[2];
@@ -319,7 +319,7 @@ void generateFBO(GLuint &FBO, GLuint* colorBuffers, int numColorAttachments, boo
         GLuint depthRBO;
         glGenRenderbuffers(1, &depthRBO);
         glBindRenderbuffer(GL_RENDERBUFFER, depthRBO);
-        glRenderbufferStorageMultisample(GL_RENDERBUFFER, AA_SAMPLES, GL_DEPTH_COMPONENT, width, height);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRBO);
     }
 

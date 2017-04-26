@@ -17,11 +17,6 @@ public:
     static void update(float delta);
 
 private:
-    struct ParticleGroup {
-        glm::vec3 planeNormal;
-        int perlinFlowField;
-    };
-
     struct Particle {
         glm::vec3 originPosition, position;
         glm::vec4 color;
