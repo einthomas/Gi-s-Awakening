@@ -1,7 +1,5 @@
 #include "Player.h"
 
-#include <iostream>
-
 Player::Player(glm::vec3 position, glm::vec3 size) {
     this->position = position;
     this->size = size;
