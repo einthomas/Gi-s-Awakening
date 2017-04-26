@@ -18,9 +18,9 @@ void main() {
     vec3 halfVector = normalize(light + camera);
     float glossy = pow(max(dot(vertNormal, halfVector), 0.0f), 100);
 
-    vec3 color = vec3((diffuse + glossy + 0.3f) * 0.75);
+    vec3 color = (diffuse + glossy + 0.3f) * vertColor;
     outColor = vec4(color, 1.0f);
-    if (color.r > 0.5f && color.g > 0.5f && color.b > 0.5f) {
+    if (color.r > 0.6f && color.g > 0.6f && color.b > 0.6f) {
         brightSpotColor = vec4(color * 0.6f, 1.0f);
     } else {
         brightSpotColor = vec4(0.0f);

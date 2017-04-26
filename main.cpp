@@ -156,7 +156,7 @@ int main(void) {
                 glm::vec3 cameraDirection = camera.getDirection();
 
                 player.shoot(Projectile(
-                    material.get(),
+                    BlinnMaterial(glm::vec3(1.0f), glm::vec3(0.0f), 0.0f),
                     player.position + player.size / 4.0f + cameraDirection * 0.5f,
                     cameraDirection * projectileSpeed
                 ));
