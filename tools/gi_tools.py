@@ -23,7 +23,6 @@ def write_object(object, offset, vbo):
     vertices = mesh.vertices
     
     texture = mesh.tessface_uv_textures["Texture"]
-    light = mesh.tessface_uv_textures["Light"]
     
     for face_index in range(len(mesh.tessfaces)):
         face = mesh.tessfaces[face_index]
@@ -31,9 +30,6 @@ def write_object(object, offset, vbo):
         texture_face = texture.data[face_index]
         #texture_path = texture.image
         texture_uvs = texture_face.uv
-        
-        light_face = light.data[face_index]
-        light_uvs = light_face.uv
         
         vertex_indices = range(3)
         if len(face.vertices) == 4:
