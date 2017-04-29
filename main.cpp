@@ -21,7 +21,7 @@
 
 static int width = 1280, height = 720;
 static const char *title = "Gi's Awakening: The Mending of the Sky";
-GLuint screenQuadVAO = 0;
+static GLuint screenQuadVAO = 0;
 const int AA_SAMPLES = 4;
 
 bool initGLEW();
@@ -93,7 +93,7 @@ int main(void) {
     SkyboxMaterial::init();
     std::unique_ptr<BlinnMaterial> material(new BlinnMaterial(glm::vec3(1.0f), glm::vec3(0.0f), 0.0f));
 
-    std::map<std::string, PlatformType> platformTypes; // TODO
+    std::map<std::string, PlatformType> platformTypes;
     nlohmann::json platformTypesJson;
     std::ifstream platformTypesFile("geometry/set1.gib");
     platformTypesFile >> platformTypesJson;
@@ -105,7 +105,9 @@ int main(void) {
         });
     }
 
-    Level level = Level::fromFile("levels/level1.gil", material.get(), platformTypes);
+    Mesh endMesh = Mesh::fromFile("geometry/End.vbo");
+
+    Level level = Level::fromFile("levels/level1.gil", material.get(), endMesh, platformTypes);
     Player player(level.start + glm::vec3(0.f, 0.f, 1.f), glm::vec3(0.5f, 0.5f, 2.0f));
     Camera camera(glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(glm::radians(90.0f), 0.0f, level.startOrientation));
     Shader textShader = Shader("shaders/textShader.vert", "shaders/textShader.frag");
@@ -257,7 +259,18 @@ int main(void) {
         // post processing - combine the blurred and the main image
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        if (player.isDead) {
+        // victory condition
+        if (glm::length(level.end - player.position) < 2) {
+            glBindFramebuffer(GL_FRAMEBUFFER, hudFBO);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            TextRenderer::renderText(
+                "You won",
+                width / 2.0f - youDiedTextDimensions.x / 2.0f,
+                height / 2.0f - youDiedTextDimensions.y / 2.0f,
+                1.0f,
+                glm::vec3(0.8f));
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        } else if (player.isDead) {
             glBindFramebuffer(GL_FRAMEBUFFER, hudFBO);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             TextRenderer::renderText(

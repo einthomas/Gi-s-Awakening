@@ -16,9 +16,10 @@ void Level::draw(const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix)
     for (Object3D &object : platforms) {
         object.draw(viewMatrix, projectionMatrix);
     }
+    endObject.draw(viewMatrix, projectionMatrix);
 }
 
-Level Level::fromFile(const char *filename, Material *material, const std::map<std::string, PlatformType> &platformTypes) {
+Level Level::fromFile(const char *filename, Material *material, Mesh endMesh, const std::map<std::string, PlatformType> &platformTypes) {
     // Note: this function will crash if the gil file is malformed.
     Level level;
     nlohmann::json json;
@@ -35,6 +36,8 @@ Level Level::fromFile(const char *filename, Material *material, const std::map<s
             &platformTypes.at(platform["type"]), material, platform["position"]
         ));
     }
+
+    level.endObject = { material, level.end, glm::vec3(1.0f), endMesh };
 
     return level;
 }

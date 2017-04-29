@@ -152,7 +152,7 @@ Object3D Object3D::makeSkyboxCube(Material *material, const glm::vec3 &position,
         glBindVertexArray(0);
     }
 
-    return { material, position, scale, skyboxCubeVAO, sizeof(skyboxVertices) / 3 / 4 };
+    return { material, position, scale, {skyboxCubeVAO, sizeof(skyboxVertices) / 3 / 4} };
 }
 
 void Object3D::draw(const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix) {

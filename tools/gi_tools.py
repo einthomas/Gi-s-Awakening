@@ -69,7 +69,7 @@ def write_gi_block(context, filepath):
     blocks = []
     
     for group in bpy.data.groups:
-        if group.name not in ["Start", "End"]:
+        if group.name != "Start":
             blocks += [write_group(group, directory)]
         
     with open(filepath, 'w', encoding='utf-8') as f:
