@@ -16,10 +16,14 @@ void Player::update(float delta, float gravity, glm::vec2 movement, const Level 
                 glm::vec3 planeNormalVector = -glm::normalize(projectiles[i].movementVector);
                 ParticleSystem::beginParticleGroup(planeNormalVector);
 
-                float x = 1.0f * planeNormalVector.x;
-                float y = 1.0f * planeNormalVector.y;
+                float x = planeNormalVector.x;
+                float y = planeNormalVector.y;
                 float z = (-x - y) / planeNormalVector.z;
-                const glm::vec3 vectorWithinPlane(x, y, z);
+                glm::vec3 vectorWithinPlane(x, y, z);
+                if (vectorWithinPlane.x == 0 && vectorWithinPlane.y == 0 && vectorWithinPlane.z == 0) {
+                    vectorWithinPlane.x = 1.0f;
+                    vectorWithinPlane.y = 1.0f;
+                }
 
                 const float ANGLE_STEP = glm::pi<float>() / 60.0f;
                 for (float angle = 0.0f; angle < glm::pi<float>() * 2.0f; angle += ANGLE_STEP) {
