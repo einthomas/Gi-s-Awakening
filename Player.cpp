@@ -14,16 +14,12 @@ void Player::update(float delta, float gravity, glm::vec2 movement, const Level 
             bool projectileRemoved = false;
             if (!projectiles[i].particlesSpawned && projectiles[i].isDying && !projectiles[i].isDead && projectiles[i].deathTimer < Projectile::DEATH_TIMER_START * 0.1f) {
                 glm::vec3 planeNormalVector = -glm::normalize(projectiles[i].movementVector);
-                ParticleSystem::beginParticleGroup(planeNormalVector);
-
-                float x = planeNormalVector.x;
-                float y = planeNormalVector.y;
-                float z = (-x - y) / planeNormalVector.z;
-                glm::vec3 vectorWithinPlane(x, y, z);
-                if (vectorWithinPlane.x == 0 && vectorWithinPlane.y == 0 && vectorWithinPlane.z == 0) {
-                    vectorWithinPlane.x = 1.0f;
-                    vectorWithinPlane.y = 1.0f;
-                }
+                glm::vec3 vectorWithinPlane(
+                    1.0f,
+                    1.0f,
+                    (-planeNormalVector.x - planeNormalVector.y) / planeNormalVector.z
+                );
+                ParticleSystem::beginParticleGroup(planeNormalVector, vectorWithinPlane);
 
                 const float ANGLE_STEP = glm::pi<float>() / 60.0f;
                 for (float angle = 0.0f; angle < glm::pi<float>() * 2.0f; angle += ANGLE_STEP) {

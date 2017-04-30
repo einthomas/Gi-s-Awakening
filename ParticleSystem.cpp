@@ -49,18 +49,9 @@ void ParticleSystem::init() {
     }
 }
 
-void ParticleSystem::beginParticleGroup(const glm::vec3 &planeNormal) {
+void ParticleSystem::beginParticleGroup(const glm::vec3 &planeNormal, const glm::vec3 &vectorWithinPlane) {
     currentPerlinFlowField++;
     currentPerlinFlowField %= perlinFlowFields.size();
-
-    float x = planeNormal.x;
-    float y = planeNormal.y;
-    float z = (-x - y) / planeNormal.z;
-    glm::vec3 vectorWithinPlane(x, y, z);
-    if (vectorWithinPlane.x == 0 && vectorWithinPlane.y == 0 && vectorWithinPlane.z == 0) {
-        vectorWithinPlane.x = 1.0f;
-        vectorWithinPlane.y = 1.0f;
-    }
     
     for (int i = 0; i < PERLIN_FLOW_FIELD_SIZE; i++) {
         for (int k = 0; k < PERLIN_FLOW_FIELD_SIZE; k++) {
