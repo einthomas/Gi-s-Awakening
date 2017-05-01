@@ -19,23 +19,8 @@ public:
     void draw(const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix);
     void update(float delta);
 
-    Projectile &operator=(const Projectile &otherProjectile) {
-        if (this != &otherProjectile) {
-            object3D = otherProjectile.object3D;
-            movementVector = otherProjectile.movementVector;
-            velocityZ = otherProjectile.velocityZ;
-            isDying = otherProjectile.isDying;
-            isDead = otherProjectile.isDead;
-            deathTimer = otherProjectile.deathTimer;
-            blinnMaterial = otherProjectile.blinnMaterial;
-            particlesSpawned = otherProjectile.particlesSpawned;
-        }
-
-        return *this;
-    }
-
 private:
-    const float GRAVITY = 6.0f;
+    constexpr static float GRAVITY = 6.0f;
     BlinnMaterial blinnMaterial;
     glm::vec3 originalColor;
     float velocityZ;
