@@ -107,7 +107,7 @@ int main(void) {
 
     Mesh endMesh = Mesh::fromFile("geometry/End.vbo");
 
-    Level level = Level::fromFile("levels/level1.gil", material.get(), endMesh, platformTypes);
+    Level level = Level::fromFile("levels/level2.gil", material.get(), endMesh, platformTypes);
     Player player(level.start + glm::vec3(0.f, 0.f, 1.f), glm::vec3(0.5f, 0.5f, 2.0f));
     Camera camera(glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(glm::radians(90.0f), 0.0f, level.startOrientation));
     Shader textShader = Shader("shaders/textShader.vert", "shaders/textShader.frag");
@@ -115,7 +115,6 @@ int main(void) {
     Shader gaussianBlurShader = Shader("shaders/gaussianBlur.vert", "shaders/gaussianBlur.frag");
     Shader postProcessingShader = Shader("shaders/postProcessing.vert", "shaders/postProcessing.frag");
     ParticleSystem::init();
-    ParticleSystem particleSystem;
 
     glm::vec3 youDiedTextDimensions = TextRenderer::calcDimensions("You died", 1.0f);
 
@@ -183,6 +182,7 @@ int main(void) {
         }
 
         player.update(delta, gravity, movement, level);
+        level.update(delta);
         ParticleSystem::update(delta);
 
         camera.position = player.position + glm::vec3(0.f, 0.f, 0.5f);
