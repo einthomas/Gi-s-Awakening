@@ -1,7 +1,7 @@
 bl_info = {
     "name": "Gi Level-Editing Tools",
     "author": "Felix Kugler",
-    "version": (0, 2),
+    "version": (0, 3),
     "blender": (2, 75, 0),
     "location": "File > Export",
     "description": "Provides Level Editing Tools for Gi's Awekening",
@@ -81,10 +81,11 @@ def write_gi_level(context, filepath, level_name):
     print("running write_gi_level...")
     
     platforms = []
+    triggers = []
     start = [0, 0, 0]
     start_orientation = 0
     end = [0, 0, 0]
-
+ 
     for object in bpy.context.scene.objects:
         try:
             type = object.dupli_group.name
@@ -94,10 +95,18 @@ def write_gi_level(context, filepath, level_name):
                 start_orientation = object.rotation_euler[2]
             elif type == "End":
                 end = object.location[:]
+            elif type == "TriggerDiamond":
+                triggers += [{
+                    "position": object.location[:],
+                    "type": type,
+                    "isTriggered": object.get("isTriggered"),
+                    "triggers": object.get("triggers")
+                }]
             else:
                 platforms += [{
                     "position": object.location[:],
-                    "type": type
+                    "type": type,
+                    "name": object.name
                 }]
                 
         except Exception as e:
@@ -106,6 +115,7 @@ def write_gi_level(context, filepath, level_name):
     level = {
         "name": level_name,
         "platforms": platforms,
+        "triggers": triggers,
         "start": start,
         "startOrientation": start_orientation,
         "end": end

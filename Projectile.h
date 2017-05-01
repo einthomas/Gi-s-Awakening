@@ -5,7 +5,7 @@
 
 class Projectile {
 public:
-    static const int DESPAWN_DISTANCE = 30.0f;
+    static const int DESPAWN_DISTANCE = 30;
     Object3D object3D;
     glm::vec3 movementVector;
     bool isDying = false;
