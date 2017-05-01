@@ -181,9 +181,11 @@ int main(void) {
             player.jumpReleased();
         }
 
-        player.update(delta, gravity, movement, level);
-        level.update(delta);
-        ParticleSystem::update(delta);
+        if (!player.isDead) {
+            player.update(delta, gravity, movement, level);
+            level.update(delta);
+            ParticleSystem::update(delta);
+        }
 
         camera.position = player.position + glm::vec3(0.f, 0.f, 0.5f);
         
