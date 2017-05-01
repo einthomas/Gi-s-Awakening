@@ -80,7 +80,7 @@ Level Level::fromFile(const char *filename, Material *material, Mesh endMesh, co
         std::vector<Platform*> triggeredPlatforms;
         triggeredPlatforms.push_back(triggeredPlatform);
         level.triggers.push_back(Trigger(
-            &platformTypes.at(trigger["type"]), material, trigger["position"], isTriggered, triggeredPlatforms
+            &platformTypes.at(trigger["type"]), BlinnMaterial(glm::vec3(1.0f), glm::vec3(0.0f), 0.0f), trigger["position"], isTriggered, triggeredPlatforms
         ));
     }
 

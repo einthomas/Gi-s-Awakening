@@ -46,7 +46,7 @@ int main(void) {
     glCullFace(GL_BACK);
 
     // activate v-sync
-    glfwSwapInterval(1);
+    glfwSwapInterval(0);
 
     if (!initGLEW()) {
         return 0;
