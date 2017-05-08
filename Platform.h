@@ -7,8 +7,12 @@ class Platform : public Object3D {
     const PlatformType *type;
 
 public:
-    Platform(const PlatformType *type, Material *material, glm::vec3 position);
+    const std::string name;
 
-    bool intersects(const glm::vec3 &position, const glm::vec3 &scale) const;
+    bool isVisible;
+
+    Platform(const PlatformType *type, Material *material, glm::vec3 position, std::string name);
+
+    virtual bool intersects(const glm::vec3 &position, const glm::vec3 &scale);
     void solveCollision(glm::vec3 &position, glm::vec3 &velocity, const glm::vec3 &scale, bool &onGround) const;
 };

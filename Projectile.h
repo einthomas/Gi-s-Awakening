@@ -5,7 +5,7 @@
 
 class Projectile {
 public:
-    static const int DESPAWN_DISTANCE = 30.0f;
+    static const int DESPAWN_DISTANCE = 30;
     Object3D object3D;
     glm::vec3 movementVector;
     bool isDying = false;
@@ -15,6 +15,7 @@ public:
     bool particlesSpawned = false;
 
     Projectile(BlinnMaterial material, glm::vec3 position, glm::vec3 movementVector);
+    Projectile(const Projectile &projectile);
 
     void draw(const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix);
     void update(float delta);

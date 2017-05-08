@@ -5,7 +5,7 @@ Player::Player(glm::vec3 position, glm::vec3 size) {
     this->size = size;
 }
 
-void Player::update(float delta, float gravity, glm::vec2 movement, const Level &level) {
+void Player::update(float delta, float gravity, glm::vec2 movement, Level &level) {
     // update projectiles
     for (unsigned int i = 0; i < projectiles.size(); i++) {
         if (glm::length(projectiles[i].object3D.position - position) > Projectile::DESPAWN_DISTANCE) {
@@ -41,11 +41,9 @@ void Player::update(float delta, float gravity, glm::vec2 movement, const Level 
                 projectileRemoved = true;
                 projectiles.erase(projectiles.begin() + static_cast<int>(i));
             } else if (!projectiles[i].isDying) {
-                for (const Platform &levelObject : level.platforms) {
-                    if (levelObject.intersects(projectiles[i].object3D.position, projectiles[i].object3D.scale)) {
-                        projectiles[i].isDying = true;
-                        break;
-                    }
+                if (level.intersects(projectiles[i].object3D.position, projectiles[i].object3D.scale)) {
+                    projectiles[i].isDying = true;
+                    break;
                 }
             }
             if (!projectileRemoved) {
