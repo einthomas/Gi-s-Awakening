@@ -12,7 +12,12 @@ void Player::update(float delta, float gravity, glm::vec2 movement, const Level 
             projectiles.erase(projectiles.begin() + static_cast<int>(i));
         } else {
             bool projectileRemoved = false;
-            if (!projectiles[i].particlesSpawned && projectiles[i].isDying && !projectiles[i].isDead && projectiles[i].deathTimer < Projectile::DEATH_TIMER_START * 0.1f) {
+            if (
+                !projectiles[i].particlesSpawned &&
+                projectiles[i].isDying &&
+                !projectiles[i].isDead &&
+                projectiles[i].deathTimer < Projectile::DEATH_TIMER_START * 0.1f
+            ) {
                 glm::vec3 planeNormalVector = -glm::normalize(projectiles[i].movementVector);
                 glm::vec3 vectorWithinPlane(
                     1.0f,
@@ -102,8 +107,8 @@ void Player::jumpPressed(float delta) {
         velocity.z = jumpSpeed;
         position.z += jumpSpeed * delta;
         jumpAccelerationDuration = 0;
-    }
-    else if (jumpState == JumpState::JUMPING) {
+
+    } else if (jumpState == JumpState::JUMPING) {
         position.z += jumpSpeed * delta;
         jumpAccelerationDuration += delta;
         if (jumpAccelerationDuration > maxJumpAccelerationDuration) {
@@ -114,10 +119,11 @@ void Player::jumpPressed(float delta) {
 
 void Player::jumpReleased() {
     releasedJumpButton = true;
+
     if (jumpState == JumpState::GROUNDED) {
         velocity.z = 0;
-    }
-    else if (jumpState == JumpState::JUMPING) {
+
+    } else if (jumpState == JumpState::JUMPING) {
         jumpState = JumpState::FALLING;
     }
 }
