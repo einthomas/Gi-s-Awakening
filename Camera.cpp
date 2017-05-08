@@ -17,5 +17,5 @@ glm::mat4 Camera::getMatrix() {
 }
 
 glm::vec3 Camera::getDirection() {
-    return glm::normalize((glm::vec3) (glm::vec4(0.0f, 0.0f, -position.z, 1.0f) * getMatrix()));
+    return glm::normalize(glm::vec3(glm::vec4(0.0f, 0.0f, -1.0f, 0.0f) * getMatrix()));
 }
