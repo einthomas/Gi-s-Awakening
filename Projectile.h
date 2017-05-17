@@ -2,6 +2,8 @@
 
 #include "BlinnMaterial.h"
 #include "Object3D.h"
+#include "ParticleSystem.h"
+#include "Level.h"
 
 class Projectile {
 public:
@@ -18,7 +20,7 @@ public:
     Projectile(const Projectile &projectile);
 
     void draw(const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix);
-    void update(float delta);
+    void update(float delta, Level &level);
 
 private:
     constexpr static float GRAVITY = 6.0f;

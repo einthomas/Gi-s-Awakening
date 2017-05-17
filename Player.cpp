@@ -8,47 +8,12 @@ Player::Player(glm::vec3 position, glm::vec3 size) {
 void Player::update(float delta, float gravity, glm::vec2 movement, Level &level) {
     // update projectiles
     for (unsigned int i = 0; i < projectiles.size(); i++) {
-        if (glm::length(projectiles[i].object3D.position - position) > Projectile::DESPAWN_DISTANCE) {
+        if (glm::length(projectiles[i].object3D.position - position) > Projectile::DESPAWN_DISTANCE ||
+            projectiles[i].isDead)
+        {
             projectiles.erase(projectiles.begin() + static_cast<int>(i));
         } else {
-            bool projectileRemoved = false;
-            if (
-                !projectiles[i].particlesSpawned &&
-                projectiles[i].isDying &&
-                !projectiles[i].isDead &&
-                projectiles[i].deathTimer < Projectile::DEATH_TIMER_START * 0.1f
-            ) {
-                glm::vec3 planeNormalVector = -glm::normalize(projectiles[i].movementVector);
-                glm::vec3 vectorWithinPlane(
-                    1.0f,
-                    1.0f,
-                    (-planeNormalVector.x - planeNormalVector.y) / planeNormalVector.z
-                );
-                ParticleSystem::beginParticleGroup(planeNormalVector, vectorWithinPlane);
-
-                const float ANGLE_STEP = glm::pi<float>() / 60.0f;
-                for (float angle = 0.0f; angle < glm::pi<float>() * 2.0f; angle += ANGLE_STEP) {
-                    glm::vec3 particleVector = vectorWithinPlane;
-                    glm::mat4 rotationMatrix = glm::rotate(glm::mat4(1.0f), angle, planeNormalVector);
-                    particleVector = rotationMatrix * glm::vec4(particleVector, 1.0f);
-                    particleVector = glm::normalize(particleVector) * 0.1f;
-                    ParticleSystem::makeParticle(projectiles[i].object3D.position + particleVector);
-                    particleVector = glm::normalize(particleVector) * 0.05f;
-                    ParticleSystem::makeParticle(projectiles[i].object3D.position + particleVector);
-                }
-                projectiles[i].particlesSpawned = true;
-            } else if (projectiles[i].isDead) {
-                projectileRemoved = true;
-                projectiles.erase(projectiles.begin() + static_cast<int>(i));
-            } else if (!projectiles[i].isDying) {
-                if (level.intersects(projectiles[i].object3D.position, projectiles[i].object3D.scale)) {
-                    projectiles[i].isDying = true;
-                    break;
-                }
-            }
-            if (!projectileRemoved) {
-                projectiles[i].update(delta);
-            }
+            projectiles[i].update(delta, level);
         }
     }
 
@@ -124,4 +89,9 @@ void Player::jumpReleased() {
     } else if (jumpState == JumpState::JUMPING) {
         jumpState = JumpState::FALLING;
     }
+}
+
+void Player::setSecondAbility(AbilityType secondAbility) {
+    this->secondAbility = secondAbility;
+    hasSecondAbility = true;
 }

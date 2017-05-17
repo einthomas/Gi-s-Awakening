@@ -13,6 +13,7 @@ public:
     glm::vec3 position;
     glm::vec3 size;
     bool isDead = false;
+    AbilityType secondAbility;
 
     Player(glm::vec3 position, glm::vec3 size);
 
@@ -21,6 +22,7 @@ public:
     void shoot(const Projectile &projectile);
     void jumpPressed(float delta);
     void jumpReleased();
+    void setSecondAbility(AbilityType secondAbility);
 
 private:
     const float movementSpeed = 54.0f;
@@ -38,4 +40,6 @@ private:
     bool releasedJumpButton = false;
     bool onGround;
     std::vector<Projectile> projectiles;
+
+    bool hasSecondAbility = false;
 };

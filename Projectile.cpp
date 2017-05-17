@@ -31,7 +31,33 @@ void Projectile::draw(const glm::mat4 &viewMatrix, const glm::mat4 &projectionMa
     object3D.draw(viewMatrix, projectionMatrix);
 }
 
-void Projectile::update(float delta) {
+void Projectile::update(float delta, Level &level) {
+    if (!particlesSpawned && isDying && !isDead && deathTimer < DEATH_TIMER_START * 0.1f) {
+        // spawn particles
+        glm::vec3 planeNormalVector = -glm::normalize(movementVector);
+        glm::vec3 vectorWithinPlane(
+            1.0f,
+            1.0f,
+            (-planeNormalVector.x - planeNormalVector.y) / planeNormalVector.z
+        );
+        ParticleSystem::beginParticleGroup(planeNormalVector, vectorWithinPlane);
+        const float ANGLE_STEP = glm::pi<float>() / 60.0f;
+        for (float angle = 0.0f; angle < glm::pi<float>() * 2.0f; angle += ANGLE_STEP) {
+            glm::vec3 particleVector = vectorWithinPlane;
+            glm::mat4 rotationMatrix = glm::rotate(glm::mat4(1.0f), angle, planeNormalVector);
+            particleVector = rotationMatrix * glm::vec4(particleVector, 1.0f);
+            particleVector = glm::normalize(particleVector) * 0.1f;
+            ParticleSystem::makeParticle(object3D.position + particleVector);
+            particleVector = glm::normalize(particleVector) * 0.05f;
+            ParticleSystem::makeParticle(object3D.position + particleVector);
+        }
+        particlesSpawned = true;
+    } else if (!isDying) {
+        if (level.intersects(object3D.position, object3D.scale)) {
+            isDying = true;
+        }
+    }
+
     if (!isDead) {
         if (isDying) {
             deathTimer -= delta;
