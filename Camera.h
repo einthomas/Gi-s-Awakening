@@ -7,6 +7,7 @@ class Camera {
 public:
     glm::vec3 position;
     glm::vec3 rotation;
+    double rotationSpeed;
 
     Camera(glm::vec3 position = glm::vec3(), glm::vec3 rotation = glm::vec3());
 

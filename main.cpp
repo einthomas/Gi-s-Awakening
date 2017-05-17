@@ -18,6 +18,7 @@
 #include "Skybox.h"
 #include "SkyboxMaterial.h"
 #include "ParticleSystem.h"
+#include "Game.h"
 
 static int width = 1280, height = 720;
 static const char *title = "Gi's Awakening: The Mending of the Sky";
@@ -106,10 +107,9 @@ int main(void) {
     }
 
     Mesh endMesh = Mesh::fromFile("geometry/End.vbo");
+    Level level = Level::fromFile("levels/level1.gil", material.get(), endMesh, platformTypes);
+    Game game(level);
 
-    Level level = Level::fromFile("levels/level2.gil", material.get(), endMesh, platformTypes);
-    Player player(level.start + glm::vec3(0.f, 0.f, 1.f), glm::vec3(0.5f, 0.5f, 2.0f));
-    Camera camera(glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(glm::radians(90.0f), 0.0f, level.startOrientation));
     Shader textShader = Shader("shaders/textShader.vert", "shaders/textShader.frag");
     TextRenderer::init(width, height, "fonts/Gidole-Regular.ttf", textShader);
     Shader gaussianBlurShader = Shader("shaders/gaussianBlur.vert", "shaders/gaussianBlur.frag");
@@ -121,92 +121,86 @@ int main(void) {
     int centerX = width / 2, centerY = height / 2;
     glfwSetCursorPos(window, centerX, centerY);
 
-    float gravity = 8.5f;
-    float rotationSpeed = glm::radians(0.25f);
-    float projectileSpeed = 12.0f;
-
     double time = glfwGetTime();
     double previousTime = time;
 
-    bool mousePressed = false;
+    bool rightMouseButtonPressed = false;
     while (!glfwWindowShouldClose(window)) {
         double currentTime = glfwGetTime();
         double delta = currentTime - previousTime;
         previousTime = currentTime;
-
+        
         // movement
-        glm::vec2 movement(0);
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-            movement.x -= std::sin(camera.rotation.z);
-            movement.y += std::cos(camera.rotation.z);
+            game.forwardPressed();
         }
         if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-            movement.x -= std::cos(camera.rotation.z);
-            movement.y -= std::sin(camera.rotation.z);
+            game.leftPressed();
         }
         if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-            movement.x += std::sin(camera.rotation.z);
-            movement.y -= std::cos(camera.rotation.z);
+            game.backwardsPressed();
         }
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-            movement.x += std::cos(camera.rotation.z);
-            movement.y += std::sin(camera.rotation.z);
+            game.rightPressed();
         }
-        if (player.isDead && glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_PRESS) {
-            player.isDead = false;
-            player.position = level.start + glm::vec3(0.f, 0.f, 2.f);
+        if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+            game.confirmPressed();
+        }
+        if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_RELEASE) {
+            game.confirmReleased();
         }
 
         // shooting
         if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
-            mousePressed = true;
+            game.primaryActionPressed();
         }
         if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE) {
-            if (mousePressed) {
-                mousePressed = false;
+            game.primaryActionReleased();
+        }
+        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
+            game.secondaryActionPressed();
+        }
+        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE) {
+            game.secondaryActionReleased();
+            if (rightMouseButtonPressed) {
+                rightMouseButtonPressed = false;
+                /*
                 glm::vec3 cameraDirection = camera.getDirection();
 
-                player.shoot(Projectile(
-                    BlinnMaterial(glm::vec3(1.0f), glm::vec3(0.0f), 0.0f),
-                    player.position + player.size / 4.0f + cameraDirection * 0.5f,
-                    cameraDirection * projectileSpeed
-                ));
+                if (player.secondAbility == AbilityType::TELEPORT) {
+                    std::cout << "shoottelep" << std::endl;
+                    player.shootTeleportProjectile(Projectile(
+                        BlinnMaterial(glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f), 0.0f),
+                        player.position + player.size / 4.0f + cameraDirection * 0.5f,
+                        cameraDirection * projectileSpeed
+                    ));
+                }
+                */
             }
         }
 
-        // jumping
-        if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-            player.jumpPressed(delta);
-        } else {
-            player.jumpReleased();
-        }
-
-        if (!player.isDead) {
-            player.update(delta, gravity, movement, level);
-            level.update(delta);
-            ParticleSystem::update(delta);
-        }
-
-        camera.position = player.position + glm::vec3(0.f, 0.f, 0.5f);
+        game.update(delta);
         
         // mouse look
         double mouseX, mouseY;
         glfwGetCursorPos(window, &mouseX, &mouseY);
         glfwSetCursorPos(window, centerX, centerY);
+        game.cursorMoved(mouseX - centerX, mouseY - centerY);
 
-        camera.rotation.z -= (mouseX - centerX) * rotationSpeed;
-        camera.rotation.x -= (mouseY - centerY) * rotationSpeed;
-        camera.rotation.x = glm::clamp(camera.rotation.x, 0.f, glm::pi<float>());
+        for (PressurePlate pressurePlate : level.pressurePlates) {
+            if (glm::length(game.player.position - pressurePlate.position) < 4.0f) {
+                game.player.setSecondAbility(pressurePlate.abilityType);
+            }
+        }
 
         // render to multisampled framebuffer
         glBindFramebuffer(GL_FRAMEBUFFER, multisampledFBO);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glDepthMask(GL_FALSE);
-        skybox.draw(camera.getMatrix(), projectionMatrix);
+        skybox.draw(game.camera.getMatrix(), projectionMatrix);
         glDepthMask(GL_TRUE);
-        player.draw(camera.getMatrix(), projectionMatrix);
-        level.draw(camera.getMatrix(), projectionMatrix);
-        ParticleSystem::draw(delta, camera.getMatrix(), projectionMatrix);
+        game.draw(projectionMatrix);
+        ParticleSystem::draw(delta, game.camera.getMatrix(), projectionMatrix);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         // copy multisampled FBO to non-multisampled FBO
@@ -262,7 +256,7 @@ int main(void) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // victory condition
-        if (glm::length(level.end - player.position) < 2) {
+        if (glm::length(level.end - game.player.position) < 2) {
             glBindFramebuffer(GL_FRAMEBUFFER, hudFBO);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             TextRenderer::renderText(
@@ -272,7 +266,7 @@ int main(void) {
                 1.0f,
                 glm::vec3(0.8f));
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        } else if (player.isDead) {
+        } else if (game.player.isDead) {
             glBindFramebuffer(GL_FRAMEBUFFER, hudFBO);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             TextRenderer::renderText(

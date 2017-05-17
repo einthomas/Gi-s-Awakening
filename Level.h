@@ -8,11 +8,13 @@
 
 #include "Platform.h"
 #include "Trigger.h"
+#include "PressurePlate.h"
 
 class Level {
 public:
     std::vector<Platform> platforms;
     std::vector<Trigger> triggers;
+    std::vector<PressurePlate> pressurePlates;
     Object3D endObject;
     glm::vec3 start, end;
     float startOrientation;

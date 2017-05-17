@@ -3,7 +3,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 Camera::Camera(glm::vec3 position, glm::vec3 rotation) :
-    position(position), rotation(rotation)
+    position(position), rotation(rotation), rotationSpeed(glm::radians(0.25f))
 {
 }
 

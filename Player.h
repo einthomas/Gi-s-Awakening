@@ -12,12 +12,13 @@ class Player {
 public:
     glm::vec3 position;
     glm::vec3 size;
+    glm::vec2 movement;
     bool isDead = false;
     AbilityType secondAbility;
 
     Player(glm::vec3 position, glm::vec3 size);
 
-    void update(float delta, float gravity, glm::vec2 movement, Level &level);
+    void update(float delta, float gravity, Level &level);
     void draw(const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix);
     void shoot(const Projectile &projectile);
     void jumpPressed(float delta);

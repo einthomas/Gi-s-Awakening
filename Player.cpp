@@ -5,7 +5,7 @@ Player::Player(glm::vec3 position, glm::vec3 size) {
     this->size = size;
 }
 
-void Player::update(float delta, float gravity, glm::vec2 movement, Level &level) {
+void Player::update(float delta, float gravity, Level &level) {
     // update projectiles
     for (unsigned int i = 0; i < projectiles.size(); i++) {
         if (glm::length(projectiles[i].object3D.position - position) > Projectile::DESPAWN_DISTANCE ||
@@ -70,7 +70,6 @@ void Player::jumpPressed(float delta) {
         velocity.z = jumpSpeed;
         position.z += jumpSpeed * delta;
         jumpAccelerationDuration = 0;
-
     } else if (jumpState == JumpState::JUMPING) {
         position.z += jumpSpeed * delta;
         jumpAccelerationDuration += delta;

@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <fstream>
 #include <json/json.hpp>
+#include "AbilityType.h"
 
 namespace glm {
     // overloads for json
@@ -38,6 +39,11 @@ void Level::draw(const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix)
             trigger.draw(viewMatrix, projectionMatrix);
         }
     }
+    for (PressurePlate &pressurePlate : pressurePlates) {
+        if (pressurePlate.isVisible) {
+            pressurePlate.draw(viewMatrix, projectionMatrix);
+        }
+    }
     endObject.draw(viewMatrix, projectionMatrix);
 }
 
@@ -62,6 +68,14 @@ Level Level::fromFile(const char *filename, Material *material, Mesh endMesh, co
     for (auto &platform : platforms) {
         level.platforms.push_back(Platform(
             &platformTypes.at(platform["type"]), material, platform["position"], platform["name"]
+        ));
+    }
+
+    auto pressurePlates = json["pressurePlates"];
+    for (auto &pressurePlate : pressurePlates) {
+        level.pressurePlates.push_back(PressurePlate(
+            &platformTypes.at(pressurePlate["type"]), BlinnMaterial(glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f), 0.0f), pressurePlate["position"],
+            static_cast<AbilityType>(pressurePlate["givesAbility"].get<int>())
         ));
     }
 
