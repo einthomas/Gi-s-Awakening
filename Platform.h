@@ -4,8 +4,6 @@
 #include "PlatformType.h"
 
 class Platform : public Object3D {
-    const PlatformType *type;
-
 public:
     const std::string name;
 

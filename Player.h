@@ -7,14 +7,16 @@
 #include "Projectile.h"
 #include "Level.h"
 #include "ParticleSystem.h"
+#include "Ability.h"
 
 class Player {
 public:
     glm::vec3 position;
     glm::vec3 size;
     glm::vec2 movement;
+    float projectileSpeed = 12.0f;
     bool isDead = false;
-    AbilityType secondAbility;
+    bool hasSecondAbility = false;
 
     Player(glm::vec3 position, glm::vec3 size);
 
@@ -23,7 +25,8 @@ public:
     void shoot(const Projectile &projectile);
     void jumpPressed(float delta);
     void jumpReleased();
-    void setSecondAbility(AbilityType secondAbility);
+    void setSecondAbility(Ability *ability);
+    void executeAbility();
 
 private:
     const float movementSpeed = 54.0f;
@@ -41,6 +44,5 @@ private:
     bool releasedJumpButton = false;
     bool onGround;
     std::vector<Projectile> projectiles;
-
-    bool hasSecondAbility = false;
+    Ability *ability = nullptr;
 };

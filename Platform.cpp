@@ -2,7 +2,7 @@
 #include <algorithm>
 
 Platform::Platform(const PlatformType *type, Material *material, glm::vec3 position, std::string name) :
-    Object3D{material, position, glm::vec3(1), type->mesh}, type(type), name(name), isVisible(true)
+    Object3D{material, position, glm::vec3(1), type->mesh, type->size}, name(name), isVisible(true)
 {
 }
 
@@ -10,7 +10,7 @@ bool Platform::intersects(const glm::vec3 &position, const glm::vec3 &scale) {
     if (!isVisible) {
         return false;
     }
-    glm::vec3 sumSize = (scale + this->type->size) * 0.5f;
+    glm::vec3 sumSize = (scale + size) * 0.5f;
     glm::vec3 delta = position - this->position;
     return glm::all(glm::lessThan(glm::abs(delta), sumSize));
 }
@@ -22,7 +22,7 @@ void Platform::solveCollision(glm::vec3 &position, glm::vec3 &velocity, const gl
 
     // colliding two boxes is equivalent to
     // colliding a point with a box of the size of both boxes combined
-    glm::vec3 sumSize = (scale + this->type->size) * 0.5f;
+    glm::vec3 sumSize = (scale + size) * 0.5f;
     glm::vec3 delta = position - this->position;
 
     // signed distance from point to closest surface

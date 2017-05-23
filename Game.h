@@ -1,7 +1,9 @@
 #pragma once
+
 #include "Camera.h"
 #include "Level.h"
 #include "Player.h"
+#include "TeleportProjectileAbility.h"
 
 class Game {
 public:
@@ -28,6 +30,5 @@ private:
     float lastDelta;
     bool isPrimaryActionPressed = false;
     bool isSecondaryActionPressed = false;
-    float projectileSpeed = 12.0f;
     float gravity = 8.5f;
 };

@@ -12,6 +12,7 @@ public:
 
     glm::vec3 position, scale;
     Mesh mesh;
+    glm::vec3 size;
 
     static GLuint cubeVAO;
     static GLuint skyboxCubeVAO;

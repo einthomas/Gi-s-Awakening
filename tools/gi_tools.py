@@ -1,7 +1,7 @@
 bl_info = {
     "name": "Gi Level-Editing Tools",
     "author": "Felix Kugler",
-    "version": (0, 3),
+    "version": (0, 4),
     "blender": (2, 75, 0),
     "location": "File > Export",
     "description": "Provides Level Editing Tools for Gi's Awekening",
@@ -82,6 +82,7 @@ def write_gi_level(context, filepath, level_name):
     
     platforms = []
     triggers = []
+    pressure_plates = []
     start = [0, 0, 0]
     start_orientation = 0
     end = [0, 0, 0]
@@ -102,6 +103,12 @@ def write_gi_level(context, filepath, level_name):
                     "isTriggered": object.get("isTriggered"),
                     "triggers": object.get("triggers")
                 }]
+            elif type == "PressurePlate":
+                pressure_plates += [{
+                    "position": object.location[:],
+                    "type": type,
+                    "givesAbility": object.get("givesAbility")
+                }]
             else:
                 platforms += [{
                     "position": object.location[:],
@@ -116,6 +123,7 @@ def write_gi_level(context, filepath, level_name):
         "name": level_name,
         "platforms": platforms,
         "triggers": triggers,
+        "pressurePlates": pressure_plates,
         "start": start,
         "startOrientation": start_orientation,
         "end": end

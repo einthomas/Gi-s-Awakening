@@ -13,6 +13,17 @@ void Game::update(float delta) {
         player.update(delta, gravity, level);
         level.update(delta);
         ParticleSystem::update(delta);
+
+        for (int i = 0; i < level.pressurePlates.size(); i++) {
+            if (level.pressurePlates[i].steppedOn(player.position, player.size)) {
+                level.pressurePlates[i].highlight();
+                if (!player.hasSecondAbility && level.pressurePlates[i].abilityType == AbilityType::TELEPORT) {
+                    player.setSecondAbility(new TeleportProjectileAbility(*this));
+                }
+            } else {
+                level.pressurePlates[i].unHighlight();
+            }
+        }
     }
     player.movement = glm::vec2(0.0f);
 
@@ -68,8 +79,8 @@ void Game::primaryActionReleased() {
 
         player.shoot(Projectile(
             BlinnMaterial(glm::vec3(1.0f), glm::vec3(0.0f), 0.0f),
-            player.position + player.size / 4.0f + cameraDirection * 0.5f,
-            cameraDirection * projectileSpeed
+            player.position + player.size / 4.0f + cameraDirection * 0.5f - glm::vec3(0.15f, 0.15f, 0.0f),
+            cameraDirection * player.projectileSpeed
         ));
     }
 }
@@ -79,6 +90,12 @@ void Game::secondaryActionPressed() {
 }
 
 void Game::secondaryActionReleased() {
+    if (isSecondaryActionPressed) {
+        isSecondaryActionPressed = false;
+        if (player.hasSecondAbility) {
+            player.executeAbility();
+        }
+    }
 }
 
 void Game::cursorMoved(double deltaX, double deltaY) {

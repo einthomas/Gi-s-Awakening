@@ -50,11 +50,18 @@ void Player::update(float delta, float gravity, Level &level) {
         // there's probably a better way to do this
         jumpState = JumpState::FALLING;
     }
+
+    if (ability != nullptr) {
+        ability->update(delta);
+    }
 }
 
 void Player::draw(const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix) {
     for (Projectile projectile : projectiles) {
         projectile.draw(viewMatrix, projectionMatrix);
+    }
+    if (ability != nullptr) {
+        ability->draw(viewMatrix, projectionMatrix);
     }
 }
 
@@ -84,13 +91,16 @@ void Player::jumpReleased() {
 
     if (jumpState == JumpState::GROUNDED) {
         velocity.z = 0;
-
     } else if (jumpState == JumpState::JUMPING) {
         jumpState = JumpState::FALLING;
     }
 }
 
-void Player::setSecondAbility(AbilityType secondAbility) {
-    this->secondAbility = secondAbility;
+void Player::setSecondAbility(Ability* ability) {
+    this->ability = ability;
     hasSecondAbility = true;
+}
+
+void Player::executeAbility() {
+    ability->executeAction();
 }

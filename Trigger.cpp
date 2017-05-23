@@ -4,7 +4,6 @@ Trigger::Trigger(const PlatformType *type, BlinnMaterial blinnMaterial, glm::vec
     blinnMaterial(blinnMaterial), Platform(type, &this->blinnMaterial, position, ""), isTriggered(isTriggered), triggeredPlatforms(triggeredPlatforms),
     rotation(0.0f), rotationAxis(0.0f, 0.0f, 1.0f), originalColor(blinnMaterial.diffuseColor), activatedColor(glm::vec3(0.0f, 1.0f, 0.0f))
 {
-    this->blinnMaterial = BlinnMaterial(glm::vec3(1.0f), glm::vec3(0.0f), 0.0f);
     material = &this->blinnMaterial;
 }
 
@@ -29,6 +28,7 @@ void Trigger::trigger() {
     for (Platform *triggeredPlatform : triggeredPlatforms) {
         triggeredPlatform->isVisible = isTriggered;
     }
+    
 }
 
 bool Trigger::intersects(const glm::vec3 &position, const glm::vec3 &scale) {

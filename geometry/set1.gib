@@ -64,6 +64,14 @@
         ]
     },
     {
+        "name": "PressurePlate",
+        "size": [
+            0.837,
+            0.837,
+            0.012
+        ]
+    },
+    {
         "name": "TriggerDiamond",
         "size": [
             0.28,

@@ -47,7 +47,7 @@ int main(void) {
     glCullFace(GL_BACK);
 
     // activate v-sync
-    glfwSwapInterval(0);
+    glfwSwapInterval(1);
 
     if (!initGLEW()) {
         return 0;
@@ -162,21 +162,6 @@ int main(void) {
         }
         if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE) {
             game.secondaryActionReleased();
-            if (rightMouseButtonPressed) {
-                rightMouseButtonPressed = false;
-                /*
-                glm::vec3 cameraDirection = camera.getDirection();
-
-                if (player.secondAbility == AbilityType::TELEPORT) {
-                    std::cout << "shoottelep" << std::endl;
-                    player.shootTeleportProjectile(Projectile(
-                        BlinnMaterial(glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f), 0.0f),
-                        player.position + player.size / 4.0f + cameraDirection * 0.5f,
-                        cameraDirection * projectileSpeed
-                    ));
-                }
-                */
-            }
         }
 
         game.update(delta);
@@ -186,12 +171,6 @@ int main(void) {
         glfwGetCursorPos(window, &mouseX, &mouseY);
         glfwSetCursorPos(window, centerX, centerY);
         game.cursorMoved(mouseX - centerX, mouseY - centerY);
-
-        for (PressurePlate pressurePlate : level.pressurePlates) {
-            if (glm::length(game.player.position - pressurePlate.position) < 4.0f) {
-                game.player.setSecondAbility(pressurePlate.abilityType);
-            }
-        }
 
         // render to multisampled framebuffer
         glBindFramebuffer(GL_FRAMEBUFFER, multisampledFBO);
