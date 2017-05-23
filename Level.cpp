@@ -13,6 +13,12 @@ namespace glm {
     }
 }
 
+Level::Level(const Object3D &endObject, const glm::vec3 &start, const glm::vec3 &end, float startOrientation) : 
+    platforms(platforms), triggers(triggers), pressurePlates(pressurePlates), endObject(endObject),
+    start(start), end(end), startOrientation(startOrientation)
+{
+}
+
 bool Level::intersects(const glm::vec3 &position, const glm::vec3 &scale) {
     for (Platform levelObject : platforms) {
         if (levelObject.intersects(position, scale)) {
@@ -55,50 +61,55 @@ void Level::update(float delta) {
 
 Level Level::fromFile(const char *filename, Material *material, Mesh endMesh, const std::map<std::string, PlatformType> &platformTypes) {
     // Note: this function will crash if the gil file is malformed.
-    Level level;
     nlohmann::json json;
     std::ifstream file(filename);
     file >> json;
 
-    level.start = json["start"];
-    level.end = json["end"];
-    level.startOrientation = json["startOrientation"];
+    Level level(
+        Object3D(material, json["end"], glm::vec3(1.0f), endMesh),
+        json["start"],
+        json["end"],
+        json["startOrientation"]
+    );
 
-    auto platforms = json["platforms"];
-    for (auto &platform : platforms) {
+    auto platformsJson = json["platforms"];
+    for (auto &platformJson : platformsJson) {
         level.platforms.push_back(Platform(
-            &platformTypes.at(platform["type"]), material, platform["position"], platform["name"]
+            &platformTypes.at(platformJson["type"]), material, platformJson["position"], platformJson["name"]
         ));
     }
 
-    auto pressurePlates = json["pressurePlates"];
-    for (auto &pressurePlate : pressurePlates) {
+    auto pressurePlatesJson = json["pressurePlates"];
+    for (auto &pressurePlateJson : pressurePlatesJson) {
         level.pressurePlates.push_back(PressurePlate(
-            &platformTypes.at(pressurePlate["type"]), BlinnMaterial(glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f), 0.0f), pressurePlate["position"],
-            static_cast<AbilityType>(pressurePlate["givesAbility"].get<int>())
+            &platformTypes.at(pressurePlateJson["type"]),
+            BlinnMaterial(glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f), 0.0f),
+            pressurePlateJson["position"],
+            static_cast<AbilityType>(pressurePlateJson["givesAbility"].get<int>())
         ));
     }
 
-    auto triggers = json["triggers"];
-    for (auto &trigger : triggers) {
-        Platform *triggeredPlatform = nullptr;
-        bool isTriggered = trigger["isTriggered"].get<int>();
+    std::vector<Platform*> triggeredPlatforms;
+    auto triggersJson = json["triggers"];
+    for (auto &triggerJson : triggersJson) {
+        bool isTriggered = triggerJson["isTriggered"].get<int>();
         for (int i = 0; i < level.platforms.size(); i++) {
-            if (level.platforms[i].name == trigger["triggers"]) {
-                triggeredPlatform = &level.platforms[i];
+            if (level.platforms[i].name == triggerJson["triggers"]) {
+                Platform *triggeredPlatform = &level.platforms[i];
                 triggeredPlatform->isVisible = isTriggered;
+                triggeredPlatforms.push_back(triggeredPlatform);
                 break;
             }
         }
 
-        std::vector<Platform*> triggeredPlatforms;
-        triggeredPlatforms.push_back(triggeredPlatform);
         level.triggers.push_back(Trigger(
-            &platformTypes.at(trigger["type"]), BlinnMaterial(glm::vec3(1.0f), glm::vec3(0.0f), 0.0f), trigger["position"], isTriggered, triggeredPlatforms
+            &platformTypes.at(triggerJson["type"]),
+            BlinnMaterial(glm::vec3(1.0f), glm::vec3(0.0f), 0.0f),
+            triggerJson["position"],
+            isTriggered,
+            triggeredPlatforms
         ));
     }
-
-    level.endObject = { material, level.end, glm::vec3(1.0f), endMesh };
 
     return level;
 }

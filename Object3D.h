@@ -17,8 +17,10 @@ public:
     static GLuint cubeVAO;
     static GLuint skyboxCubeVAO;
 
+    Object3D(Material *material, glm::vec3 position, glm::vec3 scale, Mesh mesh);
+    Object3D(Material *material, glm::vec3 position, glm::vec3 scale, glm::vec3 size, Mesh mesh);
+
     static Object3D makeCube(Material *material, const glm::vec3 &position, const glm::vec3 &scale);
-    static Object3D fromFile(Material *material, const glm::vec3 &position, const glm::vec3 &scale, const char *filename);
 
     static Object3D makeSkyboxCube(Material *material, const glm::vec3 &position, const glm::vec3 &scale);
 

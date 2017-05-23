@@ -3,6 +3,11 @@
 #include <fstream>
 #include <vector>
 
+Mesh::Mesh(GLuint VAO, GLuint elementCount) :
+    VAO(VAO), elementCount(elementCount)
+{
+}
+
 Mesh Mesh::fromFile(const char *filename) {
     std::ifstream vboFile(filename, std::ifstream::binary);
     std::vector<char> buffer((std::istreambuf_iterator<char>(vboFile)), std::istreambuf_iterator<char>());
@@ -23,5 +28,11 @@ Mesh Mesh::fromFile(const char *filename) {
 
     glBindVertexArray(0);
 
-    return { VAO, buffer.size() / 8 / 4 };
+    return Mesh(VAO, buffer.size() / 8 / 4);
+}
+
+void Mesh::draw() {
+    glBindVertexArray(VAO);
+    glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(elementCount));
+    glBindVertexArray(0);
 }

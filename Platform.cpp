@@ -2,7 +2,7 @@
 #include <algorithm>
 
 Platform::Platform(const PlatformType *type, Material *material, glm::vec3 position, std::string name) :
-    Object3D{material, position, glm::vec3(1), type->mesh, type->size}, name(name), isVisible(true)
+    Object3D(material, position, glm::vec3(1), type->size, type->mesh), name(name), isVisible(true)
 {
 }
 

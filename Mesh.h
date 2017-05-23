@@ -6,13 +6,11 @@ class Mesh {
 public:
     GLuint VAO, elementCount;
 
+    Mesh(GLuint VAO, GLuint elementCount);
+
     static Mesh fromFile(const char *filename);
 
-    void draw() {
-        glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(elementCount));
-        glBindVertexArray(0);
-    }
+    void draw();
 
     // TODO: call glDeleteVertexArrays at some point
 };

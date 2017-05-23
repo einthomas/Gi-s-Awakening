@@ -1,10 +1,6 @@
 #include "Object3D.h"
 
-#include <iostream>
-#include <fstream>
-#include <vector>
 #include <glm/gtc/matrix_transform.hpp>
-#include <algorithm>
 
 GLuint Object3D::cubeVAO = static_cast<GLuint>(-1);
 GLuint Object3D::skyboxCubeVAO = static_cast<GLuint>(-1);
@@ -99,6 +95,17 @@ static GLfloat skyboxVertices[] = {
      0.5f,  0.5f, -0.5f,
 };
 
+Object3D::Object3D(Material* material, glm::vec3 position, glm::vec3 scale, Mesh mesh) :
+    material(material), position(position), scale(scale), mesh(mesh)
+{
+}
+
+Object3D::Object3D(Material* material, glm::vec3 position, glm::vec3 scale, glm::vec3 size, Mesh mesh) :
+    material(material), position(position), scale(scale), size(size), mesh(mesh)
+{
+}
+
+
 Object3D Object3D::makeCube(Material *material, const glm::vec3 &position, const glm::vec3 &scale) {
     if (cubeVAO == static_cast<GLuint>(-1)) {
         // create and bind VAO
@@ -123,11 +130,7 @@ Object3D Object3D::makeCube(Material *material, const glm::vec3 &position, const
         glBindVertexArray(0);
     }
 
-    return { material, position, scale, { cubeVAO, sizeof(boxVertices) / 8 / 4 } };
-}
-
-Object3D Object3D::fromFile(Material *material, const glm::vec3 &position, const glm::vec3 &scale, const char *filename) {
-    return { material, position, scale, Mesh::fromFile(filename) };
+    return Object3D(material, position, scale, Mesh(cubeVAO, sizeof(boxVertices) / 8 / 4));
 }
 
 Object3D Object3D::makeSkyboxCube(Material *material, const glm::vec3 &position, const glm::vec3 &scale) {
@@ -152,7 +155,7 @@ Object3D Object3D::makeSkyboxCube(Material *material, const glm::vec3 &position,
         glBindVertexArray(0);
     }
 
-    return { material, position, scale, {skyboxCubeVAO, sizeof(skyboxVertices) / 3 / 4} };
+    return Object3D(material, position, scale, Mesh(skyboxCubeVAO, sizeof(skyboxVertices) / 3 / 4));
 }
 
 void Object3D::draw(const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix) {
