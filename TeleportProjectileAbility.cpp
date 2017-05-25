@@ -8,7 +8,7 @@ TeleportProjectileAbility::TeleportProjectileAbility(Game &game) :
 void TeleportProjectileAbility::executeAction() {
     glm::vec3 cameraDirection = game.camera.getDirection();
     projectiles.push_back(Projectile(
-        BlinnMaterial(glm::vec3(1.0f), glm::vec3(0.0f), 0.0f),
+        BlinnMaterial(glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f), 0.0f),
         game.player.position + game.player.size / 4.0f + cameraDirection * 0.5f - glm::vec3(0.15f, 0.15f, 0.0f),
         cameraDirection * game.player.projectileSpeed
     ));
