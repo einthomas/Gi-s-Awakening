@@ -21,7 +21,10 @@ public:
     Player(glm::vec3 position, glm::vec3 size);
 
     void update(float delta, float gravity, Level &level);
-    void draw(const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix);
+    void draw(
+        const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix,
+        const glm::vec3& cameraPosition
+    );
     void shoot(const Projectile &projectile);
     void jumpPressed(float delta);
     void jumpReleased();

@@ -26,8 +26,11 @@ Projectile::Projectile(const Projectile &projectile) :
     movementVector = glm::vec3(projectile.movementVector);
 }
 
-void Projectile::draw(const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix) {
-    object3D.draw(viewMatrix, projectionMatrix);
+void Projectile::draw(
+    const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix,
+    const glm::vec3 &cameraPosition
+) {
+    object3D.draw(viewMatrix, projectionMatrix, cameraPosition);
 }
 
 void Projectile::update(float delta, Level &level) {

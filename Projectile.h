@@ -19,7 +19,10 @@ public:
     Projectile(BlinnMaterial material, glm::vec3 position, glm::vec3 movementVector);
     Projectile(const Projectile &projectile);
 
-    void draw(const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix);
+    void draw(
+        const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix,
+        const glm::vec3 &cameraPosition
+    );
     void update(float delta, Level &level);
 
 private:

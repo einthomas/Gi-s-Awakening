@@ -34,23 +34,26 @@ bool Level::intersects(const glm::vec3 &position, const glm::vec3 &scale) {
     return false;
 }
 
-void Level::draw(const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix) {
+void Level::draw(
+    const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix,
+    const glm::vec3 &cameraPosition
+) {
     for (Platform &platform : platforms) {
         if (platform.isVisible) {
-            platform.draw(viewMatrix, projectionMatrix);
+            platform.draw(viewMatrix, projectionMatrix, cameraPosition);
         }
     }
     for (Trigger &trigger : triggers) {
         if (trigger.isVisible) {
-            trigger.draw(viewMatrix, projectionMatrix);
+            trigger.draw(viewMatrix, projectionMatrix, cameraPosition);
         }
     }
     for (PressurePlate &pressurePlate : pressurePlates) {
         if (pressurePlate.isVisible) {
-            pressurePlate.draw(viewMatrix, projectionMatrix);
+            pressurePlate.draw(viewMatrix, projectionMatrix, cameraPosition);
         }
     }
-    endObject.draw(viewMatrix, projectionMatrix);
+    endObject.draw(viewMatrix, projectionMatrix, cameraPosition);
 }
 
 void Level::update(float delta) {
@@ -83,7 +86,7 @@ Level Level::fromFile(const char *filename, Material *material, Mesh endMesh, co
     for (auto &pressurePlateJson : pressurePlatesJson) {
         level.pressurePlates.push_back(PressurePlate(
             &platformTypes.at(pressurePlateJson["type"]),
-            BlinnMaterial(glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f), 0.0f),
+            BlinnMaterial(glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 0.0f, 1.0f), 0.0f),
             pressurePlateJson["position"],
             static_cast<AbilityType>(pressurePlateJson["givesAbility"].get<int>())
         ));

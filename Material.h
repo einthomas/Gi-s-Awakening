@@ -8,7 +8,11 @@ public:
 
     virtual void bind(
         const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix, const glm::mat4 &modelMatrix
-    ) = 0;
+    );
+    virtual void bind(
+        const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix, const glm::mat4 &modelMatrix,
+        const glm::vec3 &cameraPosition
+    );
 
 protected:
     Material() { }

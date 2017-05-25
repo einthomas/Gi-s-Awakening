@@ -92,7 +92,7 @@ int main(void) {
 
     BlinnMaterial::init();
     SkyboxMaterial::init();
-    std::unique_ptr<BlinnMaterial> material(new BlinnMaterial(glm::vec3(1.0f), glm::vec3(0.0f), 0.0f));
+    std::unique_ptr<BlinnMaterial> material(new BlinnMaterial(glm::vec3(1.0f), glm::vec3(1.0f, 1.0f, 0.5f), 64.0f));
 
     std::map<std::string, PlatformType> platformTypes;
     nlohmann::json platformTypesJson;

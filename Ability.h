@@ -9,7 +9,10 @@ public:
 
     virtual void executeAction() = 0;
     virtual void update(float delta) = 0;
-    virtual void draw(const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix) = 0;
+    virtual void draw(
+        const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix,
+        const glm::vec3& cameraPosition
+    ) = 0;
 
 protected:
     Game &game;

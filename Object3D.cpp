@@ -158,11 +158,20 @@ Object3D Object3D::makeSkyboxCube(Material *material, const glm::vec3 &position,
     return Object3D(material, position, scale, Mesh(skyboxCubeVAO, sizeof(skyboxVertices) / 3 / 4));
 }
 
-void Object3D::draw(const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix) {
+void Object3D::draw(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) {
+    material->bind(viewMatrix, projectionMatrix, calculateModelMatrix());
+    mesh.draw();
+}
+
+void Object3D::draw(const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix, const glm::vec3 &cameraPosition) {
+    material->bind(viewMatrix, projectionMatrix, calculateModelMatrix(), cameraPosition);
+    mesh.draw();
+}
+
+glm::mat4 Object3D::calculateModelMatrix() {
     glm::mat4 modelMatrix;
     modelMatrix = glm::translate(modelMatrix, position);
     modelMatrix = glm::scale(modelMatrix, scale);
-    material->bind(viewMatrix, projectionMatrix, modelMatrix);
 
-    mesh.draw();
+    return modelMatrix;
 }

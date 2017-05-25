@@ -12,7 +12,10 @@ public:
 
     void executeAction() override;
     void update(float delta) override;
-    void draw(const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix) override;
+    void draw(
+        const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix,
+        const glm::vec3& cameraPosition
+    ) override;
 
 private:
     std::vector<Projectile> projectiles;

@@ -30,8 +30,11 @@ void TeleportProjectileAbility::update(float delta) {
     }
 }
 
-void TeleportProjectileAbility::draw(const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix) {
+void TeleportProjectileAbility::draw(
+    const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix,
+    const glm::vec3& cameraPosition
+) {
     for (Projectile projectile : projectiles) {
-        projectile.draw(viewMatrix, projectionMatrix);
+        projectile.draw(viewMatrix, projectionMatrix, cameraPosition);
     }
 }

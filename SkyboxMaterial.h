@@ -2,8 +2,6 @@
 
 #include <vector>
 
-#include <glm/gtc/matrix_access.hpp>
-
 #include "Material.h"
 #include "Shader.h"
 
@@ -14,7 +12,7 @@ public:
     SkyboxMaterial(const std::vector<std::string> &textures);
     ~SkyboxMaterial() { }
 
-    void bind(const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix, const glm::mat4 &modelMatrix);
+    void bind(const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix, const glm::mat4 &modelMatrix) override;
 
 private:
     static Shader shader;

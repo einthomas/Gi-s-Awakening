@@ -11,11 +11,17 @@ BlinnMaterial::BlinnMaterial(const glm::vec3 &diffuseColor, const glm::vec3 &spe
 {
 }
 
-void BlinnMaterial::bind(const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix, const glm::mat4 &modelMatrix) {
+void BlinnMaterial::bind(
+    const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix, const glm::mat4 &modelMatrix,
+    const glm::vec3 &cameraPosition
+) {
     shader.use();
     shader.setMatrix4("model", modelMatrix);
     shader.setMatrix4("view", viewMatrix);
     shader.setMatrix4("projection", projectionMatrix);
+    shader.setVector3f("cameraPosition", cameraPosition);
     shader.setVector3f("diffuseColor", diffuseColor);
+    shader.setVector3f("specularColor", specularColor);
+    shader.setFloat("glossyness", glossyness);
 }
 
