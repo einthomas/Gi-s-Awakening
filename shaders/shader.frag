@@ -15,18 +15,23 @@ uniform float glossyness;
 uniform sampler2D shadowMap;
 
 void main() {
+    vec3 light = normalize(vec3(-0.5f, -0.3f, 1.0f));   // TODO: unhardcode this
+    float normalDotLight = dot(vertNormal, light);
+
     vec3 shadowMappingCoords = vertFragPositionLightSpace.xyz / vertFragPositionLightSpace.w;
     shadowMappingCoords = shadowMappingCoords * 0.5f + 0.5f;
-
     float closestDepth = texture(shadowMap, shadowMappingCoords.xy).r;
-    float currentDepth = shadowMappingCoords.z - 0.005f;
+    float currentDepth = shadowMappingCoords.z;
+    // calculate a bias to avoid "shadow acne". The larger the angle between normal and light,
+    // the larger the bias
+    float bias = max(0.05f * (1.0f - normalDotLight), 0.005f);
+    currentDepth -= bias;
 
-    vec3 light = normalize(vec3(-0.5f, -0.3f, 1.0f));   // TODO: unhardcode this
     vec3 cameraVector = normalize(cameraPosition - vertFragPosition);
 
     vec3 ambient = vec3(0.1f);
 
-    vec3 diffuse = max(dot(vertNormal, light), 0.0f) * diffuseColor * ((closestDepth < currentDepth) ? 0.5f : 1.0f);
+    vec3 diffuse = max(normalDotLight, 0.0f) * diffuseColor * ((closestDepth < currentDepth) ? 0.5f : 1.0f);
 
     vec3 halfVector = normalize(light + cameraVector);
     vec3 glossy = pow(max(dot(vertNormal, halfVector), 0.0f), glossyness) * specularColor * ((closestDepth < currentDepth) ? 0.0f : 1.0f);
