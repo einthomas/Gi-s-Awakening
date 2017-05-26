@@ -34,26 +34,45 @@ bool Level::intersects(const glm::vec3 &position, const glm::vec3 &scale) {
     return false;
 }
 
-void Level::draw(
-    const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix,
-    const glm::vec3 &cameraPosition
-) {
+void Level::draw(const Shader& shader) {
     for (Platform &platform : platforms) {
         if (platform.isVisible) {
-            platform.draw(viewMatrix, projectionMatrix, cameraPosition);
+            platform.draw(shader);
         }
     }
     for (Trigger &trigger : triggers) {
         if (trigger.isVisible) {
-            trigger.draw(viewMatrix, projectionMatrix, cameraPosition);
+            trigger.draw(shader);
         }
     }
     for (PressurePlate &pressurePlate : pressurePlates) {
         if (pressurePlate.isVisible) {
-            pressurePlate.draw(viewMatrix, projectionMatrix, cameraPosition);
+            pressurePlate.draw(shader);
         }
     }
-    endObject.draw(viewMatrix, projectionMatrix, cameraPosition);
+    endObject.draw(shader);
+}
+
+void Level::draw(
+    const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix, const glm::vec3 &cameraPosition,
+    const glm::mat4 &lightSpaceMatrix, const GLuint shadowMap
+) {
+    for (Platform &platform : platforms) {
+        if (platform.isVisible) {
+            platform.draw(viewMatrix, projectionMatrix, cameraPosition, lightSpaceMatrix, shadowMap);
+        }
+    }
+    for (Trigger &trigger : triggers) {
+        if (trigger.isVisible) {
+            trigger.draw(viewMatrix, projectionMatrix, cameraPosition, lightSpaceMatrix, shadowMap);
+        }
+    }
+    for (PressurePlate &pressurePlate : pressurePlates) {
+        if (pressurePlate.isVisible) {
+            pressurePlate.draw(viewMatrix, projectionMatrix, cameraPosition, lightSpaceMatrix, shadowMap);
+        }
+    }
+    endObject.draw(viewMatrix, projectionMatrix, cameraPosition, lightSpaceMatrix, shadowMap);
 }
 
 void Level::update(float delta) {

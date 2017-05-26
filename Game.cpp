@@ -30,9 +30,17 @@ void Game::update(float delta) {
     camera.position = player.position + glm::vec3(0.0f, 0.0f, 0.5f);
 }
 
-void Game::draw(const glm::mat4 &projectionMatrix) {
-    level.draw(camera.getMatrix(), projectionMatrix, camera.position);
-    player.draw(camera.getMatrix(), projectionMatrix, camera.position);
+void Game::draw(const Shader& shader) {
+    level.draw(shader);
+    player.draw(shader);
+}
+
+void Game::draw(
+    const glm::mat4 &projectionMatrix, const glm::mat4 &lightSpaceMatrix,
+    const GLuint shadowMap
+) {
+    level.draw(camera.getMatrix(), projectionMatrix, camera.position, lightSpaceMatrix, shadowMap);
+    player.draw(camera.getMatrix(), projectionMatrix, camera.position, lightSpaceMatrix, shadowMap);
 }
 
 void Game::forwardPressed() {

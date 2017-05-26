@@ -13,7 +13,11 @@ public:
 
     Game(Level &level);
     void update(float delta);
-    void draw(const glm::mat4 &projectionMatrix);
+    void draw(const Shader &shader);
+    void draw(
+        const glm::mat4 &projectionMatrix, const glm::mat4 &lightSpaceMatrix,
+        const GLuint shadowMap
+    );
     void forwardPressed();
     void leftPressed();
     void backwardsPressed();

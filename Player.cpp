@@ -56,15 +56,24 @@ void Player::update(float delta, float gravity, Level &level) {
     }
 }
 
-void Player::draw(
-    const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix,
-    const glm::vec3& cameraPosition
-) {
+void Player::draw(const Shader& shader) {
     for (Projectile projectile : projectiles) {
-        projectile.draw(viewMatrix, projectionMatrix, cameraPosition);
+        projectile.draw(shader);
     }
     if (ability != nullptr) {
-        ability->draw(viewMatrix, projectionMatrix, cameraPosition);
+        ability->draw(shader);
+    }
+}
+
+void Player::draw(
+    const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix, const glm::vec3& cameraPosition,
+    const glm::mat4 &lightSpaceMatrix, const GLuint shadowMap
+) {
+    for (Projectile projectile : projectiles) {
+        projectile.draw(viewMatrix, projectionMatrix, cameraPosition, lightSpaceMatrix, shadowMap);
+    }
+    if (ability != nullptr) {
+        ability->draw(viewMatrix, projectionMatrix, cameraPosition, lightSpaceMatrix, shadowMap);
     }
 }
 

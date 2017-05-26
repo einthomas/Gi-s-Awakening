@@ -111,7 +111,7 @@ void ParticleSystem::makeParticle(const glm::vec3 &position) {
     }
 }
 
-void ParticleSystem::draw(float delta, const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix) {
+void ParticleSystem::draw(const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix) {
     if (particleCount == 0) {
         return;
     }

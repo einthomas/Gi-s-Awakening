@@ -13,7 +13,7 @@ public:
     static void init();
     static void beginParticleGroup(const glm::vec3 &planeNormal, const glm::vec3 &vectorWithinPlane);
     static void makeParticle(const glm::vec3 &position);
-    static void draw(float delta, const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix);
+    static void draw(const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix);
     static void update(float delta);
 
 private:

@@ -5,6 +5,7 @@
 
 #include "Material.h"
 #include "Mesh.h"
+#include "Shader.h"
 
 class Object3D {
 public:
@@ -22,8 +23,12 @@ public:
 
     static Object3D makeSkyboxCube(Material *material, const glm::vec3 &position, const glm::vec3 &scale);
 
+    void draw(const Shader &shader);
     void draw(const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix);
-    void draw(const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix, const glm::vec3 &cameraPosition);
+    void draw(
+        const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix, const glm::vec3 &cameraPosition,
+        const glm::mat4 &lightSpaceMatrix, const GLuint shadowMap
+    );
 
 private:
     glm::mat4 calculateModelMatrix();

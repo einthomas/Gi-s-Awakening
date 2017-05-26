@@ -1,4 +1,5 @@
 #include "BlinnMaterial.h"
+#include "Object3D.h"
 
 Shader BlinnMaterial::shader;
 
@@ -13,7 +14,7 @@ BlinnMaterial::BlinnMaterial(const glm::vec3 &diffuseColor, const glm::vec3 &spe
 
 void BlinnMaterial::bind(
     const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix, const glm::mat4 &modelMatrix,
-    const glm::vec3 &cameraPosition
+    const glm::vec3 &cameraPosition, const glm::mat4 &lightSpaceMatrix, const GLuint shadowMap
 ) {
     shader.use();
     shader.setMatrix4("model", modelMatrix);
@@ -23,5 +24,7 @@ void BlinnMaterial::bind(
     shader.setVector3f("diffuseColor", diffuseColor);
     shader.setVector3f("specularColor", specularColor);
     shader.setFloat("glossyness", glossyness);
+    shader.setMatrix4("lightSpaceMatrix", lightSpaceMatrix);
+    shader.setTexture2D("shadowMap", GL_TEXTURE0, shadowMap, 0);
 }
 

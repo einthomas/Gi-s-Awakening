@@ -7,7 +7,6 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
-#include <SOIL.h>
 
 #include "Camera.h"
 #include "Level.h"
@@ -24,6 +23,8 @@ static int width = 1280, height = 720;
 static const char *title = "Gi's Awakening: The Mending of the Sky";
 static GLuint screenQuadVAO = 0;
 const int AA_SAMPLES = 4;
+const int DEPTH_TEXTURE_WIDTH = 1280;
+const int DEPTH_TEXTURE_HEIGHT = 720;
 
 bool initGLEW();
 GLFWwindow *initGLFW();
@@ -38,6 +39,32 @@ int main(void) {
         return 0;
     }
 
+    // activate v-sync
+    glfwSwapInterval(1);
+
+    if (!initGLEW()) {
+        return 0;
+    }
+
+    glm::mat4 shadowMappingProjectionMatrix = glm::ortho(
+        -10.0f, 10.0f, -10.0f, 10.0f, 0.1f, 10.0f
+    );
+    glm::mat4 shadowMappingViewMatrix = glm::lookAt(
+        glm::vec3(-0.5f, -5.3f, 7.0f),
+        glm::vec3(0.0f),
+        glm::vec3(0.0f, 0.0f, -1.0f)
+    );
+    /*
+    glm::mat4 ndcUVMappingMatrix = glm::mat4(
+        glm::vec4(0.5f, 0.0f, 0.0f, 0.5f),
+        glm::vec4(0.0f, 0.5f, 0.0f, 0.5f),
+        glm::vec4(0.0f, 0.0f, 0.5f, 0.5f),
+        glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)
+    );
+    */
+    glm::mat4 lightSpaceMatrix = shadowMappingProjectionMatrix * shadowMappingViewMatrix;
+
+    glViewport(0, 0, width, height);
     // Set OpenGL options
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -46,15 +73,6 @@ int main(void) {
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
 
-    // activate v-sync
-    glfwSwapInterval(1);
-
-    if (!initGLEW()) {
-        return 0;
-    }
-
-    glViewport(0, 0, width, height);
-    glEnable(GL_DEPTH_TEST);
     glm::mat4 projectionMatrix = glm::perspectiveFov(
         glm::radians(70.0f),
         static_cast<float>(width),
@@ -80,6 +98,29 @@ int main(void) {
     GLuint hudFBO;
     GLuint hudColorBuffer;
     generateFBO(hudFBO, &hudColorBuffer, 1, false, false);
+
+    // generate FBO used for shadow mapping
+    GLuint depthFBO;
+    glGenFramebuffers(1, &depthFBO);
+
+    GLuint shadowMap;
+    glGenTextures(1, &shadowMap);
+    glBindTexture(GL_TEXTURE_2D, shadowMap);
+    glTexImage2D(
+        GL_TEXTURE_2D, 0,
+        GL_DEPTH_COMPONENT24, DEPTH_TEXTURE_WIDTH, DEPTH_TEXTURE_HEIGHT,
+        0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL
+    );
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, depthFBO);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadowMap, 0);
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     std::vector<std::string> textures;
     textures.push_back("textures/skybox/right.jpg");
@@ -110,6 +151,7 @@ int main(void) {
     Level level = Level::fromFile("levels/level1.gil", material.get(), endMesh, platformTypes);
     Game game(level);
 
+    Shader shadowMappingDepthShader = Shader("shaders/shadowMappingDepth.vert", "shaders/shadowMappingDepth.frag");
     Shader textShader = Shader("shaders/textShader.vert", "shaders/textShader.frag");
     TextRenderer::init(width, height, "fonts/Gidole-Regular.ttf", textShader);
     Shader gaussianBlurShader = Shader("shaders/gaussianBlur.vert", "shaders/gaussianBlur.frag");
@@ -172,14 +214,23 @@ int main(void) {
         glfwSetCursorPos(window, centerX, centerY);
         game.cursorMoved(mouseX - centerX, mouseY - centerY);
 
+        glViewport(0, 0, DEPTH_TEXTURE_WIDTH, DEPTH_TEXTURE_HEIGHT);
+        glBindFramebuffer(GL_FRAMEBUFFER, depthFBO);
+        glClear(GL_DEPTH_BUFFER_BIT);
+        shadowMappingDepthShader.use();
+        shadowMappingDepthShader.setMatrix4("lightSpaceMatrix", lightSpaceMatrix);
+        game.draw(shadowMappingDepthShader);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        glViewport(0, 0, width, height);
         // render to multisampled framebuffer
         glBindFramebuffer(GL_FRAMEBUFFER, multisampledFBO);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glDepthMask(GL_FALSE);
         skybox.draw(game.camera.getMatrix(), projectionMatrix);
         glDepthMask(GL_TRUE);
-        game.draw(projectionMatrix);
-        ParticleSystem::draw(delta, game.camera.getMatrix(), projectionMatrix);
+        game.draw(projectionMatrix, lightSpaceMatrix, shadowMap);
+        ParticleSystem::draw(game.camera.getMatrix(), projectionMatrix);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         // copy multisampled FBO to non-multisampled FBO
@@ -263,6 +314,7 @@ int main(void) {
 
         postProcessingShader.use();
         postProcessingShader.setTexture2D("mainImage", GL_TEXTURE0, colorBuffers[0], 0);
+        //postProcessingShader.setTexture2D("mainImage", GL_TEXTURE0, depthTexture, 0);
         postProcessingShader.setTexture2D("brightSpotsBloomImage", GL_TEXTURE1, colorBuffers[1], 1);
         postProcessingShader.setTexture2D("hudTexture", GL_TEXTURE2, hudColorBuffer, 2);
         drawScreenQuad();
