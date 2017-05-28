@@ -1,7 +1,7 @@
 bl_info = {
     "name": "Gi Level-Editing Tools",
     "author": "Felix Kugler",
-    "version": (0, 4),
+    "version": (0, 5),
     "blender": (2, 75, 0),
     "location": "File > Export",
     "description": "Provides Level Editing Tools for Gi's Awekening",
@@ -15,6 +15,7 @@ import json
 from os import path
 import struct
 from mathutils import Vector
+from math import sqrt, ceil
     
 def write_object(object, offset, vbo):
     matrix = object.matrix_world;
@@ -77,6 +78,41 @@ def write_gi_block(context, filepath):
 
     return {'FINISHED'}
 
+def bake_block(object, lightmap, grid, index):
+    print("baking block...")
+    factor = 1 / grid
+    
+    y = (index // grid) * factor
+    x = (index % grid) * factor
+
+    for sub_object in object.dupli_group.objects:
+        bpy.ops.object.select_all(action='DESELECT')
+        
+        if len(sub_object.material_slots) > 0:
+            mesh_copy = sub_object.data.copy()
+            
+            #for uv_face in mesh_copy.uv_textures["Texture"].data:
+            #    uv_face.image = lightmap
+                
+            for vertex in mesh_copy.uv_layers["Texture"].data:
+                vertex.uv = vertex.uv * factor + Vector((x, y))
+                
+            mesh_copy.update()
+                
+            bake_object = sub_object.copy()
+            bake_object.data = mesh_copy
+            
+            bpy.context.scene.objects.link(bake_object)
+            bpy.context.scene.update()
+            
+            bake_object.select = True
+            bpy.context.scene.objects.active = bake_object
+            
+            bpy.ops.object.bake(type = "DIFFUSE", margin = 2)
+            
+            bpy.data.objects.remove(bake_object, True)
+            bpy.data.meshes.remove(mesh_copy, True)
+    
 def write_gi_level(context, filepath, level_name):
     print("running write_gi_level...")
     
@@ -86,9 +122,17 @@ def write_gi_level(context, filepath, level_name):
     start = [0, 0, 0]
     start_orientation = 0
     end = [0, 0, 0]
+    
+    lightmap = bpy.data.images.get("lightmap")
+    assert lightmap is not None
+        
+    lightmap_grid = ceil(sqrt(len(bpy.context.scene.objects)))
+    
+    lightmap_index = 0
  
     for object in bpy.context.scene.objects:
-        try:
+        #try:
+        if object.dupli_group is not None:
             type = object.dupli_group.name
             
             if type == "Start":
@@ -116,8 +160,12 @@ def write_gi_level(context, filepath, level_name):
                     "name": object.name
                 }]
                 
-        except Exception as e:
-            print(e)
+                bake_block(object, lightmap, lightmap_grid, lightmap_index)
+                
+                lightmap_index += 1
+                
+        #except Exception as e:
+        #    print(e)
             
     level = {
         "name": level_name,
@@ -131,6 +179,10 @@ def write_gi_level(context, filepath, level_name):
     
     with open(filepath, 'w', encoding='utf-8') as f:
         json.dump(level, f, indent=4)
+    
+    lightmap.file_format = 'PNG'
+    lightmap.filepath_raw = filepath.rsplit('.', 1)[0] + '_lightmap.png'
+    lightmap.save()
 
     return {'FINISHED'}
 
