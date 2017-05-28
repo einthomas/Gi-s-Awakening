@@ -1,4 +1,4 @@
-#version 450 core
+#version 330 core
 
 // render to two different color buffers
 layout(location = 0) out vec4 outColor;
