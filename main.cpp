@@ -23,8 +23,8 @@ static int width = 1280, height = 720;
 static const char *title = "Gi's Awakening: The Mending of the Sky";
 static GLuint screenQuadVAO = 0;
 const int AA_SAMPLES = 4;
-const int DEPTH_TEXTURE_WIDTH = 1280;
-const int DEPTH_TEXTURE_HEIGHT = 720;
+const int DEPTH_TEXTURE_WIDTH = 2048;
+const int DEPTH_TEXTURE_HEIGHT = 2048;
 
 bool initGLEW();
 GLFWwindow *initGLFW();
@@ -40,7 +40,7 @@ int main(void) {
     }
 
     // activate v-sync
-    glfwSwapInterval(1);
+    glfwSwapInterval(0);
 
     if (!initGLEW()) {
         return 0;
@@ -51,17 +51,15 @@ int main(void) {
     );
     glm::mat4 shadowMappingViewMatrix = glm::lookAt(
         glm::vec3(-0.5f, -5.3f, 7.0f),
-        glm::vec3(0.0f),
+        glm::vec3(0.0f, 0.0f, 0.0f),
         glm::vec3(0.0f, 0.0f, -1.0f)
     );
-    /*
     glm::mat4 ndcUVMappingMatrix = glm::mat4(
-        glm::vec4(0.5f, 0.0f, 0.0f, 0.5f),
-        glm::vec4(0.0f, 0.5f, 0.0f, 0.5f),
-        glm::vec4(0.0f, 0.0f, 0.5f, 0.5f),
-        glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)
+        glm::vec4(0.5f, 0.0f, 0.0f, 0.0f),
+        glm::vec4(0.0f, 0.5f, 0.0f, 0.0f),
+        glm::vec4(0.0f, 0.0f, 0.5f, 0.0f),
+        glm::vec4(0.5f, 0.5f, 0.5f, 1.0f)
     );
-    */
     glm::mat4 lightSpaceMatrix = shadowMappingProjectionMatrix * shadowMappingViewMatrix;
 
     glViewport(0, 0, width, height);
@@ -111,10 +109,10 @@ int main(void) {
         GL_DEPTH_COMPONENT24, DEPTH_TEXTURE_WIDTH, DEPTH_TEXTURE_HEIGHT,
         0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL
     );
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
 
     glBindFramebuffer(GL_FRAMEBUFFER, depthFBO);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadowMap, 0);
@@ -165,8 +163,6 @@ int main(void) {
 
     double time = glfwGetTime();
     double previousTime = time;
-
-    bool rightMouseButtonPressed = false;
     while (!glfwWindowShouldClose(window)) {
         double currentTime = glfwGetTime();
         double delta = currentTime - previousTime;
@@ -207,6 +203,14 @@ int main(void) {
         }
 
         game.update(delta);
+
+        lightSpaceMatrix = shadowMappingProjectionMatrix * glm::translate(
+            shadowMappingViewMatrix,
+            glm::vec3(
+                shadowMappingViewMatrix *
+                glm::vec4(game.player.position.x, game.player.position.y, 0.0f, 0.0f)
+            )
+        );
         
         // mouse look
         double mouseX, mouseY;
@@ -214,6 +218,8 @@ int main(void) {
         glfwSetCursorPos(window, centerX, centerY);
         game.cursorMoved(mouseX - centerX, mouseY - centerY);
 
+        glEnable(GL_POLYGON_OFFSET_FILL);
+        glPolygonOffset(4.0f, 0.0f);
         glViewport(0, 0, DEPTH_TEXTURE_WIDTH, DEPTH_TEXTURE_HEIGHT);
         glBindFramebuffer(GL_FRAMEBUFFER, depthFBO);
         glClear(GL_DEPTH_BUFFER_BIT);
@@ -221,6 +227,7 @@ int main(void) {
         shadowMappingDepthShader.setMatrix4("lightSpaceMatrix", lightSpaceMatrix);
         game.draw(shadowMappingDepthShader);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glDisable(GL_POLYGON_OFFSET_FILL);
 
         glViewport(0, 0, width, height);
         // render to multisampled framebuffer
@@ -229,7 +236,7 @@ int main(void) {
         glDepthMask(GL_FALSE);
         skybox.draw(game.camera.getMatrix(), projectionMatrix);
         glDepthMask(GL_TRUE);
-        game.draw(projectionMatrix, lightSpaceMatrix, shadowMap);
+        game.draw(projectionMatrix, ndcUVMappingMatrix * lightSpaceMatrix, shadowMap);
         ParticleSystem::draw(game.camera.getMatrix(), projectionMatrix);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -314,7 +321,7 @@ int main(void) {
 
         postProcessingShader.use();
         postProcessingShader.setTexture2D("mainImage", GL_TEXTURE0, colorBuffers[0], 0);
-        //postProcessingShader.setTexture2D("mainImage", GL_TEXTURE0, depthTexture, 0);
+        //postProcessingShader.setTexture2D("mainImage", GL_TEXTURE0, shadowMap, 0);
         postProcessingShader.setTexture2D("brightSpotsBloomImage", GL_TEXTURE1, colorBuffers[1], 1);
         postProcessingShader.setTexture2D("hudTexture", GL_TEXTURE2, hudColorBuffer, 2);
         drawScreenQuad();
