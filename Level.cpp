@@ -14,8 +14,7 @@ namespace glm {
 }
 
 Level::Level(const Object3D &endObject, const glm::vec3 &start, const glm::vec3 &end, float startOrientation) : 
-    platforms(platforms), triggers(triggers), pressurePlates(pressurePlates), endObject(endObject),
-    start(start), end(end), startOrientation(startOrientation)
+    endObject(endObject), start(start), end(end), startOrientation(startOrientation)
 {
 }
 
