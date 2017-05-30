@@ -23,8 +23,8 @@ static int width = 1280, height = 720;
 static const char *title = "Gi's Awakening: The Mending of the Sky";
 static GLuint screenQuadVAO = 0;
 const int AA_SAMPLES = 4;
-const int DEPTH_TEXTURE_WIDTH = 2048;
-const int DEPTH_TEXTURE_HEIGHT = 2048;
+const int DEPTH_TEXTURE_WIDTH = 1024;
+const int DEPTH_TEXTURE_HEIGHT = 1024;
 
 bool initGLEW();
 GLFWwindow *initGLFW();
@@ -40,7 +40,7 @@ int main(void) {
     }
 
     // activate v-sync
-    glfwSwapInterval(0);
+    glfwSwapInterval(1);
 
     if (!initGLEW()) {
         return 0;
@@ -50,7 +50,7 @@ int main(void) {
         -10.0f, 10.0f, -10.0f, 10.0f, 0.1f, 10.0f
     );
     glm::mat4 shadowMappingViewMatrix = glm::lookAt(
-        glm::vec3(-0.5f, -5.3f, 7.0f),
+        glm::vec3(-3.5f, -5.3f, 7.0f),
         glm::vec3(0.0f, 0.0f, 0.0f),
         glm::vec3(0.0f, 0.0f, -1.0f)
     );
