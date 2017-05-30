@@ -161,6 +161,13 @@ int main(void) {
     int centerX = width / 2, centerY = height / 2;
     glfwSetCursorPos(window, centerX, centerY);
 
+    bool displayPerformanceStats = false;
+    bool drawAsWireframe = false;
+
+    int fKeyStates[9];
+
+    int softFps = 0;
+    float softFrameTime = 0.0f;
     double time = glfwGetTime();
     double previousTime = time;
     while (!glfwWindowShouldClose(window)) {
@@ -202,6 +209,40 @@ int main(void) {
             game.secondaryActionReleased();
         }
 
+        // f-keys
+        if (glfwGetKey(window, GLFW_KEY_F1) == GLFW_PRESS && fKeyStates[0] == GLFW_RELEASE) {
+            // help
+        }
+        if (glfwGetKey(window, GLFW_KEY_F2) == GLFW_PRESS && fKeyStates[1] == GLFW_RELEASE) {
+            displayPerformanceStats = !displayPerformanceStats;
+            std::cout << "Performance stats toggled " << (displayPerformanceStats ? "on" : "off") << std::endl;
+        }
+        if (glfwGetKey(window, GLFW_KEY_F3) == GLFW_PRESS && fKeyStates[2] == GLFW_RELEASE) {
+            drawAsWireframe = !drawAsWireframe;
+            std::cout << "Wireframe toggled " << (drawAsWireframe ? "on" : "off") << std::endl;
+        }
+        if (glfwGetKey(window, GLFW_KEY_F4) == GLFW_PRESS && fKeyStates[3] == GLFW_RELEASE) {
+            // texture sampling quality Nearest Neighbor/Bilinear
+        }
+        if (glfwGetKey(window, GLFW_KEY_F5) == GLFW_PRESS && fKeyStates[4] == GLFW_RELEASE) {
+            // mip mapping quality Off/Nearest Neighbor/Linear
+        }
+        if (glfwGetKey(window, GLFW_KEY_F6) == GLFW_PRESS && fKeyStates[5] == GLFW_RELEASE) {
+            // Enable/Disable effect 
+        }
+        if (glfwGetKey(window, GLFW_KEY_F7) == GLFW_PRESS && fKeyStates[6] == GLFW_RELEASE) {
+            // Enable/Disable effect 
+        }
+        if (glfwGetKey(window, GLFW_KEY_F8) == GLFW_PRESS && fKeyStates[7] == GLFW_RELEASE) {
+            // Viewfrustum-Culling
+        }
+        if (glfwGetKey(window, GLFW_KEY_F9) == GLFW_PRESS && fKeyStates[8] == GLFW_RELEASE) {
+            // Blending
+        }
+        for (int i = 0; i < 9; i++) {
+            fKeyStates[i] = glfwGetKey(window, GLFW_KEY_F1 + i);
+        }
+
         game.update(delta);
 
         lightSpaceMatrix = shadowMappingProjectionMatrix * glm::translate(
@@ -218,7 +259,11 @@ int main(void) {
         glfwSetCursorPos(window, centerX, centerY);
         game.cursorMoved(mouseX - centerX, mouseY - centerY);
 
-        glEnable(GL_POLYGON_OFFSET_FILL);
+        if (drawAsWireframe) {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        } else {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        }
         glPolygonOffset(4.0f, 0.0f);
         glViewport(0, 0, DEPTH_TEXTURE_WIDTH, DEPTH_TEXTURE_HEIGHT);
         glBindFramebuffer(GL_FRAMEBUFFER, depthFBO);
@@ -293,31 +338,43 @@ int main(void) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // victory condition
+        glBindFramebuffer(GL_FRAMEBUFFER, hudFBO);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         if (glm::length(level.end - game.player.position) < 2) {
-            glBindFramebuffer(GL_FRAMEBUFFER, hudFBO);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             TextRenderer::renderText(
                 "You won",
                 width / 2.0f - youDiedTextDimensions.x / 2.0f,
                 height / 2.0f - youDiedTextDimensions.y / 2.0f,
                 1.0f,
                 glm::vec3(0.8f));
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
         } else if (game.player.isDead) {
-            glBindFramebuffer(GL_FRAMEBUFFER, hudFBO);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             TextRenderer::renderText(
                 "You died",
                 width / 2.0f - youDiedTextDimensions.x / 2.0f,
                 height / 2.0f - youDiedTextDimensions.y / 2.0f,
                 1.0f,
                 glm::vec3(0.8f));
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        } else {
-            glBindFramebuffer(GL_FRAMEBUFFER, hudFBO);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
         }
+
+        if (displayPerformanceStats) {
+            softFps = (softFps * 9 + (1.0f / delta)) / 10;
+            softFrameTime = (softFrameTime * 9 + round(delta * 100000) / 100) / 10;
+            TextRenderer::renderText(
+                "fps: " + std::to_string(softFps),
+                0.0f,
+                height - 20.0f,
+                0.1f,
+                glm::vec3(0.8f));
+            TextRenderer::renderText(
+                "frametime (ms): " + std::to_string(softFrameTime),
+                0.0f,
+                height - 50.0f,
+                0.1f,
+                glm::vec3(0.8f));
+        }
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
         postProcessingShader.use();
         postProcessingShader.setTexture2D("mainImage", GL_TEXTURE0, colorBuffers[0], 0);
