@@ -163,6 +163,7 @@ int main(void) {
 
     bool displayPerformanceStats = false;
     bool drawAsWireframe = false;
+    bool bloomActivated = true;
 
     int fKeyStates[9];
 
@@ -228,10 +229,11 @@ int main(void) {
             // mip mapping quality Off/Nearest Neighbor/Linear
         }
         if (glfwGetKey(window, GLFW_KEY_F6) == GLFW_PRESS && fKeyStates[5] == GLFW_RELEASE) {
-            // Enable/Disable effect 
+            bloomActivated = !bloomActivated;
+            std::cout << "Bloom toggled " << (bloomActivated ? "on" : "off") << std::endl;
         }
         if (glfwGetKey(window, GLFW_KEY_F7) == GLFW_PRESS && fKeyStates[6] == GLFW_RELEASE) {
-            // Enable/Disable effect 
+            // Enable/Disable effect
         }
         if (glfwGetKey(window, GLFW_KEY_F8) == GLFW_PRESS && fKeyStates[7] == GLFW_RELEASE) {
             // Viewfrustum-Culling
@@ -293,48 +295,49 @@ int main(void) {
             );
         }
 
-        // downscale FBOs used for blurring
-        const int scaledDownWidth = 256;
-        const int scaledDownHeight = 144;
-        for (GLuint i = 0; i < 2; i++) {
+        if (bloomActivated) {
+            // downscale FBOs used for blurring
+            const int scaledDownWidth = 256;
+            const int scaledDownHeight = 144;
+            for (GLuint i = 0; i < 2; i++) {
+                blitFramebuffer(
+                    blurFBOs[i], blurFBOs[i], GL_COLOR_BUFFER_BIT, GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT0,
+                    width, height, scaledDownWidth, scaledDownHeight, GL_NEAREST
+                );
+            }
+
+            // copy color attachment 1 (bright parts of the image) to the first blur FBO
             blitFramebuffer(
-                blurFBOs[i], blurFBOs[i], GL_COLOR_BUFFER_BIT, GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT0,
+                FBO, blurFBOs[0], GL_COLOR_BUFFER_BIT, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT0,
                 width, height, scaledDownWidth, scaledDownHeight, GL_NEAREST
+            );
+
+            // gaussian blur
+            gaussianBlurShader.use();
+            gaussianBlurShader.setInteger("imageHeight", height);
+            gaussianBlurShader.setInteger("imageWidth", width);
+
+            // blur horizontally
+            glBindFramebuffer(GL_FRAMEBUFFER, blurFBOs[1]);
+            gaussianBlurShader.setInteger("horizontalBlur", 1);
+            gaussianBlurShader.setTexture2D("image", GL_TEXTURE0, blurColorBuffers[0], 0);
+            drawScreenQuad();
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+            // blur vertically
+            glBindFramebuffer(GL_FRAMEBUFFER, blurFBOs[0]);
+            gaussianBlurShader.setInteger("horizontalBlur", 0);
+            gaussianBlurShader.setTexture2D("image", GL_TEXTURE0, blurColorBuffers[1], 0);
+            drawScreenQuad();
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+            // copy blurred FBO to FBO used for drawing to the screen
+            blitFramebuffer(
+                blurFBOs[0], FBO, GL_COLOR_BUFFER_BIT, GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1,
+                scaledDownWidth, scaledDownHeight, width, height, GL_LINEAR
             );
         }
 
-        // copy color attachment 1 (bright parts of the image) to the first blur FBO
-        blitFramebuffer(
-            FBO, blurFBOs[0], GL_COLOR_BUFFER_BIT, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT0,
-            width, height, scaledDownWidth, scaledDownHeight, GL_NEAREST
-        );
-
-        // gaussian blur
-        gaussianBlurShader.use();
-        gaussianBlurShader.setInteger("imageHeight", height);
-        gaussianBlurShader.setInteger("imageWidth", width);
-
-        // blur horizontally
-        glBindFramebuffer(GL_FRAMEBUFFER, blurFBOs[1]);
-        gaussianBlurShader.setInteger("horizontalBlur", 1);
-        gaussianBlurShader.setTexture2D("image", GL_TEXTURE0, blurColorBuffers[0], 0);
-        drawScreenQuad();
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-        // blur vertically
-        glBindFramebuffer(GL_FRAMEBUFFER, blurFBOs[0]);
-        gaussianBlurShader.setInteger("horizontalBlur", 0);
-        gaussianBlurShader.setTexture2D("image", GL_TEXTURE0, blurColorBuffers[1], 0);
-        drawScreenQuad();
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-        // copy blurred FBO to FBO used for drawing to the screen
-        blitFramebuffer(
-            blurFBOs[0], FBO, GL_COLOR_BUFFER_BIT, GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1,
-            scaledDownWidth, scaledDownHeight, width, height, GL_LINEAR
-        );
-
-        // post processing - combine the blurred and the main image
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // victory condition
