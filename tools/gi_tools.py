@@ -89,6 +89,11 @@ def bake_block(object, lightmap, grid, index):
     bpy.context.scene.render.bake.use_pass_direct = False
     bpy.context.scene.render.bake.use_pass_indirect = True
     bpy.context.scene.render.bake.use_pass_color = False
+    
+    object.hide_render = True
+    object.hide = True
+    
+    # TODO: handle groups with multiple objects
 
     for sub_object in object.dupli_group.objects:
         bpy.ops.object.select_all(action='DESELECT')
@@ -110,16 +115,24 @@ def bake_block(object, lightmap, grid, index):
             bpy.context.scene.objects.link(bake_object)
             bpy.context.scene.update()
             
+            bake_object.hide_render = False
+            bake_object.hide = False
+            
+            bake_object.location += object.location - object.dupli_group.dupli_offset
+            
             bake_object.select = True
             bpy.context.scene.objects.active = bake_object
             
             mesh_copy.update()
             bpy.context.scene.update()
             
-            bpy.ops.object.bake(margin = 2)
+            bpy.ops.object.bake(type = "DIFFUSE", margin = 2)
             
             bpy.data.objects.remove(bake_object, True)
             bpy.data.meshes.remove(mesh_copy, True)
+            
+    object.hide_render = False
+    object.hide = False
     
 def write_gi_level(context, filepath, level_name):
     print("running write_gi_level...")

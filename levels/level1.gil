@@ -4,149 +4,11 @@
         0.0,
         0.5
     ],
-    "platforms": [
-        {
-            "position": [
-                3.500244617462158,
-                -7.4923906326293945,
-                5.159999847412109
-            ],
-            "type": "TriggerStand",
-            "name": "TriggerStand"
-        },
-        {
-            "position": [
-                -4.5,
-                -3.5,
-                2.0
-            ],
-            "type": "1x1",
-            "name": "1x1.003"
-        },
-        {
-            "position": [
-                -6.5,
-                -7.5,
-                3.0
-            ],
-            "type": "1x1",
-            "name": "1x1.002"
-        },
-        {
-            "position": [
-                0.0,
-                -6.0,
-                4.0
-            ],
-            "type": "4x8",
-            "name": "4x8.001"
-        },
-        {
-            "position": [
-                -10.5,
-                -8.5,
-                3.0
-            ],
-            "type": "1x1",
-            "name": "1x1.000"
-        },
-        {
-            "position": [
-                -14.5,
-                -7.5,
-                2.0
-            ],
-            "type": "1x1",
-            "name": "1x1.001"
-        },
-        {
-            "position": [
-                -17.0,
-                -4.0,
-                2.0
-            ],
-            "type": "2x2",
-            "name": "2x2.001"
-        },
-        {
-            "position": [
-                -15.0,
-                1.0,
-                1.0
-            ],
-            "type": "2x2",
-            "name": "2x2"
-        },
-        {
-            "position": [
-                -9.0,
-                2.0,
-                1.0
-            ],
-            "type": "4x4",
-            "name": "4x4"
-        },
-        {
-            "position": [
-                -3.0,
-                -3.0,
-                2.5
-            ],
-            "type": "2x2x4",
-            "name": "2x2x4"
-        },
-        {
-            "position": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "type": "4x8",
-            "name": "4x8"
-        },
-        {
-            "position": [
-                9.0,
-                -6.0,
-                4.0
-            ],
-            "type": "4x4",
-            "name": "4x4invisible"
-        },
-        {
-            "position": [
-                14.0,
-                -11.0,
-                5.0
-            ],
-            "type": "4x4",
-            "name": "4x4.002"
-        },
-        {
-            "position": [
-                -0.19306230545043945,
-                -0.6780047416687012,
-                1.2037880420684814
-            ],
-            "type": "TriggerStand",
-            "name": "TriggerStand.001"
-        },
-        {
-            "position": [
-                -22.0,
-                -4.0,
-                2.0
-            ],
-            "type": "2x2",
-            "name": "2x2.002"
-        }
-    ],
     "end": [
         14.0,
         -11.0,
         5.5
     ],
-    "name": "",
     "pressurePlates": [
         {
             "position": [
@@ -158,6 +20,144 @@
             "type": "PressurePlate"
         }
     ],
+    "startOrientation": 1.570796251296997,
+    "platforms": [
+        {
+            "position": [
+                3.500244617462158,
+                -7.4923906326293945,
+                5.159999847412109
+            ],
+            "name": "TriggerStand",
+            "type": "TriggerStand"
+        },
+        {
+            "position": [
+                -4.5,
+                -3.5,
+                2.0
+            ],
+            "name": "1x1.003",
+            "type": "1x1"
+        },
+        {
+            "position": [
+                -6.5,
+                -7.5,
+                3.0
+            ],
+            "name": "1x1.002",
+            "type": "1x1"
+        },
+        {
+            "position": [
+                0.0,
+                -6.0,
+                4.0
+            ],
+            "name": "4x8.001",
+            "type": "4x8"
+        },
+        {
+            "position": [
+                -10.5,
+                -8.5,
+                3.0
+            ],
+            "name": "1x1.000",
+            "type": "1x1"
+        },
+        {
+            "position": [
+                -14.5,
+                -7.5,
+                2.0
+            ],
+            "name": "1x1.001",
+            "type": "1x1"
+        },
+        {
+            "position": [
+                -17.0,
+                -4.0,
+                2.0
+            ],
+            "name": "2x2.001",
+            "type": "2x2"
+        },
+        {
+            "position": [
+                -15.0,
+                1.0,
+                1.0
+            ],
+            "name": "2x2",
+            "type": "2x2"
+        },
+        {
+            "position": [
+                -9.0,
+                2.0,
+                1.0
+            ],
+            "name": "4x4",
+            "type": "4x4"
+        },
+        {
+            "position": [
+                -3.0,
+                -3.0,
+                2.5
+            ],
+            "name": "2x2x4",
+            "type": "2x2x4"
+        },
+        {
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "name": "4x8",
+            "type": "4x8"
+        },
+        {
+            "position": [
+                9.0,
+                -6.0,
+                4.0
+            ],
+            "name": "4x4invisible",
+            "type": "4x4"
+        },
+        {
+            "position": [
+                14.0,
+                -11.0,
+                5.0
+            ],
+            "name": "4x4.002",
+            "type": "4x4"
+        },
+        {
+            "position": [
+                -0.19306230545043945,
+                -0.6780047416687012,
+                1.2037880420684814
+            ],
+            "name": "TriggerStand.001",
+            "type": "TriggerStand"
+        },
+        {
+            "position": [
+                -22.0,
+                -4.0,
+                2.0
+            ],
+            "name": "2x2.002",
+            "type": "2x2"
+        }
+    ],
     "triggers": [
         {
             "position": [
@@ -165,9 +165,9 @@
                 -7.492390155792236,
                 5.630000114440918
             ],
-            "type": "TriggerDiamond",
             "triggers": "4x4invisible",
-            "isTriggered": 0
+            "isTriggered": 0,
+            "type": "TriggerDiamond"
         },
         {
             "position": [
@@ -175,10 +175,10 @@
                 -0.6776971220970154,
                 1.6651047468185425
             ],
-            "type": "TriggerDiamond",
             "triggers": "4x4",
-            "isTriggered": 0
+            "isTriggered": 0,
+            "type": "TriggerDiamond"
         }
     ],
-    "startOrientation": 1.570796251296997
+    "name": ""
 }
