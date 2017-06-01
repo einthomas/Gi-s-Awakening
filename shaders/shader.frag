@@ -7,16 +7,25 @@ layout(location = 1) out vec4 brightSpotColor;
 in vec3 vertNormal;
 in vec3 vertFragPosition;
 in vec4 vertFragPositionLightSpace;
+in vec2 vertUV;
 
 uniform vec3 cameraPosition;
 uniform vec3 diffuseColor;
 uniform vec3 specularColor;
 uniform float glossyness;
+
 uniform sampler2DShadow shadowMap;
+uniform sampler2D lightMap;
+
+uniform float lightMapScale;
+uniform vec2 lightMapPosition;
 
 void main() {
-    vec3 light = normalize(vec3(-0.5f, -0.3f, 1.0f));   // TODO: unhardcode this
-    float normalDotLight = dot(vertNormal, light);
+    // TODO: unhardcode this
+    vec3 lightDirection = normalize(vec3(-0.5f, -0.3f, 1.0f));
+    vec3 light = vec3(1.0, 0.768, 0.216);
+
+    float normalDotLight = dot(vertNormal, lightDirection);
 
     //vec3 shadowMappingCoords = vertFragPositionLightSpace.xyz / vertFragPositionLightSpace.w;
     //shadowMappingCoords = shadowMappingCoords * 0.5f + 0.5f;
@@ -30,15 +39,19 @@ void main() {
     float shadowFactor = textureProj(shadowMap, vertFragPositionLightSpace);
     vec3 cameraVector = normalize(cameraPosition - vertFragPosition);
 
-    vec3 ambient = vec3(0.1f);
+    vec3 ambient = pow(texture(
+        lightMap,
+        vec2(0, 1) + (lightMapPosition + vertUV * lightMapScale) * vec2(1, -1)
+    ).rgb, vec3(2.2));
 
-    vec3 diffuse = max(normalDotLight, 0.0f) * diffuseColor * max(shadowFactor, 0.7f);
+    vec3 diffuse =
+        max(normalDotLight, 0.0f) * diffuseColor * shadowFactor * light;
 
-    vec3 halfVector = normalize(light + cameraVector);
-    vec3 glossy = pow(max(dot(vertNormal, halfVector), 0.0f), glossyness) * specularColor * shadowFactor;
+    vec3 halfVector = normalize(lightDirection + cameraVector);
+    vec3 glossy = pow(
+        max(dot(vertNormal, halfVector), 0.0f), glossyness
+    ) * specularColor * shadowFactor * light;
 
-    outColor = vec4(ambient + diffuse * 0.6f, 1.0f);
-    brightSpotColor = vec4(glossy * 0.7f, 1.0f);
-
-    //outColor = vec4(vec3(texture(shadowMap, shadowMappingUVCoords).r), 1.0f);
+    outColor = vec4((ambient + diffuse) * 0.6f, 1.0f);
+    brightSpotColor = vec4(glossy * 0.5f, 1.0f);
 }

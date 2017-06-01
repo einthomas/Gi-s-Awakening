@@ -12,12 +12,18 @@ public:
 
     static void init();
 
-    BlinnMaterial(const glm::vec3 &diffuseColor, const glm::vec3 &specularColor, float glossyness);
+    BlinnMaterial(
+        const glm::vec3 &diffuseColor, const glm::vec3 &specularColor,
+        float glossyness
+    );
     ~BlinnMaterial() { }
 
     void bind(
-        const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix, const glm::mat4 &modelMatrix,
-        const glm::vec3 &cameraPosition, const glm::mat4 &lightSpaceMatrix, const GLuint shadowMap
+        const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix,
+        const glm::mat4 &modelMatrix, const glm::vec3 &cameraPosition,
+        const glm::mat4 &lightSpaceMatrix, GLuint shadowMap,
+        GLfloat lightMapScale, const glm::vec2 &lightMapPosition,
+        GLuint lightMap
     ) override;
 
 private:

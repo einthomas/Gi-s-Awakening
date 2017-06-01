@@ -86,7 +86,7 @@ def bake_block(object, lightmap, grid, index):
     x = (index % grid) * factor
     
     bpy.context.scene.cycles.bake_type = 'DIFFUSE'
-    bpy.context.scene.render.bake.use_pass_direct = False
+    bpy.context.scene.render.bake.use_pass_direct = True
     bpy.context.scene.render.bake.use_pass_indirect = True
     bpy.context.scene.render.bake.use_pass_color = False
     
@@ -126,13 +126,13 @@ def bake_block(object, lightmap, grid, index):
             mesh_copy.update()
             bpy.context.scene.update()
             
-            bpy.ops.object.bake(type = "DIFFUSE", margin = 2)
+            #bpy.ops.object.bake(type = "DIFFUSE", margin = 2)
             
-            bpy.data.objects.remove(bake_object, True)
-            bpy.data.meshes.remove(mesh_copy, True)
+            #bpy.data.objects.remove(bake_object, True)
+            #bpy.data.meshes.remove(mesh_copy, True)
             
-    object.hide_render = False
-    object.hide = False
+    #object.hide_render = False
+    #object.hide = False
     
 def write_gi_level(context, filepath, level_name):
     print("running write_gi_level...")
@@ -147,10 +147,13 @@ def write_gi_level(context, filepath, level_name):
     lightmap = bpy.data.images.get("lightmap")
     assert lightmap is not None
         
-    lightmap_grid = ceil(sqrt(len(bpy.context.scene.objects)))
+        
+    lightmap_object_count = sum(1 for object in bpy.context.scene.objects if object.dupli_group is not None)
+        
+    lightmap_grid = ceil(sqrt(lightmap_object_count))
     
     lightmap_index = 0
- 
+  
     for object in bpy.context.scene.objects:
         #try:
         if object.dupli_group is not None:
@@ -178,7 +181,8 @@ def write_gi_level(context, filepath, level_name):
                 platforms += [{
                     "position": object.location[:],
                     "type": type,
-                    "name": object.name
+                    "name": object.name,
+                    "lightMapIndex": lightmap_index
                 }]
                 
                 bake_block(object, lightmap, lightmap_grid, lightmap_index)
@@ -187,6 +191,8 @@ def write_gi_level(context, filepath, level_name):
                 
         #except Exception as e:
         #    print(e)
+        
+    lightmap_path = filepath.rsplit('.', 1)[0] + '_lightmap.png'
             
     level = {
         "name": level_name,
@@ -195,14 +201,16 @@ def write_gi_level(context, filepath, level_name):
         "pressurePlates": pressure_plates,
         "start": start,
         "startOrientation": start_orientation,
-        "end": end
+        "end": end,
+        "lightMapSize": lightmap_grid,
+        "lightMapPath": path.basename(lightmap_path)
     }
     
     with open(filepath, 'w', encoding='utf-8') as f:
         json.dump(level, f, indent=4)
     
     lightmap.file_format = 'PNG'
-    lightmap.filepath_raw = filepath.rsplit('.', 1)[0] + '_lightmap.png'
+    lightmap.filepath_raw = lightmap_path
     lightmap.save()
 
     return {'FINISHED'}

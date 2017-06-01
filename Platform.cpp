@@ -1,8 +1,19 @@
 #include "Platform.h"
 #include <algorithm>
 
-Platform::Platform(const PlatformType *type, Material *material, glm::vec3 position, std::string name) :
-    Object3D(material, position, glm::vec3(1), type->size, type->mesh), name(name), isVisible(true)
+Platform::Platform(
+    const PlatformType *type, Material *material, glm::vec3 position,
+    std::string name, int lightMapSize, int lightMapIndex
+) :
+    Object3D(
+        material, position, glm::vec3(1), type->size, type->mesh,
+        1.f / lightMapSize,
+        glm::vec2(
+            static_cast<float>(lightMapIndex % lightMapSize) / lightMapSize,
+            static_cast<float>(lightMapIndex / lightMapSize) / lightMapSize
+        )
+    ),
+    name(name), isVisible(true), lightmapIndex(lightmapIndex)
 {
 }
 
@@ -15,7 +26,10 @@ bool Platform::intersects(const glm::vec3 &position, const glm::vec3 &scale) {
     return glm::all(glm::lessThan(glm::abs(delta), sumSize));
 }
 
-void Platform::solveCollision(glm::vec3 &position, glm::vec3 &velocity, const glm::vec3 &scale, bool &onGround) const {
+void Platform::solveCollision(
+    glm::vec3 &position, glm::vec3 &velocity,
+    const glm::vec3 &scale, bool &onGround
+) const {
     if (!isVisible) {
         return;
     }

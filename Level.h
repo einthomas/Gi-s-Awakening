@@ -18,13 +18,18 @@ public:
     Object3D endObject;
     glm::vec3 start, end;
     float startOrientation;
+    GLuint lightMap;
 
-    Level(const Object3D &endObject, const glm::vec3 &start, const glm::vec3 &end, float startOrientation);
+    Level(
+        const Object3D &endObject, const glm::vec3 &start,
+        const glm::vec3 &end, float startOrientation, GLuint lightMap = 0
+    );
 
     void draw(const Shader &shader);
     void draw(
-        const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix, const glm::vec3 &cameraPosition,
-        const glm::mat4 &lightSpaceMatrix, const GLuint shadowMap
+        const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix,
+        const glm::vec3 &cameraPosition, const glm::mat4 &lightSpaceMatrix,
+        const GLuint shadowMap
     );
     void update(float delta);
     bool intersects(const glm::vec3 &position, const glm::vec3 &scale);

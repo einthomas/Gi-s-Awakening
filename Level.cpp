@@ -2,7 +2,9 @@
 
 #include <algorithm>
 #include <fstream>
+#include <string>
 #include <json/json.hpp>
+#include <SOIL.h>
 #include "AbilityType.h"
 
 namespace glm {
@@ -13,9 +15,13 @@ namespace glm {
     }
 }
 
-Level::Level(const Object3D &endObject, const glm::vec3 &start, const glm::vec3 &end, float startOrientation) : 
-    platforms(platforms), triggers(triggers), pressurePlates(pressurePlates), endObject(endObject),
-    start(start), end(end), startOrientation(startOrientation)
+Level::Level(
+    const Object3D &endObject, const glm::vec3 &start, const glm::vec3 &end,
+    float startOrientation, GLuint lightMap
+) :
+    platforms(), triggers(), pressurePlates(),
+    endObject(endObject), start(start), end(end),
+    startOrientation(startOrientation), lightMap(lightMap)
 {
 }
 
@@ -54,25 +60,38 @@ void Level::draw(const Shader& shader) {
 }
 
 void Level::draw(
-    const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix, const glm::vec3 &cameraPosition,
-    const glm::mat4 &lightSpaceMatrix, const GLuint shadowMap
+    const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix,
+    const glm::vec3 &cameraPosition, const glm::mat4 &lightSpaceMatrix,
+    const GLuint shadowMap
 ) {
     for (Platform &platform : platforms) {
         if (platform.isVisible) {
-            platform.draw(viewMatrix, projectionMatrix, cameraPosition, lightSpaceMatrix, shadowMap);
+            platform.draw(
+                viewMatrix, projectionMatrix, cameraPosition,
+                lightSpaceMatrix, shadowMap, lightMap
+            );
         }
     }
     for (Trigger &trigger : triggers) {
         if (trigger.isVisible) {
-            trigger.draw(viewMatrix, projectionMatrix, cameraPosition, lightSpaceMatrix, shadowMap);
+            trigger.draw(
+                viewMatrix, projectionMatrix, cameraPosition,
+                lightSpaceMatrix, shadowMap
+            );
         }
     }
     for (PressurePlate &pressurePlate : pressurePlates) {
         if (pressurePlate.isVisible) {
-            pressurePlate.draw(viewMatrix, projectionMatrix, cameraPosition, lightSpaceMatrix, shadowMap);
+            pressurePlate.draw(
+                viewMatrix, projectionMatrix, cameraPosition,
+                lightSpaceMatrix, shadowMap
+            );
         }
     }
-    endObject.draw(viewMatrix, projectionMatrix, cameraPosition, lightSpaceMatrix, shadowMap);
+    endObject.draw(
+        viewMatrix, projectionMatrix, cameraPosition,
+        lightSpaceMatrix, shadowMap
+    );
 }
 
 void Level::update(float delta) {
@@ -81,23 +100,54 @@ void Level::update(float delta) {
     }
 }
 
-Level Level::fromFile(const char *filename, Material *material, Mesh endMesh, const std::map<std::string, PlatformType> &platformTypes) {
+Level Level::fromFile(
+    const char *filename, Material *material, Mesh endMesh,
+    const std::map<std::string, PlatformType> &platformTypes
+) {
     // Note: this function will crash if the gil file is malformed.
     nlohmann::json json;
     std::ifstream file(filename);
     file >> json;
 
+    int lightMapSize = json["lightMapSize"];
+
+    GLuint lightMap;
+    glGenTextures(1, &lightMap);
+    glBindTexture(GL_TEXTURE_2D, lightMap);
+
+    int lightMapWidth, lightMapHeight;
+    auto lightMapImage = SOIL_load_image(
+        ("levels/" + json["lightMapPath"].get<std::string>()).c_str(),
+        &lightMapWidth, &lightMapHeight, nullptr, SOIL_LOAD_RGB
+    );
+    glTexImage2D(
+        GL_TEXTURE_2D, 0, GL_RGB, lightMapWidth, lightMapHeight,
+        0, GL_RGB, GL_UNSIGNED_BYTE, lightMapImage
+    );
+    SOIL_free_image_data(lightMapImage);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+
     Level level(
         Object3D(material, json["end"], glm::vec3(1.0f), endMesh),
         json["start"],
         json["end"],
-        json["startOrientation"]
+        json["startOrientation"],
+        lightMap
     );
 
     auto platformsJson = json["platforms"];
     for (auto &platformJson : platformsJson) {
         level.platforms.push_back(Platform(
-            &platformTypes.at(platformJson["type"]), material, platformJson["position"], platformJson["name"]
+            &platformTypes.at(platformJson["type"]), material,
+            platformJson["position"], platformJson["name"],
+            lightMapSize,
+            platformJson["lightMapIndex"]
         ));
     }
 
@@ -105,9 +155,13 @@ Level Level::fromFile(const char *filename, Material *material, Mesh endMesh, co
     for (auto &pressurePlateJson : pressurePlatesJson) {
         level.pressurePlates.push_back(PressurePlate(
             &platformTypes.at(pressurePlateJson["type"]),
-            BlinnMaterial(glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 0.0f, 1.0f), 0.0f),
+            BlinnMaterial(
+                glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 0.0f, 1.0f), 0.0f
+            ),
             pressurePlateJson["position"],
-            static_cast<AbilityType>(pressurePlateJson["givesAbility"].get<int>())
+            static_cast<AbilityType>(
+                pressurePlateJson["givesAbility"].get<int>()
+            )
         ));
     }
 
