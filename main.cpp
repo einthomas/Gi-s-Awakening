@@ -56,10 +56,10 @@ int main(void) {
     glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxAnisotropicFiltering);
 
     glm::mat4 shadowMappingProjectionMatrix = glm::ortho(
-        -20.0f, 20.0f, -20.0f, 20.0f, 0.01f, 10.0f
+        -10.0f, 10.0f, -10.0f, 10.0f, 0.01f, 10.0f
     );
     glm::mat4 shadowMappingViewMatrix = glm::lookAt(
-        glm::vec3(-3.5f, -5.3f, 11.0f),
+        glm::vec3(-3.5f, -5.3f, 7.0f),
         glm::vec3(0.0f, 0.0f, 0.0f),
         glm::vec3(0.0f, 0.0f, -1.0f)
     );
