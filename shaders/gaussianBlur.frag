@@ -16,16 +16,14 @@ void main(void) {
 
     int imageDimension = horizontalBlur ? imageWidth : imageHeight;
     color = texture(image, vertTextureCoords).rgb * weight[0];
-
+    
+    vec2 direction = vec2(float(horizontalBlur), float(!horizontalBlur));
+    vec2 offsetVector = vec2(0.0f);
     for (int i = 1; i < 7; i++) {
-        vec2 offsetVector = vec2(0.0f);
-        if (horizontalBlur) {
-            offsetVector.x = offset[i];
-        } else {
-            offsetVector.y = offset[i];
-        }
-        color += texture(image, (vertTextureCoords + offsetVector / float(imageDimension))).rgb * weight[i];
-        color += texture(image, (vertTextureCoords - offsetVector / float(imageDimension))).rgb * weight[i];
+        offsetVector = vec2(offset[i]) * direction;
+        vec2 offsetVectorByImageDimension = offsetVector / float(imageDimension);
+        color += texture(image, (vertTextureCoords + offsetVectorByImageDimension)).rgb * weight[i];
+        color += texture(image, (vertTextureCoords - offsetVectorByImageDimension)).rgb * weight[i];
     }
     
     outColor = vec4(color, 1.0f);

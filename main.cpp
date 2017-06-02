@@ -23,15 +23,21 @@ static int width = 1920, height = 1080;
 static const char *title = "Gi's Awakening: The Mending of the Sky";
 static GLuint screenQuadVAO = 0;
 const int AA_SAMPLES = 4;
-const int DEPTH_TEXTURE_WIDTH = 2048;
-const int DEPTH_TEXTURE_HEIGHT = 2048;
+const int DEPTH_TEXTURE_WIDTH = 512;
+const int DEPTH_TEXTURE_HEIGHT = 512;
+const int BLOOM_BLUR_WIDTH = 512;
+const int BLOOM_BLUR_HEIGHT = 288;
+const int DEPTH_TEXTURE_BLUR_WIDTH = 512;
+const int DEPTH_TEXTURE_BLUR_HEIGHT = 512;
 
 bool initGLEW();
 GLFWwindow *initGLFW();
 void drawScreenQuad();
-void generateFBO(GLuint &FBO, GLuint* colorBuffers, int numColorAttachments, bool isMultisampled, bool attachDepthRBO);
+void generateFBO(GLuint &FBO, GLuint* colorBuffers, int width, int height, int numColorAttachments, bool isMultisampled, bool attachDepthRBO);
 void blitFramebuffer(GLuint srcFBO, GLuint destFBO, GLbitfield mask, GLenum readBuffer, GLenum drawBuffer,
     GLuint srcWidth, GLuint srcHeight, GLuint destWidth, GLuint destHeight, GLenum filter);
+GLuint blur(int width, int height, GLuint blurFBO0, GLuint blurFBO1, GLuint blurBuffer0,
+    GLuint blurBuffer1, GLuint inputBuffer, Shader &shader);
 
 int main(void) {
     GLFWwindow* window = initGLFW();
@@ -40,17 +46,20 @@ int main(void) {
     }
 
     // activate v-sync
-    glfwSwapInterval(0);
+    glfwSwapInterval(1);
 
     if (!initGLEW()) {
         return 0;
     }
 
+    GLfloat maxAnisotropicFiltering;
+    glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxAnisotropicFiltering);
+
     glm::mat4 shadowMappingProjectionMatrix = glm::ortho(
-        -10.0f, 10.0f, -10.0f, 10.0f, 0.1f, 10.0f
+        -10.0f, 10.0f, -10.0f, 10.0f, 0.01f, 10.0f
     );
     glm::mat4 shadowMappingViewMatrix = glm::lookAt(
-        glm::vec3(-0.5f, -5.3f, 7.0f),
+        glm::vec3(-3.5f, -5.3f, 7.0f),
         glm::vec3(0.0f, 0.0f, 0.0f),
         glm::vec3(0.0f, 0.0f, -1.0f)
     );
@@ -82,20 +91,25 @@ int main(void) {
 
     GLuint multisampledFBO;
     GLuint multisampledColorBuffers[2];
-    generateFBO(multisampledFBO, multisampledColorBuffers, 2, false, true);
+    generateFBO(multisampledFBO, multisampledColorBuffers, width, height, 2, false, true);
 
     GLuint FBO;
     GLuint colorBuffers[2];
-    generateFBO(FBO, colorBuffers, 2, false, true);
+    generateFBO(FBO, colorBuffers, width, height, 2, false, true);
 
     GLuint blurFBOs[2];
     GLuint blurColorBuffers[2];
-    generateFBO(blurFBOs[0], &blurColorBuffers[0], 1, false, false);
-    generateFBO(blurFBOs[1], &blurColorBuffers[1], 1, false, false);
+    generateFBO(blurFBOs[0], &blurColorBuffers[0], BLOOM_BLUR_WIDTH, BLOOM_BLUR_HEIGHT, 1, false, false);
+    generateFBO(blurFBOs[1], &blurColorBuffers[1], BLOOM_BLUR_WIDTH, BLOOM_BLUR_HEIGHT, 1, false, false);
+
+    GLuint blurShadowMapFBOs[2];
+    GLuint blurShadowMapBuffers[2];
+    generateFBO(blurShadowMapFBOs[0], &blurShadowMapBuffers[0], DEPTH_TEXTURE_BLUR_WIDTH, DEPTH_TEXTURE_BLUR_HEIGHT, 1, false, false);
+    generateFBO(blurShadowMapFBOs[1], &blurShadowMapBuffers[1], DEPTH_TEXTURE_BLUR_WIDTH, DEPTH_TEXTURE_BLUR_HEIGHT, 1, false, false);
 
     GLuint hudFBO;
     GLuint hudColorBuffer;
-    generateFBO(hudFBO, &hudColorBuffer, 1, false, false);
+    generateFBO(hudFBO, &hudColorBuffer, width, height, 1, false, false);
 
     // generate FBO used for shadow mapping
     GLuint depthFBO;
@@ -107,12 +121,16 @@ int main(void) {
     glTexImage2D(
         GL_TEXTURE_2D, 0,
         GL_DEPTH_COMPONENT24, DEPTH_TEXTURE_WIDTH, DEPTH_TEXTURE_HEIGHT,
-        0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL
+        0, GL_DEPTH_COMPONENT, GL_FLOAT, 0
     );
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, maxAnisotropicFiltering);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+    //glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    //glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
 
     glBindFramebuffer(GL_FRAMEBUFFER, depthFBO);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadowMap, 0);
@@ -161,6 +179,14 @@ int main(void) {
     int centerX = width / 2, centerY = height / 2;
     glfwSetCursorPos(window, centerX, centerY);
 
+    bool displayPerformanceStats = false;
+    bool drawAsWireframe = false;
+    bool bloomActivated = true;
+
+    int fKeyStates[9];
+
+    int softFps = 0;
+    float softFrameTime = 0.0f;
     double time = glfwGetTime();
     double previousTime = time;
     while (!glfwWindowShouldClose(window)) {
@@ -202,6 +228,41 @@ int main(void) {
             game.secondaryActionReleased();
         }
 
+        // f-keys
+        if (glfwGetKey(window, GLFW_KEY_F1) == GLFW_PRESS && fKeyStates[0] == GLFW_RELEASE) {
+            // help
+        }
+        if (glfwGetKey(window, GLFW_KEY_F2) == GLFW_PRESS && fKeyStates[1] == GLFW_RELEASE) {
+            displayPerformanceStats = !displayPerformanceStats;
+            std::cout << "Performance stats toggled " << (displayPerformanceStats ? "on" : "off") << std::endl;
+        }
+        if (glfwGetKey(window, GLFW_KEY_F3) == GLFW_PRESS && fKeyStates[2] == GLFW_RELEASE) {
+            drawAsWireframe = !drawAsWireframe;
+            std::cout << "Wireframe toggled " << (drawAsWireframe ? "on" : "off") << std::endl;
+        }
+        if (glfwGetKey(window, GLFW_KEY_F4) == GLFW_PRESS && fKeyStates[3] == GLFW_RELEASE) {
+            // texture sampling quality Nearest Neighbor/Bilinear
+        }
+        if (glfwGetKey(window, GLFW_KEY_F5) == GLFW_PRESS && fKeyStates[4] == GLFW_RELEASE) {
+            // mip mapping quality Off/Nearest Neighbor/Linear
+        }
+        if (glfwGetKey(window, GLFW_KEY_F6) == GLFW_PRESS && fKeyStates[5] == GLFW_RELEASE) {
+            bloomActivated = !bloomActivated;
+            std::cout << "Bloom toggled " << (bloomActivated ? "on" : "off") << std::endl;
+        }
+        if (glfwGetKey(window, GLFW_KEY_F7) == GLFW_PRESS && fKeyStates[6] == GLFW_RELEASE) {
+            // Enable/Disable effect
+        }
+        if (glfwGetKey(window, GLFW_KEY_F8) == GLFW_PRESS && fKeyStates[7] == GLFW_RELEASE) {
+            // Viewfrustum-Culling
+        }
+        if (glfwGetKey(window, GLFW_KEY_F9) == GLFW_PRESS && fKeyStates[8] == GLFW_RELEASE) {
+            // Blending
+        }
+        for (int i = 0; i < 9; i++) {
+            fKeyStates[i] = glfwGetKey(window, GLFW_KEY_F1 + i);
+        }
+
         game.update(delta);
 
         lightSpaceMatrix = shadowMappingProjectionMatrix * glm::translate(
@@ -218,7 +279,11 @@ int main(void) {
         glfwSetCursorPos(window, centerX, centerY);
         game.cursorMoved(mouseX - centerX, mouseY - centerY);
 
-        glEnable(GL_POLYGON_OFFSET_FILL);
+        if (drawAsWireframe) {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        } else {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        }
         glPolygonOffset(4.0f, 0.0f);
         glViewport(0, 0, DEPTH_TEXTURE_WIDTH, DEPTH_TEXTURE_HEIGHT);
         glBindFramebuffer(GL_FRAMEBUFFER, depthFBO);
@@ -229,6 +294,11 @@ int main(void) {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glDisable(GL_POLYGON_OFFSET_FILL);
 
+        GLuint blurredShadowMap = blur(
+            DEPTH_TEXTURE_BLUR_WIDTH, DEPTH_TEXTURE_BLUR_HEIGHT, blurShadowMapFBOs[0], blurShadowMapFBOs[1],
+            blurShadowMapBuffers[0], blurShadowMapBuffers[1], shadowMap, gaussianBlurShader
+        );
+
         glViewport(0, 0, width, height);
         // render to multisampled framebuffer
         glBindFramebuffer(GL_FRAMEBUFFER, multisampledFBO);
@@ -236,7 +306,7 @@ int main(void) {
         glDepthMask(GL_FALSE);
         skybox.draw(game.camera.getMatrix(), projectionMatrix);
         glDepthMask(GL_TRUE);
-        game.draw(projectionMatrix, ndcUVMappingMatrix * lightSpaceMatrix, shadowMap);
+        game.draw(projectionMatrix, ndcUVMappingMatrix * lightSpaceMatrix, blurredShadowMap);
         ParticleSystem::draw(game.camera.getMatrix(), projectionMatrix);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -248,81 +318,61 @@ int main(void) {
             );
         }
 
-        // downscale FBOs used for blurring
-        const int scaledDownWidth = 256;
-        const int scaledDownHeight = 144;
-        for (GLuint i = 0; i < 2; i++) {
-            blitFramebuffer(
-                blurFBOs[i], blurFBOs[i], GL_COLOR_BUFFER_BIT, GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT0,
-                width, height, scaledDownWidth, scaledDownHeight, GL_NEAREST
+        GLuint bloomColorBuffer;
+        if (bloomActivated) {
+            bloomColorBuffer = blur(
+                BLOOM_BLUR_WIDTH, BLOOM_BLUR_HEIGHT, blurFBOs[0], blurFBOs[1],
+                blurColorBuffers[0], blurColorBuffers[1], colorBuffers[1], gaussianBlurShader
             );
         }
 
-        // copy color attachment 1 (bright parts of the image) to the first blur FBO
-        blitFramebuffer(
-            FBO, blurFBOs[0], GL_COLOR_BUFFER_BIT, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT0,
-            width, height, scaledDownWidth, scaledDownHeight, GL_NEAREST
-        );
-
-        // gaussian blur
-        gaussianBlurShader.use();
-        gaussianBlurShader.setInteger("imageHeight", height);
-        gaussianBlurShader.setInteger("imageWidth", width);
-
-        // blur horizontally
-        glBindFramebuffer(GL_FRAMEBUFFER, blurFBOs[1]);
-        gaussianBlurShader.setInteger("horizontalBlur", 1);
-        gaussianBlurShader.setTexture2D("image", GL_TEXTURE0, blurColorBuffers[0], 0);
-        drawScreenQuad();
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-        // blur vertically
-        glBindFramebuffer(GL_FRAMEBUFFER, blurFBOs[0]);
-        gaussianBlurShader.setInteger("horizontalBlur", 0);
-        gaussianBlurShader.setTexture2D("image", GL_TEXTURE0, blurColorBuffers[1], 0);
-        drawScreenQuad();
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-        // copy blurred FBO to FBO used for drawing to the screen
-        blitFramebuffer(
-            blurFBOs[0], FBO, GL_COLOR_BUFFER_BIT, GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1,
-            scaledDownWidth, scaledDownHeight, width, height, GL_LINEAR
-        );
-
-        // post processing - combine the blurred and the main image
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        glViewport(0, 0, width, height);
+
         // victory condition
+        glBindFramebuffer(GL_FRAMEBUFFER, hudFBO);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         if (glm::length(level.end - game.player.position) < 2) {
-            glBindFramebuffer(GL_FRAMEBUFFER, hudFBO);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             TextRenderer::renderText(
                 "You won",
                 width / 2.0f - youDiedTextDimensions.x / 2.0f,
                 height / 2.0f - youDiedTextDimensions.y / 2.0f,
                 1.0f,
                 glm::vec3(0.8f));
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
         } else if (game.player.isDead) {
-            glBindFramebuffer(GL_FRAMEBUFFER, hudFBO);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             TextRenderer::renderText(
                 "You died",
                 width / 2.0f - youDiedTextDimensions.x / 2.0f,
                 height / 2.0f - youDiedTextDimensions.y / 2.0f,
                 1.0f,
                 glm::vec3(0.8f));
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        } else {
-            glBindFramebuffer(GL_FRAMEBUFFER, hudFBO);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
         }
+
+        if (displayPerformanceStats) {
+            softFps = (softFps * 9 + (1.0f / delta)) / 10;
+            softFrameTime = (softFrameTime * 9 + round(delta * 100000) / 100) / 10;
+            TextRenderer::renderText(
+                "fps: " + std::to_string(softFps),
+                0.0f,
+                height - 20.0f,
+                0.1f,
+                glm::vec3(0.8f));
+            TextRenderer::renderText(
+                "frametime (ms): " + std::to_string(softFrameTime),
+                0.0f,
+                height - 50.0f,
+                0.1f,
+                glm::vec3(0.8f));
+        }
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
         postProcessingShader.use();
         postProcessingShader.setTexture2D("mainImage", GL_TEXTURE0, colorBuffers[0], 0);
         //postProcessingShader.setTexture2D("mainImage", GL_TEXTURE0, shadowMap, 0);
-        postProcessingShader.setTexture2D("brightSpotsBloomImage", GL_TEXTURE1, colorBuffers[1], 1);
+        postProcessingShader.setTexture2D("brightSpotsBloomImage", GL_TEXTURE1, bloomColorBuffer, 1);
         postProcessingShader.setTexture2D("hudTexture", GL_TEXTURE2, hudColorBuffer, 2);
         drawScreenQuad();
 
@@ -334,7 +384,35 @@ int main(void) {
     return 0;
 }
 
-void generateFBO(GLuint &FBO, GLuint* colorBuffers, int numColorAttachments, bool isMultisampled, bool attachDepthRBO) {
+GLuint blur(
+    int width, int height, GLuint blurFBO0, GLuint blurFBO1, GLuint blurBuffer0,
+    GLuint blurBuffer1, GLuint inputBuffer, Shader &shader
+) {
+    // gaussian blur
+    shader.use();
+    shader.setInteger("imageHeight", height);
+    shader.setInteger("imageWidth", width);
+
+    // blur horizontally
+    glBindFramebuffer(GL_FRAMEBUFFER, blurFBO1);
+    glViewport(0, 0, width, height);
+    shader.setInteger("horizontalBlur", 1);
+    shader.setTexture2D("image", GL_TEXTURE0, inputBuffer, 0);     // colorBuffers[1]
+    drawScreenQuad();
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // blur vertically
+    glBindFramebuffer(GL_FRAMEBUFFER, blurFBO0);
+    glViewport(0, 0, width, height);
+    shader.setInteger("horizontalBlur", 0);
+    shader.setTexture2D("image", GL_TEXTURE0, blurBuffer1, 0);     // blurColorBuffers[1]
+    drawScreenQuad();
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    return blurBuffer0;
+}
+
+void generateFBO(GLuint &FBO, GLuint* colorBuffers, int width, int height, int numColorAttachments, bool isMultisampled, bool attachDepthRBO) {
     glGenFramebuffers(1, &FBO);
     glBindFramebuffer(GL_FRAMEBUFFER, FBO);
     glGenTextures(numColorAttachments, colorBuffers);
