@@ -4,26 +4,37 @@
 layout(location = 0) out vec4 outColor;
 layout(location = 1) out vec4 brightSpotColor;
 
+const int NUM_CASCADES = 3;
+
 in vec3 vertNormal;
 in vec3 vertFragPosition;
-in vec4 vertFragPositionLightSpace;
+in vec4 vertFragPositionsLightSpace[NUM_CASCADES];
+in float vertClipSpaceZPosition;
 
 uniform vec3 cameraPosition;
 uniform vec3 diffuseColor;
 uniform vec3 specularColor;
 uniform float glossyness;
-uniform sampler2D shadowMap;
+uniform sampler2D shadowMaps[NUM_CASCADES];
+uniform float cascadeEndsClipSpace[NUM_CASCADES];
 
 void main() {
     vec3 light = normalize(vec3(-3.5f, -5.3f, 7.0f));   // TODO: unhardcode this
     float normalDotLight = dot(vertNormal, light);
 
+    int cascadeIndex = 0;
+    for (; cascadeIndex < NUM_CASCADES; cascadeIndex++) {
+        if (vertClipSpaceZPosition <= cascadeEndsClipSpace[cascadeIndex]) {
+            break;
+        }
+    }
+
     // variance shadow mapping (VSM), reference: http://www.punkuser.net/vsm/vsm_paper.pdf
-    vec4 shadowMapCoords = vertFragPositionLightSpace / vertFragPositionLightSpace.w;   // perspective divide
+    vec4 shadowMapCoords = vertFragPositionsLightSpace[cascadeIndex] / vertFragPositionsLightSpace[cascadeIndex].w;   // perspective divide
     float currentDepth = shadowMapCoords.z;
 
     // Chebychev's inequality
-    vec2 moments = texture2D(shadowMap, shadowMapCoords.xy).rg;
+    vec2 moments = texture2D(shadowMaps[cascadeIndex], shadowMapCoords.xy).rg;
     float p = 1.0f;
     if (currentDepth > moments.x) {
         float variance = moments.y - moments.x * moments.x;     // Algebraic formula for the variance (Verschiebungssatz)

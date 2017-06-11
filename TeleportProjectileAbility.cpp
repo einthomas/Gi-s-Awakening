@@ -36,11 +36,8 @@ void TeleportProjectileAbility::draw(const Shader& shader) {
     }
 }
 
-void TeleportProjectileAbility::draw(
-    const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix, const glm::vec3& cameraPosition,
-    const glm::mat4 &lightSpaceMatrix, const GLuint shadowMap
-) {
+void TeleportProjectileAbility::draw(RenderInfo renderInfo, ShadowInfo shadowInfo) {
     for (Projectile projectile : projectiles) {
-        projectile.draw(viewMatrix, projectionMatrix, cameraPosition, lightSpaceMatrix, shadowMap);
+        projectile.draw(renderInfo, shadowInfo);
     }
 }

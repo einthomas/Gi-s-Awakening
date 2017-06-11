@@ -168,11 +168,8 @@ void Object3D::draw(const glm::mat4& viewMatrix, const glm::mat4& projectionMatr
     mesh.draw();
 }
 
-void Object3D::draw(
-    const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix, const glm::vec3 &cameraPosition,
-    const glm::mat4 &lightSpaceMatrix, const GLuint shadowMap
-) {
-    material->bind(viewMatrix, projectionMatrix, calculateModelMatrix(), cameraPosition, lightSpaceMatrix, shadowMap);
+void Object3D::draw(RenderInfo renderInfo, ShadowInfo shadowInfo) {
+    material->bind(renderInfo, shadowInfo, calculateModelMatrix());
     mesh.draw();
 }
 

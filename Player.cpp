@@ -65,15 +65,12 @@ void Player::draw(const Shader& shader) {
     }
 }
 
-void Player::draw(
-    const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix, const glm::vec3& cameraPosition,
-    const glm::mat4 &lightSpaceMatrix, const GLuint shadowMap
-) {
+void Player::draw(RenderInfo renderInfo, ShadowInfo shadowInfo) {
     for (Projectile projectile : projectiles) {
-        projectile.draw(viewMatrix, projectionMatrix, cameraPosition, lightSpaceMatrix, shadowMap);
+        projectile.draw(renderInfo, shadowInfo);
     }
     if (ability != nullptr) {
-        ability->draw(viewMatrix, projectionMatrix, cameraPosition, lightSpaceMatrix, shadowMap);
+        ability->draw(renderInfo, shadowInfo);
     }
 }
 
