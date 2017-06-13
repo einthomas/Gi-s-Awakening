@@ -30,11 +30,8 @@ void Projectile::draw(const Shader& shader) {
     object3D.draw(shader);
 }
 
-void Projectile::draw(
-    const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix, const glm::vec3 &cameraPosition,
-    const glm::mat4 &lightSpaceMatrix, const GLuint shadowMap
-) {
-    object3D.draw(viewMatrix, projectionMatrix, cameraPosition, lightSpaceMatrix, shadowMap);
+void Projectile::draw(RenderInfo renderInfo, ShadowInfo shadowInfo) {
+    object3D.draw(renderInfo, shadowInfo);
 }
 
 void Projectile::update(float delta, Level &level) {

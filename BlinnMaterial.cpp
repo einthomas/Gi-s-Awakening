@@ -17,24 +17,23 @@ BlinnMaterial::BlinnMaterial(
 }
 
 void BlinnMaterial::bind(
-    const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix,
-    const glm::mat4 &modelMatrix, const glm::vec3 &cameraPosition,
-    const glm::mat4 &lightSpaceMatrix, GLuint shadowMap,
+    RenderInfo renderInfo, ShadowInfo shadowInfo, const glm::mat4& modelMatrix,
     GLfloat lightMapScale, const glm::vec2 &lightMapPosition, GLuint lightMap
 ) {
     shader.use();
 
     shader.setMatrix4("model", modelMatrix);
-    shader.setMatrix4("view", viewMatrix);
-    shader.setMatrix4("projection", projectionMatrix);
-    shader.setVector3f("cameraPosition", cameraPosition);
-
+    shader.setMatrix4("view", renderInfo.viewMatrix);
+    shader.setMatrix4("projection", renderInfo.projectionMatrix);
+    shader.setVector3f("cameraPosition", renderInfo.cameraPosition);
     shader.setVector3f("diffuseColor", diffuseColor);
     shader.setVector3f("specularColor", specularColor);
     shader.setFloat("glossyness", glossyness);
-
-    shader.setMatrix4("lightSpaceMatrix", lightSpaceMatrix);
-    shader.setTexture2D("shadowMap", GL_TEXTURE0, shadowMap, 0);
+    for (int i = 0; i < shadowInfo.numShadowMaps; i++) {
+        shader.setMatrix4("lightSpaceMatrices[" + std::to_string(i) + "]", shadowInfo.lightSpaceMatrices[i]);
+        shader.setTexture2D("shadowMaps[" + std::to_string(i) + "]", GL_TEXTURE0 + i, shadowInfo.shadowMaps[i], i);
+        shader.setFloat("cascadeEndsClipSpace[" + std::to_string(i) + "]", shadowInfo.cascadeEndsClipSpace[i]);
+    }
 
     shader.setFloat("lightMapScale", lightMapScale);
     shader.setVector2f("lightMapPosition", lightMapPosition);

@@ -35,12 +35,11 @@ void Game::draw(const Shader& shader) {
     player.draw(shader);
 }
 
-void Game::draw(
-    const glm::mat4 &projectionMatrix, const glm::mat4 &lightSpaceMatrix,
-    const GLuint shadowMap
-) {
-    level.draw(camera.getMatrix(), projectionMatrix, camera.position, lightSpaceMatrix, shadowMap);
-    player.draw(camera.getMatrix(), projectionMatrix, camera.position, lightSpaceMatrix, shadowMap);
+void Game::draw(glm::mat4 &projectionMatrix, ShadowInfo shadowInfo) {
+    glm::mat4 cameraMatrix = camera.getMatrix();
+    RenderInfo renderInfo(cameraMatrix, projectionMatrix, camera.position);
+    level.draw(renderInfo, shadowInfo);
+    player.draw(renderInfo, shadowInfo);
 }
 
 void Game::forwardPressed() {

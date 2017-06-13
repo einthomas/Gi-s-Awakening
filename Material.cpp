@@ -7,10 +7,7 @@ void Material::bind(
 }
 
 void Material::bind(
-    const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix,
-    const glm::mat4 &modelMatrix, const glm::vec3 &cameraPosition,
-    const glm::mat4 &lightSpaceMatrix, GLuint shadowMap,
-    GLfloat lightmapScale, const glm::vec2 &lightmapPosition,
-    GLuint lightmap
-) {
+    RenderInfo renderInfo, ShadowInfo shadowInfo,
+    const glm::mat4& modelMatrix,
+    GLfloat lightMapScale, const glm::vec2 &lightMapPosition, GLuint lightMap) {
 }

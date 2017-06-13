@@ -26,11 +26,7 @@ public:
     );
 
     void draw(const Shader &shader);
-    void draw(
-        const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix,
-        const glm::vec3 &cameraPosition, const glm::mat4 &lightSpaceMatrix,
-        const GLuint shadowMap
-    );
+    void draw(RenderInfo renderInfo, ShadowInfo shadowInfo);
     void update(float delta);
     bool intersects(const glm::vec3 &position, const glm::vec3 &scale);
 

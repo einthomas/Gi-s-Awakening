@@ -32,6 +32,7 @@ Shader::Shader(std::string vertexShaderPath, std::string fragmentShaderPath) {
         glGetProgramInfoLog(program, infoLogLength, NULL, infoLog);
 		std::cout << "ERROR::SHADERPROGRAM::LINKING\n" << infoLog << std::endl;
 	}
+    delete[] infoLog;
 }
 
 void Shader::use() {

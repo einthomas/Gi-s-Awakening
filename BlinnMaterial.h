@@ -4,6 +4,8 @@
 
 #include "Material.h"
 #include "Shader.h"
+#include "RenderInfo.h"
+#include "ShadowInfo.h"
 
 class BlinnMaterial : public Material {
 public:
@@ -19,9 +21,8 @@ public:
     ~BlinnMaterial() { }
 
     void bind(
-        const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix,
-        const glm::mat4 &modelMatrix, const glm::vec3 &cameraPosition,
-        const glm::mat4 &lightSpaceMatrix, GLuint shadowMap,
+        RenderInfo renderInfo, ShadowInfo shadowInfo,
+        const glm::mat4& modelMatrix,
         GLfloat lightMapScale, const glm::vec2 &lightMapPosition,
         GLuint lightMap
     ) override;

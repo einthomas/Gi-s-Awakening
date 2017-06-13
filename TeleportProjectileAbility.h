@@ -11,10 +11,7 @@ public:
     void executeAction() override;
     void update(float delta) override;
     void draw(const Shader &shader) override;
-    void draw(
-        const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix, const glm::vec3& cameraPosition,
-        const glm::mat4 &lightSpaceMatrix, const GLuint shadowMap
-    ) override;
+    void draw(RenderInfo renderInfo, ShadowInfo shadowInfo) override;
 
 private:
     std::vector<Projectile> projectiles;

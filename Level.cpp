@@ -59,39 +59,23 @@ void Level::draw(const Shader& shader) {
     endObject.draw(shader);
 }
 
-void Level::draw(
-    const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix,
-    const glm::vec3 &cameraPosition, const glm::mat4 &lightSpaceMatrix,
-    const GLuint shadowMap
-) {
+void Level::draw(RenderInfo renderInfo, ShadowInfo shadowInfo) {
     for (Platform &platform : platforms) {
         if (platform.isVisible) {
-            platform.draw(
-                viewMatrix, projectionMatrix, cameraPosition,
-                lightSpaceMatrix, shadowMap, lightMap
-            );
+            platform.draw(renderInfo, shadowInfo, lightMap);
         }
     }
     for (Trigger &trigger : triggers) {
         if (trigger.isVisible) {
-            trigger.draw(
-                viewMatrix, projectionMatrix, cameraPosition,
-                lightSpaceMatrix, shadowMap
-            );
+            trigger.draw(renderInfo, shadowInfo, lightMap);
         }
     }
     for (PressurePlate &pressurePlate : pressurePlates) {
         if (pressurePlate.isVisible) {
-            pressurePlate.draw(
-                viewMatrix, projectionMatrix, cameraPosition,
-                lightSpaceMatrix, shadowMap
-            );
+            pressurePlate.draw(renderInfo, shadowInfo, lightMap);
         }
     }
-    endObject.draw(
-        viewMatrix, projectionMatrix, cameraPosition,
-        lightSpaceMatrix, shadowMap
-    );
+    endObject.draw(renderInfo, shadowInfo, lightMap);
 }
 
 void Level::update(float delta) {

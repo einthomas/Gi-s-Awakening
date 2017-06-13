@@ -22,10 +22,7 @@ public:
 
     void update(float delta, float gravity, Level &level);
     void draw(const Shader &shader);
-    void draw(
-        const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix, const glm::vec3& cameraPosition,
-        const glm::mat4 &lightSpaceMatrix, const GLuint shadowMap
-    );
+    void draw(RenderInfo renderInfo, ShadowInfo shadowInfo);
     void shoot(const Projectile &projectile);
     void jumpPressed(float delta);
     void jumpReleased();
