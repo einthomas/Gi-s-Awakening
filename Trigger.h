@@ -9,7 +9,12 @@ class Trigger : public Platform {
 public:
     bool isTriggered;
 
-    Trigger(const PlatformType *type, BlinnMaterial blinnMaterial, glm::vec3 position, bool isTriggered, std::vector<Platform*> triggeredPlatforms);
+    Trigger(
+        const PlatformType *type, BlinnMaterial blinnMaterial,
+        int lightMapSize, int lightMapIndex,
+        glm::vec3 position, bool isTriggered,
+        std::vector<Platform*> triggeredPlatforms
+    );
     Trigger(const Trigger &trigger);
     void update(float delta);
     void trigger();

@@ -1,15 +1,26 @@
 #include "PressurePlate.h"
 
-PressurePlate::PressurePlate(const PlatformType *type, BlinnMaterial blinnMaterial, glm::vec3 position, AbilityType abilityType) :
-    blinnMaterial(blinnMaterial), Platform(type, &this->blinnMaterial, position, ""), abilityType(abilityType),
-    originalDiffuseColor(blinnMaterial.diffuseColor), highlightDiffuseColor(originalDiffuseColor * 2.0f)
+PressurePlate::PressurePlate(
+    const PlatformType *type, BlinnMaterial blinnMaterial,
+    int lightMapSize, int lightMapIndex,
+    glm::vec3 position, AbilityType abilityType
+) :
+    Platform(
+        type, &this->blinnMaterial, position, "", lightMapSize, lightMapIndex
+    ),
+    abilityType(abilityType),
+    blinnMaterial(blinnMaterial),
+    originalDiffuseColor(blinnMaterial.diffuseColor),
+    highlightDiffuseColor(originalDiffuseColor * 2.0f)
 {
     material = &this->blinnMaterial;
 }
 
 PressurePlate::PressurePlate(const PressurePlate &pressurePlate) :
-    blinnMaterial(pressurePlate.blinnMaterial), Platform(pressurePlate), abilityType(pressurePlate.abilityType),
-    originalDiffuseColor(blinnMaterial.diffuseColor), highlightDiffuseColor(originalDiffuseColor * 2.0f)
+    Platform(pressurePlate), abilityType(pressurePlate.abilityType),
+    blinnMaterial(pressurePlate.blinnMaterial),
+    originalDiffuseColor(blinnMaterial.diffuseColor),
+    highlightDiffuseColor(originalDiffuseColor * 2.0f)
 {
     material = &blinnMaterial;
 }

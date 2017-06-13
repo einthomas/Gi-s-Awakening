@@ -1,8 +1,20 @@
 #include "Trigger.h"
 
-Trigger::Trigger(const PlatformType *type, BlinnMaterial blinnMaterial, glm::vec3 position, bool isTriggered, std::vector<Platform*> triggeredPlatforms) :
-    blinnMaterial(blinnMaterial), Platform(type, &this->blinnMaterial, position, ""), isTriggered(isTriggered), triggeredPlatforms(triggeredPlatforms),
-    rotation(0.0f), rotationAxis(0.0f, 0.0f, 1.0f), originalColor(blinnMaterial.diffuseColor), activatedColor(glm::vec3(0.0f, 1.0f, 0.0f))
+Trigger::Trigger(
+    const PlatformType *type, BlinnMaterial blinnMaterial,
+    int lightMapSize, int lightMapIndex,
+    glm::vec3 position, bool isTriggered,
+    std::vector<Platform*> triggeredPlatforms
+) :
+    Platform(
+        type, &this->blinnMaterial, position, "", lightMapSize, lightMapIndex
+    ),
+    isTriggered(isTriggered),
+    blinnMaterial(blinnMaterial),
+    triggeredPlatforms(triggeredPlatforms),
+    rotation(0.0f), rotationAxis(0.0f, 0.0f, 1.0f),
+    originalColor(blinnMaterial.diffuseColor),
+    activatedColor(glm::vec3(0.0f, 1.0f, 0.0f))
 {
     if (isTriggered) {
         this->blinnMaterial.specularColor = activatedColor;
@@ -11,7 +23,9 @@ Trigger::Trigger(const PlatformType *type, BlinnMaterial blinnMaterial, glm::vec
 }
 
 Trigger::Trigger(const Trigger &trigger) :
-    blinnMaterial(trigger.blinnMaterial), Platform(trigger), rotation(0.0f), isTriggered(trigger.isTriggered), originalColor(trigger.originalColor),
+    Platform(trigger), isTriggered(trigger.isTriggered),
+    blinnMaterial(trigger.blinnMaterial),
+    rotation(0.0f), originalColor(trigger.originalColor),
     activatedColor(trigger.activatedColor)
 {
     material = &blinnMaterial;
@@ -27,8 +41,10 @@ void Trigger::update(float delta) {
 
 void Trigger::trigger() {
     isTriggered = !isTriggered;
-    blinnMaterial.diffuseColor = isTriggered ? activatedColor : originalColor;
-    blinnMaterial.specularColor = isTriggered ? activatedColor : glm::vec3(0.0f);
+    blinnMaterial.diffuseColor =
+        isTriggered ? activatedColor : originalColor;
+    blinnMaterial.specularColor =
+        isTriggered ? activatedColor : glm::vec3(0.0f);
     for (Platform *triggeredPlatform : triggeredPlatforms) {
         triggeredPlatform->isVisible = isTriggered;
     }   

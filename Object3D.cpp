@@ -113,7 +113,6 @@ Object3D::Object3D(
 {
 }
 
-
 Object3D Object3D::makeCube(
     Material *material, const glm::vec3 &position, const glm::vec3 &scale
 ) {

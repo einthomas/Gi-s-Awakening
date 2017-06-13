@@ -27,6 +27,7 @@ public:
         const glm::vec3 &size, const Mesh &mesh, GLfloat lightMapScale = 0,
         glm::vec2 lightMapPosition = glm::vec2(0)
     );
+    virtual ~Object3D() = default;
 
     static Object3D makeCube(
         Material *material, const glm::vec3 &position, const glm::vec3 &scale

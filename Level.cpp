@@ -142,6 +142,7 @@ Level Level::fromFile(
             BlinnMaterial(
                 glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 0.0f, 1.0f), 0.0f
             ),
+            lightMapSize, pressurePlateJson["lightMapIndex"],
             pressurePlateJson["position"],
             static_cast<AbilityType>(
                 pressurePlateJson["givesAbility"].get<int>()
@@ -165,6 +166,7 @@ Level Level::fromFile(
         level.triggers.push_back(Trigger(
             &platformTypes.at(triggerJson["type"]),
             BlinnMaterial(glm::vec3(1.0f), glm::vec3(0.0f), 0.0f),
+            lightMapSize, triggerJson["lightMapIndex"],
             triggerJson["position"],
             isTriggered,
             triggeredPlatforms
