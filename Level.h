@@ -29,6 +29,7 @@ public:
     void draw(RenderInfo renderInfo, ShadowInfo shadowInfo);
     void update(float delta);
     bool intersects(const glm::vec3 &position, const glm::vec3 &scale);
+    int getTotalObjectCount();
 
     static Level fromFile(
         const char *filename, Material *material, Mesh endMesh,

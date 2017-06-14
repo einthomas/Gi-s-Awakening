@@ -19,7 +19,7 @@
 #include "ParticleSystem.h"
 #include "Game.h"
 
-static int width = 1920, height = 1080;
+static int width = 1280, height = 720;
 static const char *title = "Gi's Awakening: The Mending of the Sky";
 static GLuint screenQuadVAO = 0;
 const int AA_SAMPLES = 4;
@@ -46,10 +46,13 @@ GLuint blur(
     int width, int height, GLuint blurFBO0, GLuint blurFBO1, GLuint blurBuffer0,
     GLuint blurBuffer1, GLuint inputBuffer, Shader &shader
 );
+void calculateSplitFrustumCornersWorldSpace(
+    glm::vec3 frustumCornersWorldSpace[], const float *cascadeEnds,
+    const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix
+);
 void calculateShadowMappingProjectionMatrices(
-    glm::mat4 shadowMappingProjectionMatrices[], const float *cascadeEnds,
-    const glm::mat4 &shadowMappingViewMatrix, const glm::mat4 &viewMatrix,
-    const glm::mat4 &projectionMatrix
+    glm::mat4 shadowMappingProjectionMatrices[], glm::vec3 frustumCornersWorldSpace[],
+    const glm::mat4 &shadowMappingViewMatrix
 );
 
 int main(void) {
@@ -171,7 +174,7 @@ int main(void) {
     platformTypesFile >> platformTypesJson;
 
     for (auto &platformType : platformTypesJson) {
-        platformTypes.emplace(platformType["name"].get<std::string>(), PlatformType {
+        platformTypes.emplace(platformType["name"].get<std::string>(), PlatformType{
             glm::vec3(platformType["size"][0], platformType["size"][1], platformType["size"][2]),
             Mesh::fromFile(("geometry/" + platformType["name"].get<std::string>() + ".vbo").c_str())
         });
@@ -200,7 +203,7 @@ int main(void) {
     bool displayHelp = false;
     int currentShadowMap = 0;   // TODO: DEBUG, REMOVE!!
 
-    int fKeyStates[10] = {0};
+    int fKeyStates[10] = { 0 };
 
     int softFps = 0;
     float softFrameTime = 0.0f;
@@ -210,7 +213,7 @@ int main(void) {
         double currentTime = glfwGetTime();
         double delta = currentTime - previousTime;
         previousTime = currentTime;
-        
+
         // movement
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
             game.forwardPressed();
@@ -287,7 +290,7 @@ int main(void) {
         }
 
         game.update(delta);
-        
+
         // mouse look
         double mouseX, mouseY;
         glfwGetCursorPos(window, &mouseX, &mouseY);
@@ -300,11 +303,47 @@ int main(void) {
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         }
 
+        glm::vec3 splitFrustumCornersWorldSpace[4 * (NUM_SHADOW_MAPS + 1)];
+        calculateSplitFrustumCornersWorldSpace(
+            splitFrustumCornersWorldSpace, cascadeEnds, game.camera.getMatrix(), projectionMatrix
+        );
         glm::mat4 shadowProjectionMatrices[NUM_SHADOW_MAPS];
         calculateShadowMappingProjectionMatrices(
-            shadowProjectionMatrices, cascadeEnds, shadowMappingViewMatrix,
-            game.camera.getMatrix(), projectionMatrix
+            shadowProjectionMatrices, splitFrustumCornersWorldSpace, shadowMappingViewMatrix
         );
+
+        const glm::vec3 viewFrustumNormals[4] = {
+            // left plane normal (near left top, near left bottom, far left bottom)
+            glm::normalize(glm::cross(
+                splitFrustumCornersWorldSpace[0] - splitFrustumCornersWorldSpace[3],    // near left top - near left bottom
+                splitFrustumCornersWorldSpace[7] - splitFrustumCornersWorldSpace[3]     // far left bottom - near left bottom
+            )),
+
+            // right plane normal (near right bottom, near right top, far right top)
+            glm::normalize(glm::cross(
+                splitFrustumCornersWorldSpace[2] - splitFrustumCornersWorldSpace[1],    // near right bottom - near right top
+                splitFrustumCornersWorldSpace[5] - splitFrustumCornersWorldSpace[1]     // far right top - near right top
+            )),
+
+            // top plane normal (near right top, near left top, far left top)
+            glm::normalize(glm::cross(
+                splitFrustumCornersWorldSpace[1] - splitFrustumCornersWorldSpace[0],    // near right top - near left top
+                splitFrustumCornersWorldSpace[4] - splitFrustumCornersWorldSpace[0]     // far left top - near left top
+            )),
+
+            // bottom plane normal (near left bottom, near right bottom, far right bottom)
+            glm::normalize(glm::cross(
+                splitFrustumCornersWorldSpace[3] - splitFrustumCornersWorldSpace[2],    // near left bottom - near right bottom
+                splitFrustumCornersWorldSpace[6] - splitFrustumCornersWorldSpace[2]     // far right bottom - near right bottom
+            ))
+        };
+
+        const float ds[4] = {
+            -glm::dot(viewFrustumNormals[0], splitFrustumCornersWorldSpace[3]),
+            -glm::dot(viewFrustumNormals[1], splitFrustumCornersWorldSpace[1]),
+            -glm::dot(viewFrustumNormals[2], splitFrustumCornersWorldSpace[0]),
+            -glm::dot(viewFrustumNormals[3], splitFrustumCornersWorldSpace[2]),
+        };
 
         float cascadeEndsClipSpace[NUM_SHADOW_MAPS];
         for (int i = 0; i < NUM_SHADOW_MAPS; i++) {
@@ -328,7 +367,7 @@ int main(void) {
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
             glDisable(GL_POLYGON_OFFSET_FILL);
 
-            // blur just the closes shadow map
+            // blur just the closest shadow map
             if (i == 0) {
                 blurredShadowMaps[i] = blur(
                     DEPTH_TEXTURE_BLUR_WIDTH, DEPTH_TEXTURE_BLUR_HEIGHT, blurShadowMapFBOs[0], blurShadowMapFBOs[1],
@@ -346,7 +385,8 @@ int main(void) {
         glDepthMask(GL_FALSE);
         skybox.draw(game.camera.getMatrix(), projectionMatrix);
         glDepthMask(GL_TRUE);
-        game.draw(projectionMatrix, ShadowInfo(
+        Object3D::objectDrawCount = 0;
+        game.draw(projectionMatrix, viewFrustumNormals, ds, ShadowInfo(
             lightSpaceMatrices, blurredShadowMaps, NUM_SHADOW_MAPS, cascadeEndsClipSpace
         ));
         ParticleSystem::draw(game.camera.getMatrix(), projectionMatrix);
@@ -406,6 +446,12 @@ int main(void) {
                 height - 50.0f,
                 0.1f,
                 glm::vec3(0.8f));
+            TextRenderer::renderText(
+                "Objects drawn: " + std::to_string(Object3D::objectDrawCount) + "/" + std::to_string(level.getTotalObjectCount()),
+                0.0f,
+                height - 80.0f,
+                0.1f,
+                glm::vec3(0.8f));
         }
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -413,9 +459,13 @@ int main(void) {
 
         postProcessingShader.use();
         if (displayHelp) {
-            postProcessingShader.setTexture2D("mainImage", GL_TEXTURE0, blurredShadowMaps[currentShadowMap], 0);
+            postProcessingShader.setTexture2D(
+                "mainImage", GL_TEXTURE0, blurredShadowMaps[currentShadowMap], 0
+            );
         } else {
-            postProcessingShader.setTexture2D("mainImage", GL_TEXTURE0, colorBuffers[0], 0);
+            postProcessingShader.setTexture2D(
+                "mainImage", GL_TEXTURE0, colorBuffers[0], 0
+            );
         }
         postProcessingShader.setTexture2D("brightSpotsBloomImage", GL_TEXTURE1, bloomColorBuffer, 1);
         postProcessingShader.setTexture2D("hudTexture", GL_TEXTURE2, hudColorBuffer, 2);
@@ -429,32 +479,36 @@ int main(void) {
     return 0;
 }
 
-void calculateShadowMappingProjectionMatrices(
-    glm::mat4 shadowMappingProjectionMatrices[], const float *cascadeEnds,
-    const glm::mat4 &shadowMappingViewMatrix, const glm::mat4 &viewMatrix,
-    const glm::mat4 &projectionMatrix
+void calculateSplitFrustumCornersWorldSpace(
+    glm::vec3 frustumCornersWorldSpace[], const float *cascadeEnds,
+    const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix
 ) {
-    for (int k = 0; k < NUM_SHADOW_MAPS; k++) {
-        // near and far values from view to clip space
+    for (int k = 0; k < NUM_SHADOW_MAPS + 1; k++) {
+        // cascade near and far plane values from view to clip space
         glm::vec4 tmp = projectionMatrix * glm::vec4(0.0f, 0.0f, -cascadeEnds[k], 1.0f);
         float clipSpaceNear = tmp.z / tmp.w;
-        tmp = projectionMatrix * glm::vec4(0.0f, 0.0f, -cascadeEnds[k + 1], 1.0f);
-        float clipSpaceFar = tmp.z / tmp.w;
 
-        glm::vec3 frustumCornersClipSpace[8] = {
+        glm::vec3 frustumCornersClipSpace[4] = {
             // near plane
-            glm::vec3(-1.0f, 1.0f, clipSpaceNear),
-            glm::vec3(1.0f, 1.0f, clipSpaceNear),
-            glm::vec3(1.0f, -1.0f, clipSpaceNear),
-            glm::vec3(-1.0f, -1.0f, clipSpaceNear),
-
-            // far plane
-            glm::vec3(-1.0f, 1.0f, clipSpaceFar),
-            glm::vec3(1.0f, 1.0f, clipSpaceFar),
-            glm::vec3(1.0f, -1.0f, clipSpaceFar),
-            glm::vec3(-1.0f, -1.0f, clipSpaceFar),
+            glm::vec3(-1.0f, 1.0f, clipSpaceNear),      // left top
+            glm::vec3(1.0f, 1.0f, clipSpaceNear),       // right top
+            glm::vec3(1.0f, -1.0f, clipSpaceNear),      // right bottom
+            glm::vec3(-1.0f, -1.0f, clipSpaceNear)      // left bottom
         };
 
+        for (int i = 0; i < 4; i++) {
+            glm::vec4 frustumCorner = glm::inverse(projectionMatrix * viewMatrix) 
+                * glm::vec4(frustumCornersClipSpace[i], 1.0f);
+            frustumCornersWorldSpace[i + 4 * k] = glm::vec3(frustumCorner / frustumCorner.w);
+        }
+    }
+}
+
+void calculateShadowMappingProjectionMatrices(
+    glm::mat4 shadowMappingProjectionMatrices[], glm::vec3 frustumCornersWorldSpace[],
+    const glm::mat4 &shadowMappingViewMatrix
+) {
+    for (int k = 0; k < NUM_SHADOW_MAPS; k++) {
         float minX = std::numeric_limits<float>::max();
         float maxX = std::numeric_limits<float>::min();
         float minY = std::numeric_limits<float>::max();
@@ -462,12 +516,8 @@ void calculateShadowMappingProjectionMatrices(
         float minZ = std::numeric_limits<float>::max();
         float maxZ = std::numeric_limits<float>::min();
 
-        glm::vec3 frustumCornersWorldSpace[8];
         for (int i = 0; i < 8; i++) {
-            glm::vec4 frustumCorner = glm::inverse(projectionMatrix * viewMatrix) * glm::vec4(frustumCornersClipSpace[i], 1.0f);
-            frustumCornersWorldSpace[i] = glm::vec3(frustumCorner / frustumCorner.w);
-
-            glm::vec3 frustumCornerShadowSpace = shadowMappingViewMatrix * glm::vec4(frustumCornersWorldSpace[i], 1.0f);
+            glm::vec3 frustumCornerShadowSpace = shadowMappingViewMatrix * glm::vec4(frustumCornersWorldSpace[i + k * 4], 1.0f);
             minX = std::min(minX, frustumCornerShadowSpace.x);
             maxX = std::max(maxX, frustumCornerShadowSpace.x);
             minY = std::min(minY, frustumCornerShadowSpace.y);
@@ -608,7 +658,7 @@ GLFWwindow *initGLFW() {
     glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
     //glfwWindowHint(GLFW_SAMPLES, 4);
 
-    GLFWwindow *window = glfwCreateWindow(width, height, title, glfwGetPrimaryMonitor(), nullptr);
+    GLFWwindow *window = glfwCreateWindow(width, height, title, nullptr, nullptr);
     glfwMakeContextCurrent(window);
     if (window == NULL) {
         std::cout << "Failed to create GLFW window" << std::endl;

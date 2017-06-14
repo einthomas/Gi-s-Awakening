@@ -40,6 +40,10 @@ bool Level::intersects(const glm::vec3 &position, const glm::vec3 &scale) {
     return false;
 }
 
+int Level::getTotalObjectCount() {
+    return platforms.size() + triggers.size() + pressurePlates.size() + 1;  // + 1 ... the end object
+}
+
 void Level::draw(const Shader& shader) {
     for (Platform &platform : platforms) {
         if (platform.isVisible) {

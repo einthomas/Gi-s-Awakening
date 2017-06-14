@@ -9,6 +9,8 @@
 
 class Object3D {
 public:
+    static int objectDrawCount;
+
     Material *material;
     glm::vec3 position, scale, size;
     Mesh mesh;

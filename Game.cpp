@@ -35,9 +35,12 @@ void Game::draw(const Shader& shader) {
     player.draw(shader);
 }
 
-void Game::draw(glm::mat4 &projectionMatrix, ShadowInfo shadowInfo) {
+void Game::draw(
+    glm::mat4 &projectionMatrix, const glm::vec3 viewFrustumNormals[], const float ds[],
+    ShadowInfo shadowInfo
+) {
     glm::mat4 cameraMatrix = camera.getMatrix();
-    RenderInfo renderInfo(cameraMatrix, projectionMatrix, camera.position);
+    RenderInfo renderInfo(cameraMatrix, projectionMatrix, camera.position, viewFrustumNormals, ds);
     level.draw(renderInfo, shadowInfo);
     player.draw(renderInfo, shadowInfo);
 }
