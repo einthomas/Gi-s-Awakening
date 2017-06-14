@@ -29,6 +29,11 @@ void BlinnMaterial::bind(
     shader.setVector3f("diffuseColor", diffuseColor);
     shader.setVector3f("specularColor", specularColor);
     shader.setFloat("glossyness", glossyness);
+    if (shadowInfo.numShadowMaps == 0) {
+        shader.setInteger("shadowsActivated", 0);
+    } else {
+        shader.setInteger("shadowsActivated", 1);
+    }
     for (int i = 0; i < shadowInfo.numShadowMaps; i++) {
         shader.setMatrix4("lightSpaceMatrices[" + std::to_string(i) + "]", shadowInfo.lightSpaceMatrices[i]);
         shader.setTexture2D("shadowMaps[" + std::to_string(i) + "]", GL_TEXTURE0 + i, shadowInfo.shadowMaps[i], i);

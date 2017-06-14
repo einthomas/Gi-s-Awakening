@@ -62,7 +62,7 @@ int main(void) {
     }
 
     // activate v-sync
-    glfwSwapInterval(0);
+    glfwSwapInterval(1);
 
     if (!initGLEW()) {
         return 0;
@@ -200,6 +200,7 @@ int main(void) {
     bool displayPerformanceStats = false;
     bool drawAsWireframe = false;
     bool bloomActivated = true;
+    bool shadowsActivated = true;
     bool displayHelp = false;
     int currentShadowMap = 0;   // TODO: DEBUG, REMOVE!!
 
@@ -250,14 +251,18 @@ int main(void) {
 
         // f-keys
         if (glfwGetKey(window, GLFW_KEY_F1) == GLFW_PRESS && fKeyStates[0] == GLFW_RELEASE) {
+            // toggle help display
             displayHelp = !displayHelp;
             std::cout << "Help display toggled " << (drawAsWireframe ? "on" : "off") << std::endl;
         }
         if (glfwGetKey(window, GLFW_KEY_F2) == GLFW_PRESS && fKeyStates[1] == GLFW_RELEASE) {
+            // toggle performance stats
             displayPerformanceStats = !displayPerformanceStats;
-            std::cout << "Performance stats toggled " << (displayPerformanceStats ? "on" : "off") << std::endl;
+            std::cout << "Performance stats toggled " << (displayPerformanceStats ? "on" : "off")
+                << std::endl;
         }
         if (glfwGetKey(window, GLFW_KEY_F3) == GLFW_PRESS && fKeyStates[2] == GLFW_RELEASE) {
+            // toggle draw wireframe
             drawAsWireframe = !drawAsWireframe;
             std::cout << "Wireframe toggled " << (drawAsWireframe ? "on" : "off") << std::endl;
         }
@@ -267,20 +272,35 @@ int main(void) {
             currentShadowMap %= NUM_SHADOW_MAPS;
         }
         if (glfwGetKey(window, GLFW_KEY_F5) == GLFW_PRESS && fKeyStates[4] == GLFW_RELEASE) {
-            // mip mapping quality Off/Nearest Neighbor/Linear
+            // toggle mip mapping quality Off/Nearest Neighbor/Linear
         }
         if (glfwGetKey(window, GLFW_KEY_F6) == GLFW_PRESS && fKeyStates[5] == GLFW_RELEASE) {
+            // toggle bloom
             bloomActivated = !bloomActivated;
+            postProcessingShader.use();
+            postProcessingShader.setInteger("bloomActivated", bloomActivated);
             std::cout << "Bloom toggled " << (bloomActivated ? "on" : "off") << std::endl;
         }
         if (glfwGetKey(window, GLFW_KEY_F7) == GLFW_PRESS && fKeyStates[6] == GLFW_RELEASE) {
-            // Enable/Disable effect
+            // toggle shadows
+            shadowsActivated = !shadowsActivated;
+            std::cout << "Shadows toggled " << (shadowsActivated ? "on" : "off") << std::endl;
         }
         if (glfwGetKey(window, GLFW_KEY_F8) == GLFW_PRESS && fKeyStates[7] == GLFW_RELEASE) {
-            // Viewfrustum-Culling
+            // toggle view frustum culling
+            Object3D::frustumCullingEnabled = !Object3D::frustumCullingEnabled;
+            std::cout << "View frustum culling toggled " <<
+                (Object3D::frustumCullingEnabled ? "on" : "off") << std::endl;
         }
         if (glfwGetKey(window, GLFW_KEY_F9) == GLFW_PRESS && fKeyStates[8] == GLFW_RELEASE) {
-            // Blending
+            // toggle blending
+            std::cout << "Blending toggled " <<
+                (!glIsEnabled(GL_BLEND) ? "on" : "off") << std::endl;
+            if (glIsEnabled(GL_BLEND)) {
+                glDisable(GL_BLEND);
+            } else {
+                glEnable(GL_BLEND);
+            }
         }
         if (glfwGetKey(window, GLFW_KEY_F10) == GLFW_PRESS && fKeyStates[9] == GLFW_RELEASE) {
             BlinnMaterial::shader.reload();   // TODO: DEBUG, REMOVE!!
@@ -346,35 +366,37 @@ int main(void) {
         };
 
         float cascadeEndsClipSpace[NUM_SHADOW_MAPS];
-        for (int i = 0; i < NUM_SHADOW_MAPS; i++) {
-            cascadeEndsClipSpace[i] = (projectionMatrix * glm::vec4(0.0f, cascadeEnds[i + 1], 0.0f, 1.0f)).y;
-        }
         glm::mat4 lightSpaceMatrices[NUM_SHADOW_MAPS];
         GLuint blurredShadowMaps[NUM_SHADOW_MAPS];
-        for (int i = 0; i < NUM_SHADOW_MAPS; i++) {
-            glPolygonOffset(4.0f, 0.0f);
-            glViewport(0, 0, DEPTH_TEXTURE_WIDTH, DEPTH_TEXTURE_HEIGHT);
+        if (shadowsActivated) {
+            for (int i = 0; i < NUM_SHADOW_MAPS; i++) {
+                cascadeEndsClipSpace[i] = (projectionMatrix * glm::vec4(0.0f, cascadeEnds[i + 1], 0.0f, 1.0f)).y;
+            }
+            for (int i = 0; i < NUM_SHADOW_MAPS; i++) {
+                glPolygonOffset(4.0f, 0.0f);
+                glViewport(0, 0, DEPTH_TEXTURE_WIDTH, DEPTH_TEXTURE_HEIGHT);
 
-            glBindFramebuffer(GL_FRAMEBUFFER, depthFBO);
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadowMaps[i], 0);
+                glBindFramebuffer(GL_FRAMEBUFFER, depthFBO);
+                glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadowMaps[i], 0);
 
-            glClear(GL_DEPTH_BUFFER_BIT);
-            glm::mat4 lightSpaceMatrix = shadowProjectionMatrices[i] * shadowMappingViewMatrix;
-            lightSpaceMatrices[i] = ndcUVMappingMatrix * lightSpaceMatrix;
-            shadowMappingDepthShader.use();
-            shadowMappingDepthShader.setMatrix4("lightSpaceMatrix", lightSpaceMatrix);
-            game.draw(shadowMappingDepthShader);
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
-            glDisable(GL_POLYGON_OFFSET_FILL);
+                glClear(GL_DEPTH_BUFFER_BIT);
+                glm::mat4 lightSpaceMatrix = shadowProjectionMatrices[i] * shadowMappingViewMatrix;
+                lightSpaceMatrices[i] = ndcUVMappingMatrix * lightSpaceMatrix;
+                shadowMappingDepthShader.use();
+                shadowMappingDepthShader.setMatrix4("lightSpaceMatrix", lightSpaceMatrix);
+                game.draw(shadowMappingDepthShader);
+                glBindFramebuffer(GL_FRAMEBUFFER, 0);
+                glDisable(GL_POLYGON_OFFSET_FILL);
 
-            // blur just the closest shadow map
-            if (i == 0) {
-                blurredShadowMaps[i] = blur(
-                    DEPTH_TEXTURE_BLUR_WIDTH, DEPTH_TEXTURE_BLUR_HEIGHT, blurShadowMapFBOs[0], blurShadowMapFBOs[1],
-                    blurShadowMapBuffers[0], blurShadowMapBuffers[1], shadowMaps[i], gaussianBlurShader4
-                );
-            } else {
-                blurredShadowMaps[i] = shadowMaps[i];
+                // blur just the closest shadow map
+                if (i == 0) {
+                    blurredShadowMaps[i] = blur(
+                        DEPTH_TEXTURE_BLUR_WIDTH, DEPTH_TEXTURE_BLUR_HEIGHT, blurShadowMapFBOs[0], blurShadowMapFBOs[1],
+                        blurShadowMapBuffers[0], blurShadowMapBuffers[1], shadowMaps[i], gaussianBlurShader4
+                    );
+                } else {
+                    blurredShadowMaps[i] = shadowMaps[i];
+                }
             }
         }
 
@@ -387,7 +409,8 @@ int main(void) {
         glDepthMask(GL_TRUE);
         Object3D::objectDrawCount = 0;
         game.draw(projectionMatrix, viewFrustumNormals, ds, ShadowInfo(
-            lightSpaceMatrices, blurredShadowMaps, NUM_SHADOW_MAPS, cascadeEndsClipSpace
+            lightSpaceMatrices, blurredShadowMaps, shadowsActivated ? NUM_SHADOW_MAPS : 0,
+            cascadeEndsClipSpace
         ));
         ParticleSystem::draw(game.camera.getMatrix(), projectionMatrix);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -458,16 +481,10 @@ int main(void) {
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
         postProcessingShader.use();
-        if (displayHelp) {
-            postProcessingShader.setTexture2D(
-                "mainImage", GL_TEXTURE0, blurredShadowMaps[currentShadowMap], 0
-            );
-        } else {
-            postProcessingShader.setTexture2D(
-                "mainImage", GL_TEXTURE0, colorBuffers[0], 0
-            );
+        postProcessingShader.setTexture2D("mainImage", GL_TEXTURE0, colorBuffers[0], 0);
+        if (bloomActivated) {
+            postProcessingShader.setTexture2D("brightSpotsBloomImage", GL_TEXTURE1, bloomColorBuffer, 1);
         }
-        postProcessingShader.setTexture2D("brightSpotsBloomImage", GL_TEXTURE1, bloomColorBuffer, 1);
         postProcessingShader.setTexture2D("hudTexture", GL_TEXTURE2, hudColorBuffer, 2);
         drawScreenQuad();
 
@@ -574,10 +591,11 @@ void generateFBO(GLuint &FBO, GLuint* colorBuffers, int width, int height, int n
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, width, height, 0, GL_RGBA, GL_FLOAT, NULL);
         }
 
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glGenerateMipmap(GL_TEXTURE_2D);
 
         if (isMultisampled) {
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D_MULTISAMPLE, colorBuffers[i], 0);

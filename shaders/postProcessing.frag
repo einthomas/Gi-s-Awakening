@@ -2,6 +2,7 @@
 
 in vec2 vertTextureCoords;
 
+uniform bool bloomActivated = true;
 uniform sampler2D mainImage;
 uniform sampler2D brightSpotsBloomImage;
 uniform sampler2D hudTexture;
@@ -9,7 +10,11 @@ out vec4 outColor;
 
 void main() {
     vec3 color = texture(hudTexture, vertTextureCoords).rgb;
-	color += (texture(mainImage, vertTextureCoords).rgb + texture(brightSpotsBloomImage, vertTextureCoords).rgb) * (vec3(1.0) - color);
+    if (bloomActivated) {
+        color += (texture(mainImage, vertTextureCoords).rgb + texture(brightSpotsBloomImage, vertTextureCoords).rgb) * (vec3(1.0) - color);
+    } else {
+        color += texture(mainImage, vertTextureCoords).rgb * (vec3(1.0) - color);
+    }
 
     //float depthValue = texture(mainImage, vertTextureCoords).r;
     

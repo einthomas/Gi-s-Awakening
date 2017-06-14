@@ -17,6 +17,7 @@ uniform vec3 diffuseColor;
 uniform vec3 specularColor;
 uniform float glossyness;
 
+uniform bool shadowsActivated = true;
 uniform sampler2D shadowMaps[NUM_CASCADES];
 uniform float cascadeEndsClipSpace[NUM_CASCADES];
 
@@ -29,25 +30,27 @@ void main() {
     vec3 light = vec3(1.0, 0.768, 0.216);
     float normalDotLight = dot(vertNormal, lightDirection);
     
-    int cascadeIndex = 0;
-    for (; cascadeIndex < NUM_CASCADES; cascadeIndex++) {
-        if (vertClipSpaceZPosition <= cascadeEndsClipSpace[cascadeIndex]) {
-            break;
-        }
-    }
-
-    // variance shadow mapping (VSM), reference: http://www.punkuser.net/vsm/vsm_paper.pdf
-    vec4 shadowMapCoords = vertFragPositionsLightSpace[cascadeIndex] / vertFragPositionsLightSpace[cascadeIndex].w;   // perspective divide
-    float currentDepth = shadowMapCoords.z;
-
-    // Chebychev's inequality
-    vec2 moments = texture2D(shadowMaps[cascadeIndex], shadowMapCoords.xy).rg;
     float p = 1.0f;
-    if (currentDepth > moments.x) {
-        float variance = moments.y - moments.x * moments.x;     // Algebraic formula for the variance (Verschiebungssatz)
-        variance = max(variance, 0.002);
-        float currentDepthMinusFirstMoment = currentDepth - moments.x;
-        p = variance / (variance + currentDepthMinusFirstMoment * currentDepthMinusFirstMoment);
+    if (shadowsActivated) {
+        int cascadeIndex = 0;
+        for (; cascadeIndex < NUM_CASCADES; cascadeIndex++) {
+            if (vertClipSpaceZPosition <= cascadeEndsClipSpace[cascadeIndex]) {
+                break;
+            }
+        }
+
+        // variance shadow mapping (VSM), reference: http://www.punkuser.net/vsm/vsm_paper.pdf
+        vec4 shadowMapCoords = vertFragPositionsLightSpace[cascadeIndex] / vertFragPositionsLightSpace[cascadeIndex].w;   // perspective divide
+        float currentDepth = shadowMapCoords.z;
+
+        // Chebychev's inequality
+        vec2 moments = texture2D(shadowMaps[cascadeIndex], shadowMapCoords.xy).rg;
+        if (currentDepth > moments.x) {
+            float variance = moments.y - moments.x * moments.x;     // Algebraic formula for the variance (Verschiebungssatz)
+            variance = max(variance, 0.002);
+            float currentDepthMinusFirstMoment = currentDepth - moments.x;
+            p = variance / (variance + currentDepthMinusFirstMoment * currentDepthMinusFirstMoment);
+        }
     }
 
     vec3 cameraVector = normalize(cameraPosition - vertFragPosition);
