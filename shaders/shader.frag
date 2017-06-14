@@ -21,7 +21,7 @@ uniform float cascadeEndsClipSpace[NUM_CASCADES];
 void main() {
     vec3 light = normalize(vec3(-3.5f, -5.3f, 7.0f));   // TODO: unhardcode this
     float normalDotLight = dot(vertNormal, light);
-
+    
     int cascadeIndex = 0;
     for (; cascadeIndex < NUM_CASCADES; cascadeIndex++) {
         if (vertClipSpaceZPosition <= cascadeEndsClipSpace[cascadeIndex]) {

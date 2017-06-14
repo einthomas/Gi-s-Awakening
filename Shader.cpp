@@ -6,36 +6,50 @@
 
 Shader::Shader() { }
 
-Shader::Shader(std::string vertexShaderPath, std::string fragmentShaderPath) {
+Shader::Shader(std::string vertexShaderPath, std::string fragmentShaderPath) :
+    vertexShaderPath(vertexShaderPath), fragmentShaderPath(fragmentShaderPath)
+{
+    compileShader(vertexShaderPath, fragmentShaderPath);
+}
+
+void Shader::compileShader(std::string vertexShaderPath, std::string fragmentShaderPath) {
     std::ifstream vertexFile(vertexShaderPath);
     std::string vertexSource((std::istreambuf_iterator<char>(vertexFile)), std::istreambuf_iterator<char>());
+    vertexFile.close();
+
     std::ifstream fragmentFile(fragmentShaderPath);
     std::string fragmentSource((std::istreambuf_iterator<char>(fragmentFile)), std::istreambuf_iterator<char>());
+    fragmentFile.close();
 
     GLuint vertexShader = loadShader(GL_VERTEX_SHADER, vertexSource);
     GLuint fragmentShader = loadShader(GL_FRAGMENT_SHADER, fragmentSource);
 
-	program = glCreateProgram();
-	glAttachShader(program, vertexShader);
-	glAttachShader(program, fragmentShader);
-	glLinkProgram(program);
-	glDeleteShader(vertexShader);
+    program = glCreateProgram();
+    glAttachShader(program, vertexShader);
+    glAttachShader(program, fragmentShader);
+    glLinkProgram(program);
+    glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
 
-	GLint success;
+    GLint success;
     GLchar *infoLog;
     GLint infoLogLength = 0;
     glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infoLogLength);
     infoLog = new GLchar[infoLogLength];
-	glGetProgramiv(program, GL_LINK_STATUS, &success);
-	if (!success) {
+    glGetProgramiv(program, GL_LINK_STATUS, &success);
+    if (!success) {
         glGetProgramInfoLog(program, infoLogLength, NULL, infoLog);
-		std::cout << "ERROR::SHADERPROGRAM::LINKING\n" << infoLog << std::endl;
-	}
+        std::cout << "ERROR::SHADERPROGRAM::LINKING\n" << infoLog << std::endl;
+    }
 }
 
 void Shader::use() {
 	glUseProgram(program);
+}
+
+void Shader::reload() {
+    glDeleteProgram(program);
+    compileShader(vertexShaderPath, fragmentShaderPath);
 }
 
 GLuint Shader::loadShader(GLuint shaderType, std::string shaderCode) {

@@ -15,6 +15,7 @@ public:
 	Shader();
 	Shader(std::string vertexShaderPath, std::string fragmentShaderPath);
 	void use();
+    void reload();
 
 	void setFloat(std::string name, GLfloat value);
 	void setInteger(std::string name, GLint value);
@@ -28,4 +29,7 @@ public:
 
 private:
 	GLuint loadShader(GLuint shaderType, std::string shaderCode);
+    void compileShader(std::string vertexShaderPath, std::string fragmentShaderPath);
+    std::string vertexShaderPath;
+    std::string fragmentShaderPath;
 };

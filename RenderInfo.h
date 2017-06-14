@@ -4,13 +4,13 @@
 
 struct RenderInfo {
 
-    glm::mat4 &viewMatrix;
-    glm::mat4 &projectionMatrix;
-    glm::vec3 &cameraPosition;
+    const glm::mat4 &viewMatrix;
+    const glm::mat4 &projectionMatrix;
+    const glm::vec3 &cameraPosition;
 
     RenderInfo(
-        glm::mat4 &viewMatrix, glm::mat4 &projectionMatrix,
-        glm::vec3 &cameraPosition
+        const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix,
+        const glm::vec3 &cameraPosition
     ) :
         viewMatrix(viewMatrix),
         projectionMatrix(projectionMatrix),

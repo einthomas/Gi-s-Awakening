@@ -9,6 +9,8 @@
 
 class BlinnMaterial : public Material {
 public:
+    static Shader shader;
+
     glm::vec3 diffuseColor, specularColor;
     float glossyness;
 
@@ -20,5 +22,5 @@ public:
     void bind(RenderInfo renderInfo, ShadowInfo shadowInfo, const glm::mat4& modelMatrix) override;
 
 private:
-    static Shader shader;
+    
 };
