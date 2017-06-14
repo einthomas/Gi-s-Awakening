@@ -19,7 +19,7 @@
 #include "ParticleSystem.h"
 #include "Game.h"
 
-static int width = 1280, height = 720;
+static int width = 1920, height = 1080;
 static const char *title = "Gi's Awakening: The Mending of the Sky";
 static GLuint screenQuadVAO = 0;
 const int AA_SAMPLES = 4;
@@ -200,7 +200,7 @@ int main(void) {
     bool displayHelp = false;
     int currentShadowMap = 0;   // TODO: DEBUG, REMOVE!!
 
-    int fKeyStates[10];
+    int fKeyStates[10] = {0};
 
     int softFps = 0;
     float softFrameTime = 0.0f;
@@ -606,9 +606,9 @@ GLFWwindow *initGLFW() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
-    glfwWindowHint(GLFW_SAMPLES, 4);
+    //glfwWindowHint(GLFW_SAMPLES, 4);
 
-    GLFWwindow *window = glfwCreateWindow(width, height, title, nullptr, nullptr);
+    GLFWwindow *window = glfwCreateWindow(width, height, title, glfwGetPrimaryMonitor(), nullptr);
     glfwMakeContextCurrent(window);
     if (window == NULL) {
         std::cout << "Failed to create GLFW window" << std::endl;

@@ -7,7 +7,11 @@ class PressurePlate : public Platform {
 public:
     AbilityType abilityType;
 
-    PressurePlate(const PlatformType *type, BlinnMaterial blinnMaterial, glm::vec3 position, AbilityType abilityType);
+    PressurePlate(
+        const PlatformType *type, BlinnMaterial blinnMaterial,
+        int lightMapSize, int lightMapIndex,
+        glm::vec3 position, AbilityType abilityType
+    );
     PressurePlate(const PressurePlate &pressurePlate);
     bool steppedOn(const glm::vec3 &playerPosition, const glm::vec3 &playerSize);
     void highlight();

@@ -10,9 +10,15 @@ public:
     virtual ~Material() { }
 
     virtual void bind(
-        const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix, const glm::mat4 &modelMatrix
+        const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix,
+        const glm::mat4 &modelMatrix
     );
-    virtual void bind(RenderInfo renderInfo, ShadowInfo shadowInfo, const glm::mat4& modelMatrix);
+    virtual void bind(
+        RenderInfo renderInfo, ShadowInfo shadowInfo,
+        const glm::mat4& modelMatrix,
+        GLfloat lightMapScale, const glm::vec2 &lightMapPosition,
+        GLuint lightMap
+    );
 
 protected:
     Material() { }

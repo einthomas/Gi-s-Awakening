@@ -10,17 +10,24 @@ in vec3 vertNormal;
 in vec3 vertFragPosition;
 in vec4 vertFragPositionsLightSpace[NUM_CASCADES];
 in float vertClipSpaceZPosition;
+in vec2 vertUV;
 
 uniform vec3 cameraPosition;
 uniform vec3 diffuseColor;
 uniform vec3 specularColor;
 uniform float glossyness;
+
 uniform sampler2D shadowMaps[NUM_CASCADES];
 uniform float cascadeEndsClipSpace[NUM_CASCADES];
 
+uniform sampler2D lightMap;
+uniform float lightMapScale;
+uniform vec2 lightMapPosition;
+
 void main() {
-    vec3 light = normalize(vec3(-3.5f, -5.3f, 7.0f));   // TODO: unhardcode this
-    float normalDotLight = dot(vertNormal, light);
+    vec3 lightDirection = normalize(vec3(-3.5f, -5.3f, 7.0f));   // TODO: unhardcode this
+    vec3 light = vec3(1.0, 0.768, 0.216);
+    float normalDotLight = dot(vertNormal, lightDirection);
     
     int cascadeIndex = 0;
     for (; cascadeIndex < NUM_CASCADES; cascadeIndex++) {
@@ -45,13 +52,21 @@ void main() {
 
     vec3 cameraVector = normalize(cameraPosition - vertFragPosition);
 
-    vec3 ambient = vec3(0.1f);
+    // ambient
+    vec3 ambient = pow(texture(
+        lightMap,
+        vec2(0, 1) + (lightMapPosition + vertUV * lightMapScale) * vec2(1, -1)
+    ).rgb, vec3(2.2));
 
-    vec3 diffuse = max(normalDotLight, 0.0f) * diffuseColor * max(p, 0.4f);
+    // diffuse
+    vec3 diffuse = max(normalDotLight, 0.0f) * diffuseColor * max(p, 0.4f) * light;
 
-    vec3 halfVector = normalize(light + cameraVector);
-    vec3 glossy = pow(max(dot(vertNormal, halfVector), 0.0f), glossyness) * specularColor * p;
+    // specular
+    vec3 halfVector = normalize(lightDirection + cameraVector);
+    vec3 glossy = pow(
+        max(dot(vertNormal, halfVector), 0.0f), glossyness
+    ) * specularColor * p * light;
 
     outColor = vec4(ambient + diffuse * 0.6f, 1.0f);
-    brightSpotColor = vec4(glossy * 0.7f, 1.0f);
+    brightSpotColor = vec4(glossy * 0.5f, 1.0f);
 }

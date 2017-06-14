@@ -7,15 +7,21 @@ void BlinnMaterial::init() {
     shader = Shader("shaders/shader.vert", "shaders/shader.frag");
 }
 
-BlinnMaterial::BlinnMaterial(const glm::vec3 &diffuseColor, const glm::vec3 &specularColor, float glossyness) :
-	diffuseColor(diffuseColor), specularColor(specularColor), glossyness(glossyness)
+BlinnMaterial::BlinnMaterial(
+    const glm::vec3 &diffuseColor, const glm::vec3 &specularColor,
+    float glossyness
+) :
+    diffuseColor(diffuseColor), specularColor(specularColor),
+    glossyness(glossyness)
 {
 }
 
 void BlinnMaterial::bind(
-    RenderInfo renderInfo, ShadowInfo shadowInfo, const glm::mat4& modelMatrix
+    RenderInfo renderInfo, ShadowInfo shadowInfo, const glm::mat4& modelMatrix,
+    GLfloat lightMapScale, const glm::vec2 &lightMapPosition, GLuint lightMap
 ) {
     shader.use();
+
     shader.setMatrix4("model", modelMatrix);
     shader.setMatrix4("view", renderInfo.viewMatrix);
     shader.setMatrix4("projection", renderInfo.projectionMatrix);
@@ -28,5 +34,9 @@ void BlinnMaterial::bind(
         shader.setTexture2D("shadowMaps[" + std::to_string(i) + "]", GL_TEXTURE0 + i, shadowInfo.shadowMaps[i], i);
         shader.setFloat("cascadeEndsClipSpace[" + std::to_string(i) + "]", shadowInfo.cascadeEndsClipSpace[i]);
     }
+
+    shader.setFloat("lightMapScale", lightMapScale);
+    shader.setVector2f("lightMapPosition", lightMapPosition);
+    shader.setTexture2D("lightMap", GL_TEXTURE1, lightMap, 1);
 }
 

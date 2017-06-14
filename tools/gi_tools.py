@@ -1,7 +1,7 @@
 bl_info = {
     "name": "Gi Level-Editing Tools",
     "author": "Felix Kugler",
-    "version": (0, 4),
+    "version": (0, 5),
     "blender": (2, 75, 0),
     "location": "File > Export",
     "description": "Provides Level Editing Tools for Gi's Awekening",
@@ -15,6 +15,9 @@ import json
 from os import path
 import struct
 from mathutils import Vector
+from math import sqrt, ceil
+import subprocess
+import sys
     
 def write_object(object, offset, vbo):
     matrix = object.matrix_world;
@@ -38,9 +41,16 @@ def write_object(object, offset, vbo):
         if len(face.vertices) in [3, 4]:
             for i in vertex_indices:
                 vbo.write(
-                    struct.pack('fff', *(matrix * vertices[face.vertices[i]].co - offset)) + 
+                    struct.pack(
+                        'fff', 
+                        *(matrix * vertices[face.vertices[i]].co - offset)
+                    ) + 
                     struct.pack('ff', *texture_uvs[i]) +
-                    struct.pack('fff', *(matrix * Vector(vertices[face.vertices[i]].normal[:] + (0,)))[:3])
+                    struct.pack(
+                        'fff', *(matrix * Vector(
+                            vertices[face.vertices[i]].normal[:] + (0,)
+                        ))[:3]
+                    )
                 )
         else:
             print("Polygon is neither a triangle nor a square. Skipped.")
@@ -59,7 +69,9 @@ def write_group(group, directory):
                         size = size_property[:]
                     
             except Exception as e:
-                print("Couldn't convert object {} ({}). Skipped.".format(object.name, e))
+                print("Couldn't convert object {} ({}). Skipped.".format(
+                    object.name, e
+                ))
             
     return {"size": size, "name": group.name}
 
@@ -76,7 +88,7 @@ def write_gi_block(context, filepath):
         json.dump(blocks, f, indent=4)
 
     return {'FINISHED'}
-
+            
 def write_gi_level(context, filepath, level_name):
     print("running write_gi_level...")
     
@@ -86,10 +98,26 @@ def write_gi_level(context, filepath, level_name):
     start = [0, 0, 0]
     start_orientation = 0
     end = [0, 0, 0]
- 
+    
+    lightmap = bpy.data.images.get("lightmap")
+    assert lightmap is not None
+        
+        
+    lightmap_object_count = 0
     for object in bpy.context.scene.objects:
-        try:
+        if object.dupli_group is not None:
+            lightmap_object_count += 1
+        
+    lightmap_grid = ceil(sqrt(lightmap_object_count))
+    
+    lightmap_index = 0
+    
+    for object in bpy.context.scene.objects:
+        #try:
+        if object.dupli_group is not None:
             type = object.dupli_group.name
+                
+            lightmap_index += 1
             
             if type == "Start":
                 start = object.location[:]
@@ -101,23 +129,47 @@ def write_gi_level(context, filepath, level_name):
                     "position": object.location[:],
                     "type": type,
                     "isTriggered": object.get("isTriggered"),
-                    "triggers": object.get("triggers")
+                    "triggers": object.get("triggers"),
+                    "lightMapIndex": lightmap_index
                 }]
             elif type == "PressurePlate":
                 pressure_plates += [{
                     "position": object.location[:],
                     "type": type,
-                    "givesAbility": object.get("givesAbility")
+                    "givesAbility": object.get("givesAbility"),
+                    "lightMapIndex": lightmap_index
                 }]
             else:
                 platforms += [{
                     "position": object.location[:],
                     "type": type,
-                    "name": object.name
+                    "name": object.name,
+                    "lightMapIndex": lightmap_index
                 }]
                 
-        except Exception as e:
-            print(e)
+                # TODO
+                #bake_block(object, lightmap, lightmap_grid, lightmap_index)
+                
+        #except Exception as e:
+        #    print(e)
+        
+    #run Blender in background:
+    # -b
+    #run Python script:
+    # -P <script>
+        
+    lightmap_path = filepath.rsplit('.', 1)[0] + '_lightmap.png'
+    
+    # Warning: only works if levels are saved in level folder 
+    # and script is in tools folder
+    directory = path.split(filepath)[0]
+    
+    script = path.join(directory, "..", "tools", "gi_tools.py")
+    
+    blender = subprocess.Popen([
+        bpy.app.binary_path, bpy.data.filepath, "-b", "-P", script, "--", 
+        "--bake", lightmap_path
+    ])
             
     level = {
         "name": level_name,
@@ -126,7 +178,9 @@ def write_gi_level(context, filepath, level_name):
         "pressurePlates": pressure_plates,
         "start": start,
         "startOrientation": start_orientation,
-        "end": end
+        "end": end,
+        "lightMapSize": lightmap_grid,
+        "lightMapPath": path.basename(lightmap_path)
     }
     
     with open(filepath, 'w', encoding='utf-8') as f:
@@ -134,6 +188,86 @@ def write_gi_level(context, filepath, level_name):
 
     return {'FINISHED'}
 
+
+def bake_block(object, lightmap, grid, index):
+    """prepares a block for baking"""
+    print("baking block...")
+    factor = 1 / grid
+    
+    y = (index // grid) * factor
+    x = (index % grid) * factor
+    
+    object.hide_render = True
+    object.hide = True
+
+    for sub_object in object.dupli_group.objects:
+        if len(sub_object.material_slots) > 0:
+            mesh_copy = sub_object.data.copy()
+            
+            for uv_face in mesh_copy.uv_textures["Texture"].data:
+                uv_face.image = lightmap
+                
+            for vertex in mesh_copy.uv_layers["Texture"].data:
+                vertex.uv = vertex.uv * factor + Vector((x, y))
+                
+            mesh_copy.update()
+                
+            bake_object = sub_object.copy()
+            bake_object.data = mesh_copy
+            
+            bpy.context.scene.objects.link(bake_object)
+            bpy.context.scene.update()
+            
+            bake_object.hide_render = False
+            bake_object.hide = False
+            
+            bake_object.location += \
+                object.location - object.dupli_group.dupli_offset
+            
+            bake_object.select = True
+            bpy.context.scene.objects.active = bake_object
+            
+            mesh_copy.update()
+            bpy.context.scene.update()
+        
+def bake(lightmap_path):
+    bpy.context.scene.cycles.bake_type = 'DIFFUSE'
+    bpy.context.scene.render.bake.use_pass_direct = True
+    bpy.context.scene.render.bake.use_pass_indirect = True
+    bpy.context.scene.render.bake.use_pass_color = False
+    
+    lightmap = bpy.data.images.get("lightmap")
+    assert lightmap is not None
+        
+    lightmap_object_count = 0
+    for object in bpy.context.scene.objects:
+        if object.dupli_group is not None:
+            lightmap_object_count += 1
+        
+    lightmap_grid = ceil(sqrt(lightmap_object_count))
+    
+    lightmap_index = 0
+
+    bpy.ops.object.select_all(action='DESELECT')
+        
+    for object in bpy.context.scene.objects:
+        if object.dupli_group is not None:
+            type = object.dupli_group.name
+            
+            lightmap_index += 1
+            
+            bake_block(object, lightmap, lightmap_grid, lightmap_index)
+                
+    bpy.ops.object.bake(
+        type = "DIFFUSE", 
+        pass_filter = {"DIRECT", "INDIRECT"}, 
+        width = 4096, height = 4096
+    )
+    
+    lightmap.file_format = 'PNG'
+    lightmap.filepath_raw = lightmap_path
+    lightmap.save()
+    
 # ExportHelper is a helper class, defines filename and
 # invoke() function which calls the file selector.
 from bpy_extras.io_utils import ExportHelper
@@ -143,7 +277,8 @@ from bpy.types import Operator
 
 class ExportGiLevel(Operator, ExportHelper):
     """Export to Gi Level file"""
-    bl_idname = "gi.level_export"  # important since its how bpy.ops.import_test.some_data is constructed
+    # important since its how bpy.ops.import_test.some_data is constructed
+    bl_idname = "gi.level_export"  
     bl_label = "Export Gi Level"
 
     # ExportHelper mixin class uses this
@@ -171,7 +306,8 @@ class ExportGiLevel(Operator, ExportHelper):
         
 class ExportGiBlock(Operator, ExportHelper):
     """Export to Gi Block file"""
-    bl_idname = "gi.block_export"  # important since its how bpy.ops.import_test.some_data is constructed
+    # important since its how bpy.ops.import_test.some_data is constructed
+    bl_idname = "gi.block_export"  
     bl_label = "Export Gi Block"
 
     # ExportHelper mixin class uses this
@@ -206,8 +342,15 @@ def unregister():
 
 
 if __name__ == "__main__":
+    print(sys.argv)
     try:
-        unregister()
-    except:
-        pass
-    register()
+        arguments = sys.argv[sys.argv.index("--") + 1:]
+        lightmap_path = arguments[arguments.index("--bake") + 1]
+        bake(lightmap_path)
+    
+    except ValueError:
+        try:
+            unregister()
+        except:
+            pass
+        register()

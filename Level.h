@@ -18,8 +18,12 @@ public:
     Object3D endObject;
     glm::vec3 start, end;
     float startOrientation;
+    GLuint lightMap;
 
-    Level(const Object3D &endObject, const glm::vec3 &start, const glm::vec3 &end, float startOrientation);
+    Level(
+        const Object3D &endObject, const glm::vec3 &start,
+        const glm::vec3 &end, float startOrientation, GLuint lightMap = 0
+    );
 
     void draw(const Shader &shader);
     void draw(RenderInfo renderInfo, ShadowInfo shadowInfo);

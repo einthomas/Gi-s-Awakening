@@ -39,8 +39,9 @@ void Shader::compileShader(std::string vertexShaderPath, std::string fragmentSha
     glGetProgramiv(program, GL_LINK_STATUS, &success);
     if (!success) {
         glGetProgramInfoLog(program, infoLogLength, NULL, infoLog);
-        std::cout << "ERROR::SHADERPROGRAM::LINKING\n" << infoLog << std::endl;
-    }
+		std::cout << "ERROR::SHADERPROGRAM::LINKING\n" << infoLog << std::endl;
+	}
+    delete[] infoLog;
 }
 
 void Shader::use() {
