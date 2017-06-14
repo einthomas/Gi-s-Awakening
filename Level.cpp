@@ -154,16 +154,18 @@ Level Level::fromFile(
         ));
     }
 
-    std::vector<Platform*> triggeredPlatforms;
     auto triggersJson = json["triggers"];
     for (auto &triggerJson : triggersJson) {
+        std::vector<Platform*> triggeredPlatforms;
         bool isTriggered = triggerJson["isTriggered"].get<int>();
-        for (int i = 0; i < level.platforms.size(); i++) {
-            if (level.platforms[i].name == triggerJson["triggers"]) {
-                Platform *triggeredPlatform = &level.platforms[i];
-                triggeredPlatform->isVisible = isTriggered;
-                triggeredPlatforms.push_back(triggeredPlatform);
-                break;
+        for (auto &triggeredPlatformName : triggerJson["triggers"]) {
+            for (int i = 0; i < level.platforms.size(); i++) {
+                if (level.platforms[i].name == triggeredPlatformName.get<std::string>()) {
+                    Platform *triggeredPlatform = &level.platforms[i];
+                    triggeredPlatform->isVisible = isTriggered;
+                    triggeredPlatforms.push_back(triggeredPlatform);
+                    break;
+                }
             }
         }
 
