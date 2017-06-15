@@ -128,7 +128,7 @@ Level Level::fromFile(
     auto platformsJson = json["platforms"];
     for (auto &platformJson : platformsJson) {
         level.platforms.push_back(Platform(
-            &platformTypes.at(platformJson["type"]), material,
+            &platformTypes.at(platformJson["type"]),
             platformJson["position"], platformJson["name"],
             lightMapSize,
             platformJson["lightMapIndex"]
@@ -137,11 +137,10 @@ Level Level::fromFile(
 
     auto pressurePlatesJson = json["pressurePlates"];
     for (auto &pressurePlateJson : pressurePlatesJson) {
+        const PlatformType *type = &platformTypes.at(pressurePlateJson["type"]);
         level.pressurePlates.push_back(PressurePlate(
-            &platformTypes.at(pressurePlateJson["type"]),
-            BlinnMaterial(
-                glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 0.0f, 1.0f), 0.0f
-            ),
+            type,
+            PlatformMaterial(type->colorTexture, 0),
             lightMapSize, pressurePlateJson["lightMapIndex"],
             pressurePlateJson["position"],
             static_cast<AbilityType>(

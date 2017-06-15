@@ -24,9 +24,17 @@ uniform sampler2D lightMap;
 uniform float lightMapScale;
 uniform vec2 lightMapPosition;
 
+uniform sampler2D colorTexture;
+uniform sampler2D linesTexture;
+
+vec2 flip(vec2 p) {
+    return vec2(p.x, 1.0f - p.y);
+}
+
 void main() {
     vec3 lightDirection = normalize(vec3(-3.5f, -5.3f, 7.0f));   // TODO: unhardcode this
     vec3 light = vec3(1.0, 0.768, 0.216);
+    vec3 glow = vec3(0.0, 0.0, 0.0);
     float normalDotLight = dot(vertNormal, lightDirection);
     
     int cascadeIndex = 0;
@@ -55,11 +63,12 @@ void main() {
     // ambient
     vec3 ambient = pow(texture(
         lightMap,
-        vec2(0, 1) + (lightMapPosition + vertUV * lightMapScale) * vec2(1, -1)
+        flip(lightMapPosition + vertUV * lightMapScale)
     ).rgb, vec3(2.2));
 
     // diffuse
-    vec3 diffuse = max(normalDotLight, 0.0f) * diffuseColor * max(p, 0.4f) * light;
+    vec3 diffuse =
+        max(normalDotLight, 0.0f) * diffuseColor * max(p, 0.4f) * light;
 
     // specular
     vec3 halfVector = normalize(lightDirection + cameraVector);
@@ -67,6 +76,24 @@ void main() {
         max(dot(vertNormal, halfVector), 0.0f), glossyness
     ) * specularColor * p * light;
 
-    outColor = vec4(ambient + diffuse * 0.6f, 1.0f);
-    brightSpotColor = vec4(glossy * 0.5f, 1.0f);
+    float line = texture(linesTexture, flip(vertUV)).r;
+
+    outColor = vec4(
+        (1.0 - line) * texture(colorTexture, flip(vertUV)).rgb * (ambient + diffuse * 0.8f) +
+        line * glow,
+        1.0f
+    );
+    brightSpotColor = vec4(
+        (1.0 - line) * glossy * 0.5f +
+        line * glow,
+        1.0f
+    );
+
+    /*
+    if (line > 0.25) {
+        outColor = vec4(glow, 1.0);
+        brightSpotColor = outColor;
+    } else {
+        discard;
+    }*/
 }

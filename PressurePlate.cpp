@@ -1,12 +1,12 @@
 #include "PressurePlate.h"
 
 PressurePlate::PressurePlate(
-    const PlatformType *type, BlinnMaterial blinnMaterial,
+    const PlatformType *type, PlatformMaterial blinnMaterial,
     int lightMapSize, int lightMapIndex,
     glm::vec3 position, AbilityType abilityType
 ) :
     Platform(
-        type, &this->blinnMaterial, position, "", lightMapSize, lightMapIndex
+        type, position, "", lightMapSize, lightMapIndex
     ),
     abilityType(abilityType),
     blinnMaterial(blinnMaterial),

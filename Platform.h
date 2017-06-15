@@ -9,10 +9,10 @@ public:
 
     bool isVisible;
 
-    int lightmapIndex;
+    int lightMapIndex;
 
     Platform(
-        const PlatformType *type, Material *material, glm::vec3 position,
+        const PlatformType *type, glm::vec3 position,
         std::string name, int lightMapSize = 1, int lightMapIndex = 0
     );
 

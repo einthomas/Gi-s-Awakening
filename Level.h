@@ -30,8 +30,6 @@ public:
     void update(float delta);
     bool intersects(const glm::vec3 &position, const glm::vec3 &scale);
 
-    static Level fromFile(
-        const char *filename, Material *material, Mesh endMesh,
-        const std::map<std::string, PlatformType> &platformTypes
-    );
+    static Level fromFile(const char *filename, Material *material, Mesh endMesh,
+        const std::map<std::string, PlatformType> &platformTypes);
 };

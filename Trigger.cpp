@@ -7,7 +7,7 @@ Trigger::Trigger(
     std::vector<Platform*> triggeredPlatforms
 ) :
     Platform(
-        type, &this->blinnMaterial, position, "", lightMapSize, lightMapIndex
+        type, position, "", lightMapSize, lightMapIndex
     ),
     isTriggered(isTriggered),
     blinnMaterial(blinnMaterial),

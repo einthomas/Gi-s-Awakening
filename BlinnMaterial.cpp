@@ -37,6 +37,9 @@ void BlinnMaterial::bind(
 
     shader.setFloat("lightMapScale", lightMapScale);
     shader.setVector2f("lightMapPosition", lightMapPosition);
-    shader.setTexture2D("lightMap", GL_TEXTURE0 + shadowInfo.numShadowMaps, lightMap, shadowInfo.numShadowMaps);
+    shader.setTexture2D(
+        "lightMap", GL_TEXTURE0 + shadowInfo.numShadowMaps,
+        lightMap, shadowInfo.numShadowMaps
+    );
 }
 

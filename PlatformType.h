@@ -9,4 +9,7 @@ class PlatformType {
 public:
     glm::vec3 size;
     Mesh mesh;
+
+    GLuint colorTexture;
+    GLuint linesTexture;
 };

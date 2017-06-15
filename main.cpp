@@ -4,6 +4,7 @@
 
 #include <json/json.hpp>
 
+#include <SOIL.h>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
@@ -18,6 +19,7 @@
 #include "SkyboxMaterial.h"
 #include "ParticleSystem.h"
 #include "Game.h"
+#include "PlatformMaterial.h"
 
 static int width = 1920, height = 1080;
 static const char *title = "Gi's Awakening: The Mending of the Sky";
@@ -83,8 +85,11 @@ int main(void) {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_MULTISAMPLE);
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
+    //glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
+
+    GLfloat fLargest;
+    glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &fLargest);
 
     const float FOV = glm::radians(70.0f);
     const float CAMERA_NEAR = 0.01f;
@@ -171,14 +176,77 @@ int main(void) {
     platformTypesFile >> platformTypesJson;
 
     for (auto &platformType : platformTypesJson) {
-        platformTypes.emplace(platformType["name"].get<std::string>(), PlatformType {
-            glm::vec3(platformType["size"][0], platformType["size"][1], platformType["size"][2]),
-            Mesh::fromFile(("geometry/" + platformType["name"].get<std::string>() + ".vbo").c_str())
-        });
+        GLuint textures[2] = {0};
+        glGenTextures(2, textures);
+
+        int width, height;
+        auto image = SOIL_load_image(
+            (
+                "textures/" +
+                platformType.value<std::string>("colorTexture", "")
+            ).c_str(),
+            &width, &height, nullptr, SOIL_LOAD_RGB
+        );
+        glBindTexture(GL_TEXTURE_2D, textures[0]);
+        glTexImage2D(
+            GL_TEXTURE_2D, 0, GL_RGB, width, height,
+            0, GL_RGB, GL_UNSIGNED_BYTE, image
+        );
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, fLargest);
+        glGenerateMipmap(GL_TEXTURE_2D);
+        glTexParameteri(
+            GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR
+        );
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+        SOIL_free_image_data(image);
+        image = SOIL_load_image(
+            (
+                "textures/" +
+                platformType.value<std::string>("linesTexture", "")
+            ).c_str(),
+            &width, &height, nullptr, SOIL_LOAD_RGB
+        );
+        glBindTexture(GL_TEXTURE_2D, textures[1]);
+        glTexImage2D(
+            GL_TEXTURE_2D, 0, GL_RGB, width, height,
+            0, GL_RGB, GL_UNSIGNED_BYTE, image
+        );
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, fLargest);
+        glGenerateMipmap(GL_TEXTURE_2D);
+        glTexParameteri(
+            GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR
+        );
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        SOIL_free_image_data(image);
+
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        platformTypes.emplace(
+            platformType["name"].get<std::string>(), PlatformType {
+                glm::vec3(
+                    platformType["size"][0],
+                    platformType["size"][1],
+                    platformType["size"][2]
+                ),
+                Mesh::fromFile((
+                    "geometry/" +
+                    platformType["name"].get<std::string>() + ".vbo"
+                ).c_str()),
+                textures[0], textures[1]
+            }
+        );
     }
 
     Mesh endMesh = Mesh::fromFile("geometry/End.vbo");
-    Level level = Level::fromFile("levels/level1.gil", material.get(), endMesh, platformTypes);
+
+    Level level = Level::fromFile(
+        "levels/level1.gil", material.get(), endMesh, platformTypes
+    );
     Game game(level);
 
     Shader shadowMappingDepthShader = Shader("shaders/shadowMappingDepth.vert", "shaders/shadowMappingDepth.frag");
@@ -608,7 +676,8 @@ GLFWwindow *initGLFW() {
     glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
     //glfwWindowHint(GLFW_SAMPLES, 4);
 
-    GLFWwindow *window = glfwCreateWindow(width, height, title, glfwGetPrimaryMonitor(), nullptr);
+    //GLFWwindow *window = glfwCreateWindow(width, height, title, glfwGetPrimaryMonitor(), nullptr);
+    GLFWwindow *window = glfwCreateWindow(width, height, title, nullptr, nullptr);
     glfwMakeContextCurrent(window);
     if (window == NULL) {
         std::cout << "Failed to create GLFW window" << std::endl;

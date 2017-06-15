@@ -1,19 +1,22 @@
 #include "Platform.h"
+#include "PlatformMaterial.h"
+
 #include <algorithm>
 
 Platform::Platform(
-    const PlatformType *type, Material *material, glm::vec3 position,
+    const PlatformType *type, glm::vec3 position,
     std::string name, int lightMapSize, int lightMapIndex
 ) :
     Object3D(
-        material, position, glm::vec3(1), type->size, type->mesh,
+        new PlatformMaterial(type->colorTexture, type->linesTexture),
+        position, glm::vec3(1), type->size, type->mesh,
         1.f / lightMapSize,
         glm::vec2(
             static_cast<float>(lightMapIndex % lightMapSize) / lightMapSize,
             static_cast<float>(lightMapIndex / lightMapSize) / lightMapSize
         )
     ),
-    name(name), isVisible(true), lightmapIndex(lightmapIndex)
+    name(name), isVisible(true), lightMapIndex(lightMapIndex)
 {
 }
 

@@ -1,6 +1,6 @@
 #pragma once
 #include "Platform.h"
-#include "BlinnMaterial.h"
+#include "PlatformMaterial.h"
 #include "AbilityType.h"
 
 class PressurePlate : public Platform {
@@ -8,7 +8,7 @@ public:
     AbilityType abilityType;
 
     PressurePlate(
-        const PlatformType *type, BlinnMaterial blinnMaterial,
+        const PlatformType *type, PlatformMaterial blinnMaterial,
         int lightMapSize, int lightMapIndex,
         glm::vec3 position, AbilityType abilityType
     );
@@ -18,7 +18,7 @@ public:
     void unHighlight();
 
 private:
-    BlinnMaterial blinnMaterial;
+    PlatformMaterial blinnMaterial;
     glm::vec3 originalDiffuseColor;
     glm::vec3 highlightDiffuseColor;
 };
