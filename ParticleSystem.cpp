@@ -1,4 +1,5 @@
 #include "ParticleSystem.h"
+#include <algorithm>
 
 int ParticleSystem::particleCount = 0;
 int ParticleSystem::bufferStart = 0;
@@ -106,8 +107,12 @@ void ParticleSystem::makeParticle(const glm::vec3 &position) {
         particleCount++;
     }
     bufferEnd++;
-    if (bufferEnd == MAX_PARTICLES) {
+    if (bufferEnd >= MAX_PARTICLES) {
         bufferEnd = 0;
+        bufferStart = 0;
+    }
+    if (bufferEnd <= bufferStart) {
+        bufferStart = 0;
     }
 }
 
@@ -136,23 +141,25 @@ void ParticleSystem::draw(const glm::mat4 &viewMatrix, const glm::mat4 &projecti
 }
 
 void ParticleSystem::update(float delta) {
-    for (int i = bufferStart, k = 0; k < particleCount; i++, k++) {
-        if (i == MAX_PARTICLES) {
-            i = 0;
-            if (i == bufferEnd) {
-                break;
-            }
-        }
+    std::fill_n(particlePositions, MAX_PARTICLES * 3 + 3, 0.0f);
+    std::fill_n(particleColors, MAX_PARTICLES * 4 + 4, 0.0f);
+    if (particleCount == 0) {
+        return;
+    }
+
+    for (int i = bufferStart, k = 0; i < MAX_PARTICLES; i++) {
         if (particles[i].color.a > 0.0f) {
+            k++;
             int xIndex = floor(fmodf(particles[i].position.x * 20.0f, PERLIN_FLOW_FIELD_SIZE));
             xIndex = xIndex < 0 ? PERLIN_FLOW_FIELD_SIZE + xIndex : xIndex;
 
             int yIndex = floor(fmodf(particles[i].position.y * 20.0f, PERLIN_FLOW_FIELD_SIZE));
             yIndex = yIndex < 0 ? PERLIN_FLOW_FIELD_SIZE + yIndex : yIndex;
 
-            particles[i].velocity += perlinFlowFields[currentPerlinFlowField][xIndex][yIndex] * 5.0f * delta;
+            particles[i].velocity += perlinFlowFields[currentPerlinFlowField][xIndex][yIndex] * 8.0f * delta;
             particles[i].velocity = MathUtil::limit(particles[i].velocity, 1.0f);
-            particles[i].position += particles[i].velocity * delta - 0.5f * (perlinFlowFields[currentPerlinFlowField][xIndex][yIndex] * 0.1f) * delta * delta;
+            particles[i].position += particles[i].velocity * delta - 0.5f *
+                (perlinFlowFields[currentPerlinFlowField][xIndex][yIndex] * 0.1f) * delta * delta;
 
             particlePositions[3 * k] = particles[i].position.x;
             particlePositions[3 * k + 1] = particles[i].position.y;
@@ -166,8 +173,10 @@ void ParticleSystem::update(float delta) {
             particles[i].color.a -= delta * 1.5f;
             if (particles[i].color.a <= 0.0f) {
                 particleCount--;
-                bufferStart++;
-                if (bufferStart == MAX_PARTICLES) {
+                if (particles[bufferStart].color.a <= 0.0f) {
+                    bufferStart++;
+                }
+                if (bufferStart >= MAX_PARTICLES) {
                     bufferStart = 0;
                 }
             }

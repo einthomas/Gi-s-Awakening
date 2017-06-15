@@ -2,6 +2,8 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
+int Object3D::objectDrawCount = 0;
+bool Object3D::frustumCullingEnabled = true;
 GLuint Object3D::cubeVAO = static_cast<GLuint>(-1);
 GLuint Object3D::skyboxCubeVAO = static_cast<GLuint>(-1);
 
@@ -203,11 +205,51 @@ void Object3D::draw(
 void Object3D::draw(
     RenderInfo renderInfo, ShadowInfo shadowInfo, GLuint lightMap
 ) {
-    material->bind(
-        renderInfo, shadowInfo, calculateModelMatrix(),
-        lightMapScale, lightMapPosition, lightMap
-    );
-    mesh.draw();
+    int outside = 0;
+    int inside = 0;
+    if (Object3D::frustumCullingEnabled) {
+        glm::vec3 sizeFactors[8] = {
+            glm::vec3(-0.5f, -0.5f, -0.5f),
+            glm::vec3(-0.5f, -0.5f,  0.5f),
+
+            glm::vec3(-0.5f,  0.5f, -0.5f),
+            glm::vec3(-0.5f,  0.5f,  0.5f),
+
+            glm::vec3(0.5f, -0.5f, -0.5f),
+            glm::vec3(0.5f, -0.5f,  0.5f),
+
+            glm::vec3(0.5f,  0.5f, -0.5f),
+            glm::vec3(0.5f,  0.5f,  0.5f),
+        };
+
+        for (int i = 0; i < 4; i++) {
+            outside = 0;
+            inside = 0;
+            for (int k = 0; k < 8 && (outside == 0 || inside == 0); k++) {
+                if (glm::dot(renderInfo.viewFrustumNormals[i], position + size * sizeFactors[k])
+                    + renderInfo.ds[i] < 0
+                    ) {
+                    outside++;
+                } else {
+                    inside++;
+                }
+            }
+
+            // object is outside -> return
+            if (inside == 0) {
+                return;
+            }
+        }
+    }
+
+    if (!Object3D::frustumCullingEnabled || inside != 0) {
+        Object3D::objectDrawCount++;
+        material->bind(
+            renderInfo, shadowInfo, calculateModelMatrix(),
+            lightMapScale, lightMapPosition, lightMap
+        );
+        mesh.draw();
+    }
 }
 
 glm::mat4 Object3D::calculateModelMatrix() {

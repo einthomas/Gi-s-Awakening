@@ -19,3 +19,7 @@
 !*.gib
 
 !.gitattributes
+
+!/libs/**
+!*.sln
+!*.vcxproj*

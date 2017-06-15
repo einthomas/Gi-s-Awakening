@@ -40,6 +40,10 @@ bool Level::intersects(const glm::vec3 &position, const glm::vec3 &scale) {
     return false;
 }
 
+int Level::getTotalObjectCount() {
+    return platforms.size() + triggers.size() + pressurePlates.size() + 1;  // + 1 ... the end object
+}
+
 void Level::draw(const Shader& shader) {
     for (Platform &platform : platforms) {
         if (platform.isVisible) {
@@ -149,16 +153,18 @@ Level Level::fromFile(
         ));
     }
 
-    std::vector<Platform*> triggeredPlatforms;
     auto triggersJson = json["triggers"];
     for (auto &triggerJson : triggersJson) {
+        std::vector<Platform*> triggeredPlatforms;
         bool isTriggered = triggerJson["isTriggered"].get<int>();
-        for (int i = 0; i < level.platforms.size(); i++) {
-            if (level.platforms[i].name == triggerJson["triggers"]) {
-                Platform *triggeredPlatform = &level.platforms[i];
-                triggeredPlatform->isVisible = isTriggered;
-                triggeredPlatforms.push_back(triggeredPlatform);
-                break;
+        for (auto &triggeredPlatformName : triggerJson["triggers"]) {
+            for (int i = 0; i < level.platforms.size(); i++) {
+                if (level.platforms[i].name == triggeredPlatformName.get<std::string>()) {
+                    Platform *triggeredPlatform = &level.platforms[i];
+                    triggeredPlatform->isVisible = isTriggered;
+                    triggeredPlatforms.push_back(triggeredPlatform);
+                    break;
+                }
             }
         }
 
