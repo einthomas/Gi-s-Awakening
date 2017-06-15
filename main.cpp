@@ -62,7 +62,7 @@ int main(void) {
     }
 
     // activate v-sync
-    glfwSwapInterval(1);
+    glfwSwapInterval(0);
 
     if (!initGLEW()) {
         return 0;
@@ -104,7 +104,7 @@ int main(void) {
 
     GLuint multisampledFBO;
     GLuint multisampledColorBuffers[2];
-    generateFBO(multisampledFBO, multisampledColorBuffers, width, height, 2, false, true);
+    generateFBO(multisampledFBO, multisampledColorBuffers, width, height, 2, true, true);
 
     GLuint FBO;
     GLuint colorBuffers[2];
@@ -610,6 +610,13 @@ void generateFBO(GLuint &FBO, GLuint* colorBuffers, int width, int height, int n
         glGenRenderbuffers(1, &depthRBO);
         glBindRenderbuffer(GL_RENDERBUFFER, depthRBO);
         glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
+        if (isMultisampled) {
+            glRenderbufferStorageMultisample(
+                GL_RENDERBUFFER, AA_SAMPLES, GL_DEPTH_COMPONENT, width, height
+            );
+        } else {
+            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
+        }
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRBO);
     }
 
