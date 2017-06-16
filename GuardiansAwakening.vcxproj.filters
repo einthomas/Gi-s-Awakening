@@ -93,6 +93,9 @@
     <ClCompile Include="TeleportProjectileAbility.cpp">
       <Filter>Source Files\Ability</Filter>
     </ClCompile>
+    <ClCompile Include="PlatformMaterial.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Cube.h">
@@ -169,6 +172,9 @@
     </ClInclude>
     <ClInclude Include="ShadowInfo.h">
       <Filter>Header Files\InfoStructs</Filter>
+    </ClInclude>
+    <ClInclude Include="PlatformMaterial.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

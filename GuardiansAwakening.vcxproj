@@ -158,6 +158,7 @@
     <ClCompile Include="Object3D.cpp" />
     <ClCompile Include="ParticleSystem.cpp" />
     <ClCompile Include="Platform.cpp" />
+    <ClCompile Include="PlatformMaterial.cpp" />
     <ClCompile Include="PlatformType.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="PressurePlate.cpp" />
@@ -183,6 +184,7 @@
     <ClInclude Include="Object3D.h" />
     <ClInclude Include="ParticleSystem.h" />
     <ClInclude Include="Platform.h" />
+    <ClInclude Include="PlatformMaterial.h" />
     <ClInclude Include="PlatformType.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="PressurePlate.h" />
