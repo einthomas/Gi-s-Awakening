@@ -3,6 +3,7 @@
 Player::Player(glm::vec3 position, glm::vec3 size) {
     this->position = position;
     this->size = size;
+    this->movementStart = position;
 }
 
 void Player::update(float delta, float gravity, Level &level) {
@@ -45,8 +46,12 @@ void Player::update(float delta, float gravity, Level &level) {
         object.solveCollision(position, velocity, size, onGround);
     }
     if (onGround) {
+        if (jumpState == JumpState::FALLING) {
+            SoundEngine::play2D(SoundEngine::PLAYER_LAND_SOUND);
+        }
         jumpState = JumpState::GROUNDED;
     } else if (jumpState == JumpState::GROUNDED) {
+        // the player was grounded last frame e.g. falling from a platform
         // there's probably a better way to do this
         jumpState = JumpState::FALLING;
     }
@@ -81,6 +86,7 @@ void Player::shoot(const Projectile &projectile) {
 void Player::jumpPressed(float delta) {
     // TODO: should use the fraction of delta at which maxJumpAccelerationDuration is reached
     if (jumpState == JumpState::GROUNDED && releasedJumpButton) {
+        SoundEngine::play2D(SoundEngine::PLAYER_JUMP_SOUND);
         releasedJumpButton = false;
         jumpState = JumpState::JUMPING;
         velocity.z = jumpSpeed;
@@ -112,4 +118,14 @@ void Player::setSecondAbility(Ability* ability) {
 
 void Player::executeAbility() {
     ability->executeAction();
+}
+
+void Player::move(glm::vec2 movement) {
+    this->movement += movement;
+    if (glm::distance(position, movementStart) >= 1.3f) {
+        movementStart = position;
+        if (jumpState == JumpState::GROUNDED) {
+            SoundEngine::play2D(SoundEngine::getRandomFootstepSound());
+        }
+    }
 }

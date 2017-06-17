@@ -47,7 +47,11 @@ void Trigger::trigger() {
         isTriggered ? activatedColor : glm::vec3(0.0f);
     for (Platform *triggeredPlatform : triggeredPlatforms) {
         triggeredPlatform->isVisible = isTriggered;
-    }   
+    }
+
+    if (isTriggered) {
+        SoundEngine::play2D(SoundEngine::TRIGGER_ACTIVATED_SOUND);
+    }
 }
 
 bool Trigger::intersects(const glm::vec3 &position, const glm::vec3 &scale) {

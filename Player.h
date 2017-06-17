@@ -3,11 +3,13 @@
 #include <vector>
 #include <glm/glm.hpp>
 #include <glm/gtc/noise.hpp>
+#include <iostream>
 
 #include "Projectile.h"
 #include "Level.h"
 #include "ParticleSystem.h"
 #include "Ability.h"
+#include "SoundEngine.h"
 
 class Player {
 public:
@@ -28,6 +30,7 @@ public:
     void jumpReleased();
     void setSecondAbility(Ability *ability);
     void executeAbility();
+    void move(glm::vec2 movement);
 
 private:
     const float movementSpeed = 54.0f;
@@ -35,6 +38,7 @@ private:
     const float maxJumpAccelerationDuration = 0.3f;
     const float movementDampening = 1.2e-6f;
     const float movementDampeningFactor = 1 / std::log(movementDampening);
+    glm::vec3 movementStart;
 
     enum struct JumpState {
         GROUNDED, JUMPING, FALLING

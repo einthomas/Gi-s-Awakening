@@ -46,23 +46,31 @@ void Game::draw(
 }
 
 void Game::forwardPressed() {
-    player.movement.x -= std::sin(camera.rotation.z);
-    player.movement.y += std::cos(camera.rotation.z);
+    player.move(glm::vec2(
+        -std::sin(camera.rotation.z),
+        std::cos(camera.rotation.z)
+    ));
 }
 
 void Game::leftPressed() {
-    player.movement.x -= std::cos(camera.rotation.z);
-    player.movement.y -= std::sin(camera.rotation.z);
+    player.move(glm::vec2(
+        -std::cos(camera.rotation.z),
+        -std::sin(camera.rotation.z)
+    ));
 }
 
 void Game::backwardsPressed() {
-    player.movement.x += std::sin(camera.rotation.z);
-    player.movement.y -= std::cos(camera.rotation.z);
+    player.move(glm::vec2(
+        std::sin(camera.rotation.z),
+        -std::cos(camera.rotation.z)
+    ));
 }
 
 void Game::rightPressed() {
-    player.movement.x += std::cos(camera.rotation.z);
-    player.movement.y += std::sin(camera.rotation.z);
+    player.move(glm::vec2(
+        std::cos(camera.rotation.z),
+        std::sin(camera.rotation.z)
+    ));
 }
 
 void Game::confirmPressed() {

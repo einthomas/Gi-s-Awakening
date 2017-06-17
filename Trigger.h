@@ -4,6 +4,7 @@
 
 #include "Platform.h"
 #include "BlinnMaterial.h"
+#include "SoundEngine.h"
 
 class Trigger : public Platform {
 public:

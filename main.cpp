@@ -1,6 +1,10 @@
 #include <iostream>
 #include <chrono>
 #include <memory>
+#include <stdlib.h>
+#include <time.h>
+
+#include <irrKlang.h>
 
 #include <json/json.hpp>
 
@@ -20,6 +24,7 @@
 #include "ParticleSystem.h"
 #include "Game.h"
 #include "PlatformMaterial.h"
+#include "SoundEngine.h"
 
 static int width = 1280, height = 720;
 static const char *title = "Gi's Awakening: The Mending of the Sky";
@@ -58,6 +63,8 @@ void calculateShadowMappingProjectionMatrices(
 );
 
 int main(void) {
+    srand(time(NULL));
+
     GLFWwindow* window = initGLFW();
     if (window == NULL) {
         return 0;
@@ -259,6 +266,7 @@ int main(void) {
     Shader gaussianBlurShader7 = Shader("shaders/gaussianBlur.vert", "shaders/gaussianBlur7.frag");
     Shader postProcessingShader = Shader("shaders/postProcessing.vert", "shaders/postProcessing.frag");
     ParticleSystem::init();
+    SoundEngine::init();
 
     glm::vec3 youDiedTextDimensions = TextRenderer::calcDimensions("You died", 1.0f);
 
@@ -278,10 +286,13 @@ int main(void) {
     float softFrameTime = 0.0f;
     double time = glfwGetTime();
     double previousTime = time;
+    SoundEngine::soundEndTime = time;
     while (!glfwWindowShouldClose(window)) {
         double currentTime = glfwGetTime();
         double delta = currentTime - previousTime;
         previousTime = currentTime;
+
+        SoundEngine::update(delta, currentTime);
 
         // movement
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {

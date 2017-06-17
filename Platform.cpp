@@ -40,7 +40,7 @@ void Platform::solveCollision(
     // colliding two boxes is equivalent to
     // colliding a point with a box of the size of both boxes combined
     glm::vec3 sumSize = (scale + size) * 0.5f;
-    glm::vec3 delta = position - this->position;
+    glm::vec3 delta = position + -this->position;
 
     // signed distance from point to closest surface
     glm::vec3 distance = glm::abs(delta) - sumSize;
@@ -61,7 +61,7 @@ void Platform::solveCollision(
         }
     }
 
-    if (distance[dimension] < 0) {
+    if (distance[dimension] <= 0) {
         // fix intersection
         if (delta[dimension] > 0) {
             if (dimension == 2) {

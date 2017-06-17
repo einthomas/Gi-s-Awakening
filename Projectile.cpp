@@ -57,6 +57,7 @@ void Projectile::update(float delta, Level &level) {
         particlesSpawned = true;
     } else if (!isDying) {
         if (level.intersects(object3D.position, object3D.scale)) {
+            SoundEngine::play2D(SoundEngine::PROJECTILE_DISAPPEAR_SOUND);
             isDying = true;
         }
     }

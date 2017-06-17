@@ -1,5 +1,7 @@
 #pragma once
 
+#include <iostream>
+
 #include "Object3D.h"
 #include "PlatformType.h"
 

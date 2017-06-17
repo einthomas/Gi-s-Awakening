@@ -35,7 +35,7 @@ vec2 flip(vec2 p) {
 void main() {
     vec3 lightDirection = normalize(vec3(-3.5f, -5.3f, 7.0f));   // TODO: unhardcode this
     vec3 light = vec3(1.0, 0.768, 0.216);
-    vec3 glow = vec3(0.0, 0.0, 0.0);
+    vec3 glow = vec3(1.0, 1.0, 0.0);
     float normalDotLight = dot(vertNormal, lightDirection);
     
     float p = 1.0f;
