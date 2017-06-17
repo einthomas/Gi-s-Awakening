@@ -5,7 +5,8 @@
 
 Platform::Platform(
     const PlatformType *type, glm::vec3 position,
-    std::string name, int lightMapSize, int lightMapIndex
+    std::string name, int lightMapSize, int lightMapIndex,
+    glm::vec3 movement
 ) :
     Object3D(
         new PlatformMaterial(type->colorTexture, type->linesTexture),
@@ -16,7 +17,8 @@ Platform::Platform(
             static_cast<float>(lightMapIndex / lightMapSize) / lightMapSize
         )
     ),
-    name(name), isVisible(true), lightMapIndex(lightMapIndex)
+    name(name), isVisible(true), lightMapIndex(lightMapIndex),
+    startPosition(position), time(0), movement(movement)
 {
 }
 
@@ -74,5 +76,10 @@ void Platform::solveCollision(
             velocity[dimension] = std::min(velocity[dimension], 0.f);
         }
     }
+}
+
+void Platform::update(float delta) {
+    time += delta;
+    position = startPosition + movement * sinf(time * 0.4f);
 }
 

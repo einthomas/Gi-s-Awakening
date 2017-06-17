@@ -11,9 +11,15 @@ public:
 
     int lightMapIndex;
 
+    glm::vec3 startPosition;
+
+    float time;
+    glm::vec3 movement;
+
     Platform(
         const PlatformType *type, glm::vec3 position,
-        std::string name, int lightMapSize = 1, int lightMapIndex = 0
+        std::string name, int lightMapSize = 1, int lightMapIndex = 0,
+        glm::vec3 movement = glm::vec3(0)
     );
 
     virtual bool intersects(const glm::vec3 &position, const glm::vec3 &scale);
@@ -21,4 +27,6 @@ public:
         glm::vec3 &position, glm::vec3 &velocity,
         const glm::vec3 &scale, bool &onGround
     ) const;
+
+    void update(float delta);
 };

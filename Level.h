@@ -15,14 +15,14 @@ public:
     std::vector<Platform> platforms;
     std::vector<Trigger> triggers;
     std::vector<PressurePlate> pressurePlates;
-    Object3D endObject;
+    Platform endObject;
     glm::vec3 start, end;
     float startOrientation;
     GLuint lightMap;
     float time;
 
     Level(
-        const Object3D &endObject, const glm::vec3 &start,
+        const Platform &endObject, const glm::vec3 &start,
         const glm::vec3 &end, float startOrientation, GLuint lightMap = 0
     );
 

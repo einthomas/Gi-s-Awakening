@@ -16,7 +16,7 @@ namespace glm {
 }
 
 Level::Level(
-    const Object3D &endObject, const glm::vec3 &start, const glm::vec3 &end,
+    const Platform &endObject, const glm::vec3 &start, const glm::vec3 &end,
     float startOrientation, GLuint lightMap
 ) :
     platforms(), triggers(), pressurePlates(),
@@ -92,6 +92,9 @@ void Level::update(float delta) {
     for (Trigger &trigger : triggers) {
         trigger.update(delta);
     }
+    for (Platform &platform : platforms) {
+        platform.update(delta);
+    }
 }
 
 Level Level::fromFile(
@@ -130,11 +133,9 @@ Level Level::fromFile(
     const PlatformType& end = platformTypes.at("End");
 
     Level level(
-        Object3D(
-            new PlatformMaterial(
-                end.colorTexture, 0
-            ), json["end"], glm::vec3(1.0f),
-            end.size, endMesh
+        Platform(
+            &end, json["end"], "End", lightMapSize,
+            json["endLightMapIndex"]
         ),
         json["start"],
         json["end"],
@@ -148,7 +149,8 @@ Level Level::fromFile(
             &platformTypes.at(platformJson["type"]),
             platformJson["position"], platformJson["name"],
             lightMapSize,
-            platformJson["lightMapIndex"]
+            platformJson["lightMapIndex"],
+            platformJson.value<glm::vec3>("movement", glm::vec3(0))
         ));
     }
 
@@ -188,7 +190,8 @@ Level Level::fromFile(
             lightMapSize, triggerJson["lightMapIndex"],
             triggerJson["position"],
             isTriggered,
-            triggeredPlatforms
+            triggeredPlatforms,
+            triggerJson.value<glm::vec3>("movement", glm::vec3(0))
         ));
     }
 
