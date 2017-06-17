@@ -20,7 +20,6 @@ Platform::Platform(
     name(name), isVisible(true), lightMapIndex(lightMapIndex),
     startPosition(position), time(0), movement(movement)
 {
-    this->type = type;
 }
 
 bool Platform::intersects(const glm::vec3 &position, const glm::vec3 &scale) {
@@ -83,9 +82,4 @@ void Platform::update(float delta) {
     time += delta;
     position = startPosition + movement * sinf(time * 0.4f);
     dynamic_cast<PlatformMaterial*>(material)->visible = isVisible;
-}
-
-void Platform::reloadTexture() {
-    dynamic_cast<PlatformMaterial*>(material)->colorTexture = type->colorTexture;
-    dynamic_cast<PlatformMaterial*>(material)->linesTexture = type->linesTexture;
 }

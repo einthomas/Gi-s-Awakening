@@ -77,11 +77,8 @@ void calculateShadowMappingProjectionMatrices(
     const glm::mat4 &shadowMappingViewMatrix
 );
 GLuint loadTexture(const char* filename, GLfloat fLargest);
-void loadPlatformTypesTextures(
-    std::map<std::string, PlatformType> &platformTypes,
-    const nlohmann::json &platformTypesJson,
-    Level &level
-);
+void loadPlatformTypesTextures(Level &level);
+GLint getTextureQualitySettings();
 
 int main(void) {
     srand(time(NULL));
@@ -335,7 +332,7 @@ int main(void) {
                 std::cout << " bilinear";
             }
             std::cout << std::endl;
-            loadPlatformTypesTextures(platformTypes, platformTypesJson, level);
+            loadPlatformTypesTextures(level);
 
             //currentShadowMap++;    // TODO: DEBUG, REMOVE!!
             //currentShadowMap %= NUM_SHADOW_MAPS;
@@ -352,7 +349,7 @@ int main(void) {
                 mipMappingQuality = MipMappingQuality::OFF;
                 std::cout << "Mip mapping disabled" << std::endl;
             }
-            loadPlatformTypesTextures(platformTypes, platformTypesJson, level);
+            loadPlatformTypesTextures(level);
         }
         if (glfwGetKey(window, GLFW_KEY_F6) == GLFW_PRESS && fKeyStates[5] == GLFW_RELEASE) {
             // toggle bloom
@@ -718,24 +715,7 @@ void blitFramebuffer(GLuint srcFBO, GLuint destFBO,  GLbitfield mask, GLenum rea
 }
 
 GLuint loadTexture(const char* filename, GLfloat fLargest) {
-    GLint textureQuality;
-    if (textureSamplingQuality == TextureSamplingQuality::NEAREST_NEIGHBOR) {
-        if (mipMappingQuality == MipMappingQuality::OFF) {
-            textureQuality = GL_NEAREST;
-        } else if (mipMappingQuality == MipMappingQuality::NEAREST_NEIGHBOR) {
-            textureQuality = GL_NEAREST_MIPMAP_NEAREST;
-        } else if (mipMappingQuality == MipMappingQuality::LINEAR) {
-            textureQuality = GL_NEAREST_MIPMAP_LINEAR;
-        }
-    } else {
-        if (mipMappingQuality == MipMappingQuality::OFF) {
-            textureQuality = GL_LINEAR;
-        } else if (mipMappingQuality == MipMappingQuality::NEAREST_NEIGHBOR) {
-            textureQuality = GL_LINEAR_MIPMAP_NEAREST;
-        } else if (mipMappingQuality == MipMappingQuality::LINEAR) {
-            textureQuality = GL_LINEAR_MIPMAP_LINEAR;
-        }
-    }
+    GLint textureQuality = getTextureQualitySettings();
 
     GLuint texture;
     glGenTextures(1, &texture);
@@ -831,28 +811,44 @@ bool initGLEW() {
     return true;
 }
 
-void loadPlatformTypesTextures(
-    std::map<std::string, PlatformType> &platformTypes,
-    const nlohmann::json &platformTypesJson,
-    Level &level
-) {
-    for (auto &platformType : platformTypesJson) {
-        platformTypes.at(platformType["name"].get<std::string>()).colorTexture =
-            loadTexture((
-                "textures/" +
-                platformType.value<std::string>("colorTexture", "")
-                ).c_str(), fLargest);
-
-        platformTypes.at(platformType["name"].get<std::string>()).linesTexture =
-            loadTexture((
-                "textures/" +
-                platformType.value<std::string>("linesTexture", "")
-                ).c_str(), fLargest);
-
-        platformTypes.at(platformType["name"].get<std::string>()).size.x = 100.0f;
-    }
-
+void loadPlatformTypesTextures(Level &level) {
+    GLint textureQuality = getTextureQualitySettings();
     for (int i = 0; i < level.platforms.size(); i++) {
-        level.platforms.at(i).reloadTexture();
+        glBindTexture(
+            GL_TEXTURE_2D,
+            dynamic_cast<PlatformMaterial*>(level.platforms.at(i).material)->colorTexture
+        );
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, textureQuality);
+        glGenerateMipmap(GL_TEXTURE_2D);
+
+        glBindTexture(
+            GL_TEXTURE_2D,
+            dynamic_cast<PlatformMaterial*>(level.platforms.at(i).material)->linesTexture
+        );
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, textureQuality);
+        glGenerateMipmap(GL_TEXTURE_2D);
     }
+}
+
+GLint getTextureQualitySettings() {
+    GLint textureQuality;
+    if (textureSamplingQuality == TextureSamplingQuality::NEAREST_NEIGHBOR) {
+        if (mipMappingQuality == MipMappingQuality::OFF) {
+            textureQuality = GL_NEAREST;
+        } else if (mipMappingQuality == MipMappingQuality::NEAREST_NEIGHBOR) {
+            textureQuality = GL_NEAREST_MIPMAP_NEAREST;
+        } else if (mipMappingQuality == MipMappingQuality::LINEAR) {
+            textureQuality = GL_NEAREST_MIPMAP_LINEAR;
+        }
+    } else {
+        if (mipMappingQuality == MipMappingQuality::OFF) {
+            textureQuality = GL_LINEAR;
+        } else if (mipMappingQuality == MipMappingQuality::NEAREST_NEIGHBOR) {
+            textureQuality = GL_LINEAR_MIPMAP_NEAREST;
+        } else if (mipMappingQuality == MipMappingQuality::LINEAR) {
+            textureQuality = GL_LINEAR_MIPMAP_LINEAR;
+        }
+    }
+
+    return textureQuality;
 }
