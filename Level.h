@@ -19,6 +19,7 @@ public:
     glm::vec3 start, end;
     float startOrientation;
     GLuint lightMap;
+    float time;
 
     Level(
         const Object3D &endObject, const glm::vec3 &start,

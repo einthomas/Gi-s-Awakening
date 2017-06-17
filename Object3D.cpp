@@ -98,19 +98,12 @@ static GLfloat skyboxVertices[] = {
 };
 
 Object3D::Object3D(
-    Material* material, glm::vec3 position, glm::vec3 scale, Mesh mesh
-) :
-    material(material), position(position), scale(scale), mesh(mesh)
-{
-}
-
-Object3D::Object3D(
     Material *material, const glm::vec3 &position, const glm::vec3 &scale,
     const glm::vec3 &size, const Mesh &mesh,
     GLfloat lightMapScale, glm::vec2 lightMapPosition
 ) :
-    material(material), position(position), scale(scale),
-    size(size), mesh(mesh),
+    material(material), position(position), rotation(glm::vec3(0)),
+    scale(scale), size(size), mesh(mesh),
     lightMapScale(lightMapScale), lightMapPosition(lightMapPosition)
 {
 }
@@ -150,7 +143,7 @@ Object3D Object3D::makeCube(
     }
 
     return Object3D(
-        material, position, scale, Mesh(cubeVAO, sizeof(boxVertices) / 8 / 4)
+        material, position, scale, scale, Mesh(cubeVAO, sizeof(boxVertices) / 8 / 4)
     );
 }
 
@@ -185,7 +178,7 @@ Object3D Object3D::makeSkyboxCube(
     }
 
     return Object3D(
-        material, position, scale,
+        material, position, scale, scale,
         Mesh(skyboxCubeVAO, sizeof(skyboxVertices) / 3 / 4)
     );
 }
@@ -255,6 +248,9 @@ void Object3D::draw(
 glm::mat4 Object3D::calculateModelMatrix() {
     glm::mat4 modelMatrix;
     modelMatrix = glm::translate(modelMatrix, position);
+    modelMatrix = glm::rotate(modelMatrix, rotation.x, glm::vec3(1, 0, 0));
+    modelMatrix = glm::rotate(modelMatrix, rotation.y, glm::vec3(0, 1, 0));
+    modelMatrix = glm::rotate(modelMatrix, rotation.z, glm::vec3(0, 0, 1));
     modelMatrix = glm::scale(modelMatrix, scale);
 
     return modelMatrix;

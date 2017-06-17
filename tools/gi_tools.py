@@ -57,23 +57,28 @@ def write_object(object, offset, vbo):
     
 def write_group(group, directory): 
     offset = group.dupli_offset
-    size = [0, 0, 0]
+    properties = {"name": group.name}
     with open(path.join(directory, group.name + ".vbo"), "wb") as vbo:
         for object in group.objects:
             try:
                 if object.type == 'MESH':
                     write_object(object, offset, vbo)
                     
-                    size_property = object.get("size")
-                    if size_property is not None:
-                        size = size_property[:]
+                    try: properties["size"] = object["size"][:]
+                    except KeyError: pass
+                    
+                    try: properties["colorTexture"] = object["colorTexture"]
+                    except KeyError: pass
+                    
+                    try: properties["linesTexture"] = object["linesTexture"]
+                    except KeyError: pass
                     
             except Exception as e:
                 print("Couldn't convert object {} ({}). Skipped.".format(
                     object.name, e
                 ))
             
-    return {"size": size, "name": group.name}
+    return properties
 
 def write_gi_block(context, filepath):
     directory, filename = path.split(filepath)
@@ -81,7 +86,7 @@ def write_gi_block(context, filepath):
     blocks = []
     
     for group in bpy.data.groups:
-        if group.name != "Start":
+        if group.name != "Start" and len(group.objects) > 0:
             blocks += [write_group(group, directory)]
         
     with open(filepath, 'w', encoding='utf-8') as f:

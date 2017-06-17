@@ -21,7 +21,7 @@ Level::Level(
 ) :
     platforms(), triggers(), pressurePlates(),
     endObject(endObject), start(start), end(end),
-    startOrientation(startOrientation), lightMap(lightMap)
+    startOrientation(startOrientation), lightMap(lightMap), time(0)
 {
 }
 
@@ -83,6 +83,12 @@ void Level::draw(RenderInfo renderInfo, ShadowInfo shadowInfo) {
 }
 
 void Level::update(float delta) {
+    time += delta;
+    endObject.position = end + glm::vec3(0, 0, sinf(time) * 0.2f);
+    endObject.rotation.x += delta * 0.5f;
+    endObject.rotation.y += delta * 0.7f;
+    endObject.rotation.z += delta * 0.6f;
+
     for (Trigger &trigger : triggers) {
         trigger.update(delta);
     }
@@ -121,8 +127,15 @@ Level Level::fromFile(
 
     glBindTexture(GL_TEXTURE_2D, 0);
 
+    const PlatformType& end = platformTypes.at("End");
+
     Level level(
-        Object3D(material, json["end"], glm::vec3(1.0f), endMesh),
+        Object3D(
+            new PlatformMaterial(
+                end.colorTexture, 0
+            ), json["end"], glm::vec3(1.0f),
+            end.size, endMesh
+        ),
         json["start"],
         json["end"],
         json["startOrientation"],
@@ -155,6 +168,7 @@ Level Level::fromFile(
 
     auto triggersJson = json["triggers"];
     for (auto &triggerJson : triggersJson) {
+        const PlatformType *type = &platformTypes.at(triggerJson["type"]);
         std::vector<Platform*> triggeredPlatforms;
         bool isTriggered = triggerJson["isTriggered"].get<int>();
         for (auto &triggeredPlatformName : triggerJson["triggers"]) {
@@ -170,7 +184,7 @@ Level Level::fromFile(
 
         level.triggers.push_back(Trigger(
             &platformTypes.at(triggerJson["type"]),
-            BlinnMaterial(glm::vec3(1.0f), glm::vec3(0.0f), 0.0f),
+            PlatformMaterial(type->colorTexture, 0),
             lightMapSize, triggerJson["lightMapIndex"],
             triggerJson["position"],
             isTriggered,

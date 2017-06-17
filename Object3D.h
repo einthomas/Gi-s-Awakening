@@ -13,7 +13,7 @@ public:
     static bool frustumCullingEnabled;
 
     Material *material;
-    glm::vec3 position, scale, size;
+    glm::vec3 position, rotation, scale, size;
     Mesh mesh;
 
     GLfloat lightMapScale;
@@ -22,9 +22,6 @@ public:
     static GLuint cubeVAO;
     static GLuint skyboxCubeVAO;
 
-    Object3D(
-        Material *material, glm::vec3 position, glm::vec3 scale, Mesh mesh
-    );
     Object3D(
         Material *material, const glm::vec3 &position, const glm::vec3 &scale,
         const glm::vec3 &size, const Mesh &mesh, GLfloat lightMapScale = 0,

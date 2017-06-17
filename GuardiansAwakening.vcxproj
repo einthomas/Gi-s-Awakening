@@ -169,6 +169,7 @@
     <ClCompile Include="SoundEngine.cpp" />
     <ClCompile Include="TeleportProjectileAbility.cpp" />
     <ClCompile Include="TextRenderer.cpp" />
+    <ClCompile Include="Textures.cpp" />
     <ClCompile Include="Trigger.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -198,6 +199,7 @@
     <ClInclude Include="SoundEngine.h" />
     <ClInclude Include="TeleportProjectileAbility.h" />
     <ClInclude Include="TextRenderer.h" />
+    <ClInclude Include="Textures.h" />
     <ClInclude Include="Trigger.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
