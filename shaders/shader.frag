@@ -40,7 +40,7 @@ vec3 fromSRGB(vec3 c) {
 void main() {
     vec3 lightDirection = normalize(vec3(-3.5f, -5.3f, 7.0f));   // TODO: unhardcode this
     vec3 light = vec3(1.0, 0.768, 0.216);
-    vec3 glow = vec3(1.0, 1.0, 0.0);
+    vec3 glow = vec3(1.0, 1.0, 1.0);
     float normalDotLight = dot(vertNormal, lightDirection);
     
     float p = 1.0f;
@@ -95,14 +95,13 @@ void main() {
     );
     brightSpotColor = vec4(
         (1.0 - line) * glossy * 0.5f +
-        line * glow,
+        line * glow * 50.0f,
         1.0f
     );
 
     if (invisibility > 0.5) {
         if (line > 0.01) {
-            outColor = vec4(glow, line);
-            brightSpotColor = outColor;
+            outColor = vec4(glow, line * 5.0f);
         } else {
             discard;
         }
