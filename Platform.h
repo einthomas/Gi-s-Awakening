@@ -7,6 +7,8 @@
 
 class Platform : public Object3D {
 public:
+    const PlatformType *type;
+
     const std::string name;
 
     bool isVisible;
@@ -31,4 +33,6 @@ public:
     ) const;
 
     void update(float delta);
+
+    void reloadTexture();
 };

@@ -40,6 +40,19 @@ const int DEPTH_TEXTURE_BLUR_HEIGHT = 1024;
 const int NUM_SHADOW_MAPS = 3;
 static GLfloat fLargest;
 
+enum class TextureSamplingQuality {
+    NEAREST_NEIGHBOR,
+    BILINEAR
+};
+TextureSamplingQuality textureSamplingQuality = TextureSamplingQuality::BILINEAR;
+
+enum class MipMappingQuality {
+    OFF,
+    NEAREST_NEIGHBOR,
+    LINEAR
+};
+MipMappingQuality mipMappingQuality = MipMappingQuality::LINEAR;
+
 bool initGLEW();
 GLFWwindow *initGLFW();
 void drawScreenQuad();
@@ -62,6 +75,12 @@ void calculateSplitFrustumCornersWorldSpace(
 void calculateShadowMappingProjectionMatrices(
     glm::mat4 shadowMappingProjectionMatrices[], glm::vec3 frustumCornersWorldSpace[],
     const glm::mat4 &shadowMappingViewMatrix
+);
+GLuint loadTexture(const char* filename, GLfloat fLargest);
+void loadPlatformTypesTextures(
+    std::map<std::string, PlatformType> &platformTypes,
+    const nlohmann::json &platformTypesJson,
+    Level &level
 );
 
 int main(void) {
@@ -307,11 +326,33 @@ int main(void) {
         }
         if (glfwGetKey(window, GLFW_KEY_F4) == GLFW_PRESS && fKeyStates[3] == GLFW_RELEASE) {
             // texture sampling quality Nearest Neighbor/Bilinear
-            currentShadowMap++;    // TODO: DEBUG, REMOVE!!
-            currentShadowMap %= NUM_SHADOW_MAPS;
+            std::cout << "Texture sampling quality set to ";
+            if (textureSamplingQuality == TextureSamplingQuality::BILINEAR) {
+                textureSamplingQuality = TextureSamplingQuality::NEAREST_NEIGHBOR;
+                std::cout << " nearest neighbor";
+            } else {
+                textureSamplingQuality = TextureSamplingQuality::BILINEAR;
+                std::cout << " bilinear";
+            }
+            std::cout << std::endl;
+            loadPlatformTypesTextures(platformTypes, platformTypesJson, level);
+
+            //currentShadowMap++;    // TODO: DEBUG, REMOVE!!
+            //currentShadowMap %= NUM_SHADOW_MAPS;
         }
         if (glfwGetKey(window, GLFW_KEY_F5) == GLFW_PRESS && fKeyStates[4] == GLFW_RELEASE) {
             // toggle mip mapping quality Off/Nearest Neighbor/Linear
+            if (mipMappingQuality == MipMappingQuality::OFF) {
+                mipMappingQuality = MipMappingQuality::NEAREST_NEIGHBOR;
+                std::cout << "Mip mapping quality set to nearest neighbor" << std::endl;
+            } else if (mipMappingQuality == MipMappingQuality::NEAREST_NEIGHBOR) {
+                mipMappingQuality = MipMappingQuality::LINEAR;
+                std::cout << "Mip mapping quality set to linear" << std::endl;
+            } else {
+                mipMappingQuality = MipMappingQuality::OFF;
+                std::cout << "Mip mapping disabled" << std::endl;
+            }
+            loadPlatformTypesTextures(platformTypes, platformTypesJson, level);
         }
         if (glfwGetKey(window, GLFW_KEY_F6) == GLFW_PRESS && fKeyStates[5] == GLFW_RELEASE) {
             // toggle bloom
@@ -676,6 +717,51 @@ void blitFramebuffer(GLuint srcFBO, GLuint destFBO,  GLbitfield mask, GLenum rea
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
+GLuint loadTexture(const char* filename, GLfloat fLargest) {
+    GLint textureQuality;
+    if (textureSamplingQuality == TextureSamplingQuality::NEAREST_NEIGHBOR) {
+        if (mipMappingQuality == MipMappingQuality::OFF) {
+            textureQuality = GL_NEAREST;
+        } else if (mipMappingQuality == MipMappingQuality::NEAREST_NEIGHBOR) {
+            textureQuality = GL_NEAREST_MIPMAP_NEAREST;
+        } else if (mipMappingQuality == MipMappingQuality::LINEAR) {
+            textureQuality = GL_NEAREST_MIPMAP_LINEAR;
+        }
+    } else {
+        if (mipMappingQuality == MipMappingQuality::OFF) {
+            textureQuality = GL_LINEAR;
+        } else if (mipMappingQuality == MipMappingQuality::NEAREST_NEIGHBOR) {
+            textureQuality = GL_LINEAR_MIPMAP_NEAREST;
+        } else if (mipMappingQuality == MipMappingQuality::LINEAR) {
+            textureQuality = GL_LINEAR_MIPMAP_LINEAR;
+        }
+    }
+
+    GLuint texture;
+    glGenTextures(1, &texture);
+
+    int width, height;
+    auto image = SOIL_load_image(
+        filename,
+        &width, &height, nullptr, SOIL_LOAD_RGB
+    );
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexImage2D(
+        GL_TEXTURE_2D, 0, GL_RGB, width, height,
+        0, GL_RGB, GL_UNSIGNED_BYTE, image
+    );
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, fLargest);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, textureQuality);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    SOIL_free_image_data(image);
+
+    return texture;
+}
+
 void drawScreenQuad() {
     if (screenQuadVAO == 0)     {
         GLfloat quadVertices[] = {
@@ -743,4 +829,30 @@ bool initGLEW() {
     }
 
     return true;
+}
+
+void loadPlatformTypesTextures(
+    std::map<std::string, PlatformType> &platformTypes,
+    const nlohmann::json &platformTypesJson,
+    Level &level
+) {
+    for (auto &platformType : platformTypesJson) {
+        platformTypes.at(platformType["name"].get<std::string>()).colorTexture =
+            loadTexture((
+                "textures/" +
+                platformType.value<std::string>("colorTexture", "")
+                ).c_str(), fLargest);
+
+        platformTypes.at(platformType["name"].get<std::string>()).linesTexture =
+            loadTexture((
+                "textures/" +
+                platformType.value<std::string>("linesTexture", "")
+                ).c_str(), fLargest);
+
+        platformTypes.at(platformType["name"].get<std::string>()).size.x = 100.0f;
+    }
+
+    for (int i = 0; i < level.platforms.size(); i++) {
+        level.platforms.at(i).reloadTexture();
+    }
 }
