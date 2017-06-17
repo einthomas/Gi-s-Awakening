@@ -13,7 +13,7 @@ public:
     static bool frustumCullingEnabled;
 
     Material *material;
-    glm::vec3 position, scale, size;
+    glm::vec3 position, rotation, scale, size;
     Mesh mesh;
 
     GLfloat lightMapScale;

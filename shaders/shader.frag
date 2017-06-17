@@ -88,7 +88,7 @@ void main() {
     outColor = vec4(
         (1.0 - line) *
         fromSRGB(texture(colorTexture, flip(vertUV)).rgb) *
-        (ambient + diffuse * 0.8f) +
+        (ambient + diffuse * 1.5f) +
         line * glow,
         1.0f
     );

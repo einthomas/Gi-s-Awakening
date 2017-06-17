@@ -12,7 +12,6 @@ Trigger::Trigger(
     isTriggered(isTriggered),
     blinnMaterial(blinnMaterial),
     triggeredPlatforms(triggeredPlatforms),
-    rotation(0.0f), rotationAxis(0.0f, 0.0f, 1.0f),
     originalColor(blinnMaterial.diffuseColor),
     activatedColor(glm::vec3(0.0f, 1.0f, 0.0f))
 {
@@ -25,7 +24,7 @@ Trigger::Trigger(
 Trigger::Trigger(const Trigger &trigger) :
     Platform(trigger), isTriggered(trigger.isTriggered),
     blinnMaterial(trigger.blinnMaterial),
-    rotation(0.0f), originalColor(trigger.originalColor),
+    originalColor(trigger.originalColor),
     activatedColor(trigger.activatedColor)
 {
     material = &blinnMaterial;
@@ -33,9 +32,8 @@ Trigger::Trigger(const Trigger &trigger) :
 }
 
 void Trigger::update(float delta) {
-    // TODO: rotate -> Implement rotation in Object3D where the model matrix is updated
     if (isTriggered) {
-        rotation += delta;
+        rotation.z += delta * 1.2f;
     }
 }
 

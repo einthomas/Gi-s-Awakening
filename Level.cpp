@@ -21,7 +21,7 @@ Level::Level(
 ) :
     platforms(), triggers(), pressurePlates(),
     endObject(endObject), start(start), end(end),
-    startOrientation(startOrientation), lightMap(lightMap)
+    startOrientation(startOrientation), lightMap(lightMap), time(0)
 {
 }
 
@@ -83,6 +83,12 @@ void Level::draw(RenderInfo renderInfo, ShadowInfo shadowInfo) {
 }
 
 void Level::update(float delta) {
+    time += delta;
+    endObject.position = end + glm::vec3(0, 0, sinf(time) * 0.2f);
+    endObject.rotation.x += delta * 0.5f;
+    endObject.rotation.y += delta * 0.7f;
+    endObject.rotation.z += delta * 0.6f;
+
     for (Trigger &trigger : triggers) {
         trigger.update(delta);
     }

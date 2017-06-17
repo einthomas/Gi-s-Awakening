@@ -23,7 +23,5 @@ public:
 
 private:
     std::vector<Platform*> triggeredPlatforms;
-    float rotation;
-    glm::vec3 rotationAxis;
     glm::vec3 originalColor, activatedColor;
 };

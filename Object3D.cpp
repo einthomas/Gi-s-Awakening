@@ -102,8 +102,8 @@ Object3D::Object3D(
     const glm::vec3 &size, const Mesh &mesh,
     GLfloat lightMapScale, glm::vec2 lightMapPosition
 ) :
-    material(material), position(position), scale(scale),
-    size(size), mesh(mesh),
+    material(material), position(position), rotation(glm::vec3(0)),
+    scale(scale), size(size), mesh(mesh),
     lightMapScale(lightMapScale), lightMapPosition(lightMapPosition)
 {
 }
@@ -248,6 +248,9 @@ void Object3D::draw(
 glm::mat4 Object3D::calculateModelMatrix() {
     glm::mat4 modelMatrix;
     modelMatrix = glm::translate(modelMatrix, position);
+    modelMatrix = glm::rotate(modelMatrix, rotation.x, glm::vec3(1, 0, 0));
+    modelMatrix = glm::rotate(modelMatrix, rotation.y, glm::vec3(0, 1, 0));
+    modelMatrix = glm::rotate(modelMatrix, rotation.z, glm::vec3(0, 0, 1));
     modelMatrix = glm::scale(modelMatrix, scale);
 
     return modelMatrix;
