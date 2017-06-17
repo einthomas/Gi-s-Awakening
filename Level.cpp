@@ -46,9 +46,7 @@ int Level::getTotalObjectCount() {
 
 void Level::draw(const Shader& shader) {
     for (Platform &platform : platforms) {
-        if (platform.isVisible) {
-            platform.draw(shader);
-        }
+        platform.draw(shader);
     }
     for (Trigger &trigger : triggers) {
         if (trigger.isVisible) {
@@ -65,9 +63,7 @@ void Level::draw(const Shader& shader) {
 
 void Level::draw(RenderInfo renderInfo, ShadowInfo shadowInfo) {
     for (Platform &platform : platforms) {
-        if (platform.isVisible) {
-            platform.draw(renderInfo, shadowInfo, lightMap);
-        }
+        platform.draw(renderInfo, shadowInfo, lightMap);
     }
     for (Trigger &trigger : triggers) {
         if (trigger.isVisible) {

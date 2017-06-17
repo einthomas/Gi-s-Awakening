@@ -9,6 +9,8 @@ public:
     GLuint colorTexture;
     GLuint linesTexture;
 
+    bool visible;
+
     PlatformMaterial(GLuint colorTexture, GLuint linesTexture);
 
     void bind(

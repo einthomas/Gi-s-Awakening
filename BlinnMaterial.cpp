@@ -46,5 +46,7 @@ void BlinnMaterial::bind(
         "lightMap", GL_TEXTURE0 + shadowInfo.numShadowMaps,
         lightMap, shadowInfo.numShadowMaps
     );
+
+    BlinnMaterial::shader.setFloat("invisibility", 0.0f);
 }
 
