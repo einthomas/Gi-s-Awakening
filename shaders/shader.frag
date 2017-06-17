@@ -16,6 +16,7 @@ uniform vec3 cameraPosition;
 uniform vec3 diffuseColor;
 uniform vec3 specularColor;
 uniform float glossyness;
+uniform float invisibility;
 
 uniform bool shadowsActivated = true;
 uniform sampler2D shadowMaps[NUM_CASCADES];
@@ -98,11 +99,12 @@ void main() {
         1.0f
     );
 
-    /*
-    if (line > 0.01) {
-        outColor = vec4(glow, line);
-        brightSpotColor = outColor;
-    } else {
-        discard;
-    }*/
+    if (invisibility > 0.5) {
+        if (line > 0.01) {
+            outColor = vec4(glow, line);
+            brightSpotColor = outColor;
+        } else {
+            discard;
+        }
+    }
 }

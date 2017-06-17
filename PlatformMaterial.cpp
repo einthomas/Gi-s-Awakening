@@ -26,4 +26,5 @@ void PlatformMaterial::bind(
         "linesTexture", GL_TEXTURE0 + shadowInfo.numShadowMaps + 2,
         linesTexture, shadowInfo.numShadowMaps + 2
     );
+    BlinnMaterial::shader.setFloat("invisibility", visible ? 0.0f : 1.0f);
 }

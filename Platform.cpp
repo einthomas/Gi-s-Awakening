@@ -82,6 +82,7 @@ void Platform::solveCollision(
 void Platform::update(float delta) {
     time += delta;
     position = startPosition + movement * sinf(time * 0.4f);
+    dynamic_cast<PlatformMaterial*>(material)->visible = isVisible;
 }
 
 void Platform::reloadTexture() {
