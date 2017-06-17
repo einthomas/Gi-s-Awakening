@@ -23,9 +23,6 @@ public:
     static GLuint skyboxCubeVAO;
 
     Object3D(
-        Material *material, glm::vec3 position, glm::vec3 scale, Mesh mesh
-    );
-    Object3D(
         Material *material, const glm::vec3 &position, const glm::vec3 &scale,
         const glm::vec3 &size, const Mesh &mesh, GLfloat lightMapScale = 0,
         glm::vec2 lightMapPosition = glm::vec2(0)

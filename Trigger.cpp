@@ -1,7 +1,7 @@
 #include "Trigger.h"
 
 Trigger::Trigger(
-    const PlatformType *type, BlinnMaterial blinnMaterial,
+    const PlatformType *type, PlatformMaterial blinnMaterial,
     int lightMapSize, int lightMapIndex,
     glm::vec3 position, bool isTriggered,
     std::vector<Platform*> triggeredPlatforms

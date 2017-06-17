@@ -1,67 +1,53 @@
 [
     {
-        "size": [
-            1,
-            1,
-            1
-        ],
-        "name": "1x1",
         "colorTexture": "1x1Color.png",
-        "linesTexture": "1x1Lines.png"
+        "linesTexture": "1x1Lines.png",
+        "size": [
+            1,
+            1,
+            1
+        ],
+        "name": "1x1"
     },
     {
+        "colorTexture": "2x2Color.png",
+        "linesTexture": "2x2Lines.png",
         "size": [
             2,
             2,
             1
         ],
-        "name": "2x2",
-        "colorTexture": "2x2Color.png",
-        "linesTexture": "2x2Lines.png"
+        "name": "2x2"
     },
     {
+        "colorTexture": "2x2x4Color.png",
         "size": [
             2,
             2,
             4
         ],
-        "name": "2x2x4",
-        "colorTexture": "2x2x4Color.png"
+        "name": "2x2x4"
     },
     {
+        "colorTexture": "EndColor.png",
         "size": [
-            4,
-            4,
-            1
-        ],
-        "name": "4x4"
-    },
-    {
-        "size": [
-            8,
-            4,
-            1
-        ],
-        "name": "4x8"
-    },
-    {
-        "size": [
-            0,
-            0,
-            0
+            0.5,
+            0.5,
+            0.5
         ],
         "name": "End"
     },
     {
+        "colorTexture": "PressurePlateColor.png",
         "size": [
             0.837,
             0.837,
             0.012
         ],
-        "name": "PressurePlate",
-        "colorTexture": "PressurePlateColor.png"
+        "name": "PressurePlate"
     },
     {
+        "colorTexture": "DiamondColor.png",
         "size": [
             0.28,
             0.28,
@@ -70,12 +56,12 @@
         "name": "TriggerDiamond"
     },
     {
+        "colorTexture": "StandColor.png",
         "size": [
             0.25,
             0.25,
             0.7
         ],
-        "name": "TriggerStand",
-        "colorTexture": "StandColor.png"
+        "name": "TriggerStand"
     }
 ]

@@ -20,6 +20,7 @@
 #include "ParticleSystem.h"
 #include "Game.h"
 #include "PlatformMaterial.h"
+#include "Textures.h"
 
 static int width = 1280, height = 720;
 static const char *title = "Gi's Awakening: The Mending of the Sky";
@@ -32,6 +33,7 @@ const int BLOOM_BLUR_HEIGHT = 288;
 const int DEPTH_TEXTURE_BLUR_WIDTH = 1024;
 const int DEPTH_TEXTURE_BLUR_HEIGHT = 1024;
 const int NUM_SHADOW_MAPS = 3;
+static GLfloat fLargest;
 
 bool initGLEW();
 GLFWwindow *initGLFW();
@@ -91,7 +93,6 @@ int main(void) {
     //glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
 
-    GLfloat fLargest;
     glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &fLargest);
 
     const float FOV = glm::radians(70.0f);
@@ -179,56 +180,6 @@ int main(void) {
     platformTypesFile >> platformTypesJson;
 
     for (auto &platformType : platformTypesJson) {
-        GLuint textures[2] = {0};
-        glGenTextures(2, textures);
-
-        int width, height;
-        auto image = SOIL_load_image(
-            (
-                "textures/" +
-                platformType.value<std::string>("colorTexture", "")
-            ).c_str(),
-            &width, &height, nullptr, SOIL_LOAD_RGB
-        );
-        glBindTexture(GL_TEXTURE_2D, textures[0]);
-        glTexImage2D(
-            GL_TEXTURE_2D, 0, GL_RGB, width, height,
-            0, GL_RGB, GL_UNSIGNED_BYTE, image
-        );
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, fLargest);
-        glGenerateMipmap(GL_TEXTURE_2D);
-        glTexParameteri(
-            GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR
-        );
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-        SOIL_free_image_data(image);
-        image = SOIL_load_image(
-            (
-                "textures/" +
-                platformType.value<std::string>("linesTexture", "")
-            ).c_str(),
-            &width, &height, nullptr, SOIL_LOAD_RGB
-        );
-        glBindTexture(GL_TEXTURE_2D, textures[1]);
-        glTexImage2D(
-            GL_TEXTURE_2D, 0, GL_RGB, width, height,
-            0, GL_RGB, GL_UNSIGNED_BYTE, image
-        );
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, fLargest);
-        glGenerateMipmap(GL_TEXTURE_2D);
-        glTexParameteri(
-            GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR
-        );
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        SOIL_free_image_data(image);
-
-        glBindTexture(GL_TEXTURE_2D, 0);
-
         platformTypes.emplace(
             platformType["name"].get<std::string>(), PlatformType {
                 glm::vec3(
@@ -240,7 +191,14 @@ int main(void) {
                     "geometry/" +
                     platformType["name"].get<std::string>() + ".vbo"
                 ).c_str()),
-                textures[0], textures[1]
+                loadTexture((
+                    "textures/" +
+                    platformType.value<std::string>("colorTexture", "")
+                ).c_str(), fLargest),
+                loadTexture((
+                    "textures/" +
+                    platformType.value<std::string>("linesTexture", "")
+                ).c_str(), fLargest)
             }
         );
     }
@@ -248,7 +206,9 @@ int main(void) {
     Mesh endMesh = Mesh::fromFile("geometry/End.vbo");
 
     Level level = Level::fromFile(
-        "levels/level1.gil", material.get(), endMesh, platformTypes
+        "levels/level1.gil",
+        material.get(),
+        endMesh, platformTypes
     );
     Game game(level);
 

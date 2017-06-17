@@ -98,13 +98,6 @@ static GLfloat skyboxVertices[] = {
 };
 
 Object3D::Object3D(
-    Material* material, glm::vec3 position, glm::vec3 scale, Mesh mesh
-) :
-    material(material), position(position), scale(scale), mesh(mesh)
-{
-}
-
-Object3D::Object3D(
     Material *material, const glm::vec3 &position, const glm::vec3 &scale,
     const glm::vec3 &size, const Mesh &mesh,
     GLfloat lightMapScale, glm::vec2 lightMapPosition
@@ -150,7 +143,7 @@ Object3D Object3D::makeCube(
     }
 
     return Object3D(
-        material, position, scale, Mesh(cubeVAO, sizeof(boxVertices) / 8 / 4)
+        material, position, scale, scale, Mesh(cubeVAO, sizeof(boxVertices) / 8 / 4)
     );
 }
 
@@ -185,7 +178,7 @@ Object3D Object3D::makeSkyboxCube(
     }
 
     return Object3D(
-        material, position, scale,
+        material, position, scale, scale,
         Mesh(skyboxCubeVAO, sizeof(skyboxVertices) / 3 / 4)
     );
 }

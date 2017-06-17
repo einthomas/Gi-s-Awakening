@@ -32,6 +32,10 @@ vec2 flip(vec2 p) {
     return vec2(p.x, 1.0f - p.y);
 }
 
+vec3 fromSRGB(vec3 c) {
+    return pow(c, vec3(2.2));
+}
+
 void main() {
     vec3 lightDirection = normalize(vec3(-3.5f, -5.3f, 7.0f));   // TODO: unhardcode this
     vec3 light = vec3(1.0, 0.768, 0.216);
@@ -64,10 +68,10 @@ void main() {
     vec3 cameraVector = normalize(cameraPosition - vertFragPosition);
 
     // ambient
-    vec3 ambient = pow(texture(
+    vec3 ambient = fromSRGB(texture(
         lightMap,
         flip(lightMapPosition + vertUV * lightMapScale)
-    ).rgb, vec3(2.2));
+    ).rgb);
 
     // diffuse
     vec3 diffuse =
@@ -79,10 +83,12 @@ void main() {
         max(dot(vertNormal, halfVector), 0.0f), glossyness
     ) * specularColor * p * light;
 
-    float line = texture(linesTexture, flip(vertUV)).r;
+    float line = fromSRGB(texture(linesTexture, flip(vertUV)).rgb).r;
 
     outColor = vec4(
-        (1.0 - line) * texture(colorTexture, flip(vertUV)).rgb * (ambient + diffuse * 0.8f) +
+        (1.0 - line) *
+        fromSRGB(texture(colorTexture, flip(vertUV)).rgb) *
+        (ambient + diffuse * 0.8f) +
         line * glow,
         1.0f
     );
@@ -93,8 +99,8 @@ void main() {
     );
 
     /*
-    if (line > 0.25) {
-        outColor = vec4(glow, 1.0);
+    if (line > 0.01) {
+        outColor = vec4(glow, line);
         brightSpotColor = outColor;
     } else {
         discard;
