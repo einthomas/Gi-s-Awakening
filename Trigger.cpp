@@ -4,10 +4,11 @@ Trigger::Trigger(
     const PlatformType *type, PlatformMaterial blinnMaterial,
     int lightMapSize, int lightMapIndex,
     glm::vec3 position, bool isTriggered,
-    std::vector<Platform*> triggeredPlatforms
+    std::vector<Platform*> triggeredPlatforms,
+    glm::vec3 movement
 ) :
     Platform(
-        type, position, "", lightMapSize, lightMapIndex
+        type, position, "", lightMapSize, lightMapIndex, movement
     ),
     isTriggered(isTriggered),
     blinnMaterial(blinnMaterial),
@@ -32,6 +33,7 @@ Trigger::Trigger(const Trigger &trigger) :
 }
 
 void Trigger::update(float delta) {
+    Platform::update(delta);
     if (isTriggered) {
         rotation.z += delta * 1.2f;
     }

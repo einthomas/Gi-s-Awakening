@@ -15,7 +15,8 @@ public:
         const PlatformType *type, PlatformMaterial blinnMaterial,
         int lightMapSize, int lightMapIndex,
         glm::vec3 position, bool isTriggered,
-        std::vector<Platform*> triggeredPlatforms
+        std::vector<Platform*> triggeredPlatforms,
+        glm::vec3 movement = glm::vec3(0)
     );
     Trigger(const Trigger &trigger);
     void update(float delta);
@@ -26,4 +27,5 @@ public:
 private:
     std::vector<Platform*> triggeredPlatforms;
     glm::vec3 originalColor, activatedColor;
+    glm::vec3 movement;
 };

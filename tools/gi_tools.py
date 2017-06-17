@@ -103,6 +103,7 @@ def write_gi_level(context, filepath, level_name):
     start = [0, 0, 0]
     start_orientation = 0
     end = [0, 0, 0]
+    end_lightmap_index = 0
     
     lightmap = bpy.data.images.get("lightmap")
     assert lightmap is not None
@@ -129,14 +130,20 @@ def write_gi_level(context, filepath, level_name):
                 start_orientation = object.rotation_euler[2]
             elif type == "End":
                 end = object.location[:]
+                end_lightmap_index = lightmap_index
             elif type == "TriggerDiamond":
-                triggers += [{
+                properties = {
                     "position": object.location[:],
                     "type": type,
                     "isTriggered": object.get("isTriggered"),
                     "triggers": object.get("triggers"),
                     "lightMapIndex": lightmap_index
-                }]
+                }
+                
+                try: properties["movement"] = object["movement"][:]
+                except KeyError: pass
+                
+                triggers += [properties]
             elif type == "PressurePlate":
                 pressure_plates += [{
                     "position": object.location[:],
@@ -145,18 +152,17 @@ def write_gi_level(context, filepath, level_name):
                     "lightMapIndex": lightmap_index
                 }]
             else:
-                platforms += [{
+                properties = {
                     "position": object.location[:],
                     "type": type,
                     "name": object.name,
                     "lightMapIndex": lightmap_index
-                }]
+                }
                 
-                # TODO
-                #bake_block(object, lightmap, lightmap_grid, lightmap_index)
-                
-        #except Exception as e:
-        #    print(e)
+                try: properties["movement"] = object["movement"][:]
+                except KeyError: pass
+            
+                platforms += [properties]
         
     #run Blender in background:
     # -b
@@ -185,7 +191,8 @@ def write_gi_level(context, filepath, level_name):
         "startOrientation": start_orientation,
         "end": end,
         "lightMapSize": lightmap_grid,
-        "lightMapPath": path.basename(lightmap_path)
+        "lightMapPath": path.basename(lightmap_path),
+        "endLightMapIndex": end_lightmap_index
     }
     
     with open(filepath, 'w', encoding='utf-8') as f:
