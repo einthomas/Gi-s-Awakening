@@ -40,6 +40,8 @@ void Player::update(float delta, float gravity, Level &level) {
     velocity.x *= std::pow(movementDampening, delta);
     velocity.y *= std::pow(movementDampening, delta);
 
+    float old_velocity_z = velocity.z;
+
     // check for and handle player intersection
     onGround = false;
     for (Platform object : level.platforms) {
@@ -47,7 +49,9 @@ void Player::update(float delta, float gravity, Level &level) {
     }
     if (onGround) {
         if (jumpState == JumpState::FALLING) {
-            SoundEngine::play2D(SoundEngine::PLAYER_LAND_SOUND);
+            if (old_velocity_z < -2.0f) {
+                SoundEngine::play2D(SoundEngine::PLAYER_LAND_SOUND);
+            }
         }
         jumpState = JumpState::GROUNDED;
     } else if (jumpState == JumpState::GROUNDED) {
