@@ -9,7 +9,7 @@ Projectile::Projectile(PlatformMaterial* material, glm::vec3 position, glm::vec3
     blinnMaterial(material),
     object3D(Object3D(
         blinnMaterial, position,
-        glm::vec3(1.0f), glm::vec3(0.3f), mesh
+        glm::vec3(1.0f), glm::vec3(0.2f), mesh
     ))
 {
     this->movementVector = movementVector;
