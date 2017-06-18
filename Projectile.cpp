@@ -16,6 +16,12 @@ Projectile::Projectile(PlatformMaterial* material, glm::vec3 position, glm::vec3
 
     originalColor = blinnMaterial->diffuseColor / deathTimer;
     velocityZ = 1.0f;
+
+    object3D.rotation = glm::vec3(
+        (rand() % 128) / 128.f * glm::pi<float>(),
+        (rand() % 128) / 128.f * glm::pi<float>(),
+        (rand() % 128) / 128.f * glm::pi<float>()
+    );
 }
 
 Projectile::Projectile(const Projectile &projectile) :
@@ -72,6 +78,8 @@ void Projectile::update(float delta, Level &level) {
             object3D.position += movementVector * delta;
             velocityZ -= GRAVITY * delta;
             object3D.position.z += velocityZ * delta;
+            object3D.rotation.x += 2.0f * delta;
+            object3D.rotation.y += 1.5f * delta;
         }
     }
 }
