@@ -1,24 +1,29 @@
 #include "TeleportProjectileAbility.h"
 
-TeleportProjectileAbility::TeleportProjectileAbility(Game &game) :
-    Ability(game)
+TeleportProjectileAbility::TeleportProjectileAbility(Game &game, PlatformType* projectile) :
+    Ability(game), projectile(projectile)
 {
 }
 
 void TeleportProjectileAbility::executeAction() {
     glm::vec3 cameraDirection = game.camera.getDirection();
     projectiles.push_back(Projectile(
-        BlinnMaterial(glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f), 0.0f),
+        new PlatformMaterial(
+            projectile->colorTexture, projectile->linesTexture
+        ),
         game.player.position + game.player.size / 4.0f + cameraDirection * 0.5f - glm::vec3(0.15f, 0.15f, 0.0f),
-        cameraDirection * game.player.projectileSpeed
+        cameraDirection * game.player.projectileSpeed, projectile->mesh
     ));
 }
 
 void TeleportProjectileAbility::update(float delta) {
     for (unsigned int i = 0; i < projectiles.size(); i++) {
-        if (glm::length(projectiles[i].object3D.position - game.player.position) > Projectile::DESPAWN_DISTANCE ||
-            projectiles[i].isDead)
-        {
+        if (
+            glm::length(
+                projectiles[i].object3D.position - game.player.position
+            ) > Projectile::DESPAWN_DISTANCE ||
+            projectiles[i].isDead
+        ) {
             projectiles.erase(projectiles.begin() + static_cast<int>(i));
         } else {
             projectiles[i].update(delta, game.level);

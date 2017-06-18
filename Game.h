@@ -11,7 +11,7 @@ public:
     Level &level;
     Player player;
 
-    Game(Level &level);
+    Game(Level &level, PlatformType *projectile);
     void update(float delta);
     void draw(const Shader &shader);
     void draw(
@@ -35,4 +35,6 @@ private:
     bool isPrimaryActionPressed = false;
     bool isSecondaryActionPressed = false;
     float gravity = 8.5f;
+
+    PlatformType *projectile;
 };

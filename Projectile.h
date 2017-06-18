@@ -8,6 +8,8 @@
 class Projectile {
 public:
     static const int DESPAWN_DISTANCE = 30;
+
+    BlinnMaterial *blinnMaterial;
     Object3D object3D;
     glm::vec3 movementVector;
     bool isDying = false;
@@ -16,7 +18,10 @@ public:
     float deathTimer = 0.5f;
     bool particlesSpawned = false;
 
-    Projectile(BlinnMaterial material, glm::vec3 position, glm::vec3 movementVector);
+    Projectile(
+        PlatformMaterial *material, glm::vec3 position, glm::vec3 movementVector,
+        Mesh mesh
+    );
     Projectile(const Projectile &projectile);
 
     void draw(const Shader &shader);
@@ -25,7 +30,6 @@ public:
 
 private:
     constexpr static float GRAVITY = 6.0f;
-    BlinnMaterial blinnMaterial;
     glm::vec3 originalColor;
     float velocityZ;
 };

@@ -1,67 +1,78 @@
 [
     {
+        "size": [
+            1,
+            1,
+            1
+        ],
         "colorTexture": "1x1Color.png",
-        "linesTexture": "1x1Lines.png",
-        "size": [
-            1,
-            1,
-            1
-        ],
-        "name": "1x1"
+        "name": "1x1",
+        "linesTexture": "1x1Lines.png"
     },
     {
+        "size": [
+            2,
+            2,
+            1
+        ],
         "colorTexture": "2x2Color.png",
-        "linesTexture": "2x2Lines.png",
-        "size": [
-            2,
-            2,
-            1
-        ],
-        "name": "2x2"
+        "name": "2x2",
+        "linesTexture": "2x2Lines.png"
     },
     {
-        "colorTexture": "2x2x4Color.png",
         "size": [
             2,
             2,
             4
         ],
+        "colorTexture": "2x2x4Color.png",
         "name": "2x2x4"
     },
     {
-        "colorTexture": "EndColor.png",
         "size": [
             0.5,
             0.5,
             0.5
         ],
-        "name": "End"
+        "colorTexture": "EndColor.png",
+        "name": "End",
+        "linesTexture": "EndLines.png"
     },
     {
-        "colorTexture": "PressurePlateColor.png",
         "size": [
             0.837,
             0.837,
             0.012
         ],
+        "colorTexture": "PressurePlateColor.png",
         "name": "PressurePlate"
     },
     {
-        "colorTexture": "DiamondColor.png",
+        "size": [
+            0.2,
+            0.2,
+            0.2
+        ],
+        "colorTexture": "ProjectileColor.png",
+        "name": "Projectile",
+        "linesTexture": "ProjectileLines.png"
+    },
+    {
         "size": [
             0.28,
             0.28,
             0.6
         ],
+        "colorTexture": "DiamondColor.png",
         "name": "TriggerDiamond"
     },
     {
-        "colorTexture": "StandColor.png",
         "size": [
             0.25,
             0.25,
             0.7
         ],
+        "colorTexture": "StandColor.png",
         "name": "TriggerStand"
     }
 ]

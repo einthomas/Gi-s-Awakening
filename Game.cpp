@@ -1,9 +1,10 @@
 #include "Game.h"
 
-Game::Game(Level &level) :
+Game::Game(Level &level, PlatformType *projectile) :
     camera(Camera(glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(glm::radians(90.0f), 0.0f, level.startOrientation))),
     level(level),
-    player(Player(level.start + glm::vec3(0.f, 0.f, 1.f), glm::vec3(0.5f, 0.5f, 2.0f)))
+    player(Player(level.start + glm::vec3(0.f, 0.f, 1.f), glm::vec3(0.5f, 0.5f, 2.0f))),
+    projectile(projectile)
 {
 }
 
@@ -18,7 +19,9 @@ void Game::update(float delta) {
             if (level.pressurePlates[i].steppedOn(player.position, player.size)) {
                 level.pressurePlates[i].highlight();
                 if (!player.hasSecondAbility && level.pressurePlates[i].abilityType == AbilityType::TELEPORT) {
-                    player.setSecondAbility(new TeleportProjectileAbility(*this));
+                    player.setSecondAbility(
+                        new TeleportProjectileAbility(*this, projectile)
+                    );
                 }
             } else {
                 level.pressurePlates[i].unHighlight();
@@ -95,10 +98,13 @@ void Game::primaryActionReleased() {
         isPrimaryActionPressed = false;
         glm::vec3 cameraDirection = camera.getDirection();
 
+        // TODO: use PlatformType of projectile
         player.shoot(Projectile(
-            BlinnMaterial(glm::vec3(1.0f), glm::vec3(0.0f), 0.0f),
+             new PlatformMaterial(
+                 projectile->colorTexture, projectile->linesTexture
+             ),
             player.position + player.size / 4.0f + cameraDirection * 0.5f - glm::vec3(0.15f, 0.15f, 0.0f),
-            cameraDirection * player.projectileSpeed
+            cameraDirection * player.projectileSpeed, projectile->mesh
         ));
     }
 }

@@ -4,7 +4,7 @@ PlatformMaterial::PlatformMaterial(
     GLuint colorTexture, GLuint linesTexture
 ) :
     BlinnMaterial(glm::vec3(1.0f), glm::vec3(1.0f, 1.0f, 0.5f), 64.0f),
-    colorTexture(colorTexture), linesTexture(linesTexture)
+    colorTexture(colorTexture), linesTexture(linesTexture), visible(true)
 { }
 
 void PlatformMaterial::bind(

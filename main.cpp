@@ -233,7 +233,7 @@ int main(void) {
         material.get(),
         endMesh, platformTypes
     );
-    Game game(level);
+    Game game(level, &platformTypes.at("Projectile"));
 
     Shader shadowMappingDepthShader = Shader("shaders/shadowMappingDepth.vert", "shaders/shadowMappingDepth.frag");
     Shader textShader = Shader("shaders/textShader.vert", "shaders/textShader.frag");

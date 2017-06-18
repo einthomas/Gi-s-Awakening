@@ -3,24 +3,25 @@
 const int Projectile::DESPAWN_DISTANCE;
 const float Projectile::DEATH_TIMER_START = 0.5f;
 
-Projectile::Projectile(BlinnMaterial material, glm::vec3 position, glm::vec3 movementVector) :
+Projectile::Projectile(PlatformMaterial* material, glm::vec3 position, glm::vec3 movementVector,
+    Mesh mesh
+) :
     blinnMaterial(material),
-    object3D(Object3D::makeCube(
-        &blinnMaterial,
-        position,
-        glm::vec3(0.3f)
+    object3D(Object3D(
+        blinnMaterial, position,
+        glm::vec3(1.0f), glm::vec3(0.3f), mesh
     ))
 {
     this->movementVector = movementVector;
 
-    originalColor = blinnMaterial.diffuseColor / deathTimer;
+    originalColor = blinnMaterial->diffuseColor / deathTimer;
     velocityZ = 1.0f;
 }
 
 Projectile::Projectile(const Projectile &projectile) :
     blinnMaterial(projectile.blinnMaterial), object3D(Object3D(projectile.object3D))
 {
-    object3D.material = &blinnMaterial;
+    object3D.material = blinnMaterial;
     originalColor = projectile.originalColor;
     velocityZ = projectile.velocityZ;
     movementVector = glm::vec3(projectile.movementVector);
@@ -65,7 +66,7 @@ void Projectile::update(float delta, Level &level) {
     if (!isDead) {
         if (isDying) {
             deathTimer -= delta;
-            blinnMaterial.diffuseColor -= originalColor * delta;
+            blinnMaterial->diffuseColor -= originalColor * delta;
             isDead = deathTimer <= 0.0f;
         } else {
             object3D.position += movementVector * delta;
