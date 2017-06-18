@@ -17,6 +17,7 @@ uniform vec3 diffuseColor;
 uniform vec3 specularColor;
 uniform float glossyness;
 uniform float invisibility;
+uniform vec3 ambientColor;
 
 uniform bool shadowsActivated = true;
 uniform sampler2D shadowMaps[NUM_CASCADES];
@@ -72,7 +73,7 @@ void main() {
     vec3 ambient = fromSRGB(texture(
         lightMap,
         flip(lightMapPosition + vertUV * lightMapScale)
-    ).rgb);
+    ).rgb) + ambientColor;
 
     // diffuse
     vec3 diffuse =

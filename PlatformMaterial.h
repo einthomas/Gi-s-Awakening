@@ -11,7 +11,12 @@ public:
 
     bool visible;
 
-    PlatformMaterial(GLuint colorTexture, GLuint linesTexture);
+    glm::vec3 ambientColor;
+
+    PlatformMaterial(
+        GLuint colorTexture, GLuint linesTexture,
+        glm::vec3 ambientColor = glm::vec3(0)
+    );
 
     void bind(
         RenderInfo renderInfo, ShadowInfo shadowInfo,

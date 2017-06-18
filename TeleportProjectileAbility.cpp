@@ -9,7 +9,8 @@ void TeleportProjectileAbility::executeAction() {
     glm::vec3 cameraDirection = game.camera.getDirection();
     projectiles.push_back(Projectile(
         new PlatformMaterial(
-            projectile->colorTexture, projectile->linesTexture
+            projectile->colorTexture, projectile->linesTexture,
+            glm::vec3(0.635f, 0.773f, 0.98f)
         ),
         game.player.position + game.player.size / 4.0f + cameraDirection * 0.5f - glm::vec3(0.15f, 0.15f, 0.0f),
         cameraDirection * game.player.projectileSpeed, projectile->mesh

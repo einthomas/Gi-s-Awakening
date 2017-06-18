@@ -1,10 +1,11 @@
 #include "PlatformMaterial.h"
 
 PlatformMaterial::PlatformMaterial(
-    GLuint colorTexture, GLuint linesTexture
+    GLuint colorTexture, GLuint linesTexture, glm::vec3 ambientColor
 ) :
     BlinnMaterial(glm::vec3(1.0f), glm::vec3(1.0f, 1.0f, 0.5f), 64.0f),
-    colorTexture(colorTexture), linesTexture(linesTexture), visible(true)
+    colorTexture(colorTexture), linesTexture(linesTexture), visible(true),
+    ambientColor(ambientColor)
 { }
 
 void PlatformMaterial::bind(
@@ -27,4 +28,5 @@ void PlatformMaterial::bind(
         linesTexture, shadowInfo.numShadowMaps + 2
     );
     BlinnMaterial::shader.setFloat("invisibility", visible ? 0.0f : 1.0f);
+    BlinnMaterial::shader.setVector3f("ambientColor", ambientColor);
 }

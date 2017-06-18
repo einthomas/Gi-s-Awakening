@@ -100,9 +100,10 @@ void Game::primaryActionReleased() {
 
         // TODO: use PlatformType of projectile
         player.shoot(Projectile(
-             new PlatformMaterial(
-                 projectile->colorTexture, projectile->linesTexture
-             ),
+            new PlatformMaterial(
+                projectile->colorTexture, projectile->linesTexture,
+                glm::vec3(0.635f, 0.773f, 0.98f)
+            ),
             player.position + player.size / 4.0f + cameraDirection * 0.5f - glm::vec3(0.15f, 0.15f, 0.0f),
             cameraDirection * player.projectileSpeed, projectile->mesh
         ));
