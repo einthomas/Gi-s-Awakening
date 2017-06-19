@@ -245,6 +245,7 @@ int main(void) {
     SoundEngine::init();
 
     glm::vec3 youDiedTextDimensions = TextRenderer::calcDimensions("You died", 1.0f);
+    glm::vec3 spaceToRestartTextDimensions = TextRenderer::calcDimensions("Press space to restart", 0.15f);
 
     int centerX = width / 2, centerY = height / 2;
     glfwSetCursorPos(window, centerX, centerY);
@@ -255,6 +256,10 @@ int main(void) {
     bool shadowsActivated = true;
     bool displayHelp = false;
     int currentShadowMap = 0;   // TODO: DEBUG, REMOVE!!
+
+    int teleportPlatformIndices[4] = { 7, 5, 0, 9 };
+    int currentTeleportPlatformIndex = 0;
+    bool teleportKeyPressed = false;
 
     int fKeyStates[10] = { 0 };
 
@@ -290,6 +295,16 @@ int main(void) {
             game.confirmReleased();
         }
 
+        if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS) {
+            teleportKeyPressed = true;
+        }
+        if (glfwGetKey(window, GLFW_KEY_J) == GLFW_RELEASE && teleportKeyPressed) {
+            teleportKeyPressed = false;
+            game.player.position = game.level.platforms[teleportPlatformIndices[currentTeleportPlatformIndex]].position + glm::vec3(0.0f, 0.0f, game.level.platforms[teleportPlatformIndices[currentTeleportPlatformIndex]].size.z);
+            currentTeleportPlatformIndex++;
+            currentTeleportPlatformIndex %= 4;
+        }
+
         // shooting
         if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
             game.primaryActionPressed();
@@ -306,9 +321,12 @@ int main(void) {
 
         // f-keys
         if (glfwGetKey(window, GLFW_KEY_F1) == GLFW_PRESS && fKeyStates[0] == GLFW_RELEASE) {
-            // toggle help display
-            displayHelp = !displayHelp;
-            std::cout << "Help display toggled " << (drawAsWireframe ? "on" : "off") << std::endl;
+            // print controls
+            std::cout << "Controls: " << std::endl;
+            std::cout << "W, A, S, D ... move" << std::endl;
+            std::cout << "Space ... jump/revive" << std::endl;
+            std::cout << "Left click ... shoot projectile" << std::endl;
+            std::cout << "Right click ... shoot teleportation projectile (if available)" << std::endl;
         }
         if (glfwGetKey(window, GLFW_KEY_F2) == GLFW_PRESS && fKeyStates[1] == GLFW_RELEASE) {
             // toggle performance stats
@@ -528,6 +546,12 @@ int main(void) {
                 width / 2.0f - youDiedTextDimensions.x / 2.0f,
                 height / 2.0f - youDiedTextDimensions.y / 2.0f,
                 1.0f,
+                glm::vec3(0.8f));
+            TextRenderer::renderText(
+                "Press space to restart",
+                width / 2.0f - spaceToRestartTextDimensions.x / 2.0f,
+                height / 2.0f - youDiedTextDimensions.y / 2.0f - spaceToRestartTextDimensions.y * 2.0f,
+                0.15f,
                 glm::vec3(0.8f));
         }
 
