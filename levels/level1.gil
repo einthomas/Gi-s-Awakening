@@ -1,395 +1,440 @@
 {
-    "pressurePlates": [
-        {
-            "type": "PressurePlate",
-            "givesAbility": 0,
-            "lightMapIndex": 28,
-            "position": [
-                7.0,
-                -20.0,
-                7.515626430511475
-            ]
-        }
-    ],
+    "name": "",
     "start": [
         -4.0,
         5.0,
         0.5
     ],
-    "endLightMapIndex": 31,
+    "lightMapSize": 7,
     "startOrientation": 3.141592502593994,
-    "name": "",
-    "lightMapSize": 6,
-    "triggers": [
-        {
-            "type": "TriggerDiamond",
-            "lightMapIndex": 30,
-            "movement": [
-                2,
-                0,
-                0
-            ],
-            "triggers": [
-                "switchableB1",
-                "switchableB2",
-                "switchableB3",
-                "switchableB4"
-            ],
-            "isTriggered": 0,
-            "position": [
-                -3.0,
-                17.0,
-                6.630000114440918
-            ]
-        },
-        {
-            "lightMapIndex": 36,
-            "type": "TriggerDiamond",
-            "triggers": [
-                "switchableA1",
-                "switchableA2",
-                "switchableA3",
-                "switchableA4"
-            ],
-            "isTriggered": 0,
-            "position": [
-                -2.57377028465271,
-                -0.44583457708358765,
-                6.630120277404785
-            ]
-        }
-    ],
-    "end": [
-        32.0,
-        -20.0,
-        8.5
-    ],
-    "lightMapPath": "level1_lightmap.png",
+    "endLightMapIndex": 28,
     "platforms": [
         {
-            "type": "2x2",
+            "position": [
+                -14.99951457977295,
+                -21.8608455657959,
+                6.599461555480957
+            ],
             "lightMapIndex": 1,
             "name": "2x2.010",
-            "position": [
-                18.0,
-                -19.0,
-                6.0
-            ]
+            "type": "2x2"
         },
         {
-            "type": "2x2",
+            "position": [
+                -5.841502666473389,
+                -11.69473934173584,
+                8.003246307373047
+            ],
             "lightMapIndex": 2,
-            "name": "2x2.002",
-            "position": [
-                20.0,
-                -19.0,
-                6.0
-            ]
-        },
-        {
-            "type": "2x2",
-            "lightMapIndex": 3,
-            "name": "2x2.001",
-            "position": [
-                20.0,
-                -21.0,
-                6.0
-            ]
-        },
-        {
-            "type": "2x2",
-            "lightMapIndex": 4,
-            "name": "2x2.000",
-            "position": [
-                18.0,
-                -21.0,
-                6.0
-            ]
-        },
-        {
-            "type": "1x1",
-            "lightMapIndex": 5,
             "name": "1x1.004",
-            "position": [
-                3.0,
-                -20.0,
-                7.0
-            ]
+            "type": "1x1"
         },
         {
-            "type": "1x1",
-            "lightMapIndex": 6,
+            "position": [
+                -4.404470443725586,
+                -13.19473934173584,
+                7.003246307373047
+            ],
+            "lightMapIndex": 3,
             "name": "1x1.001",
-            "position": [
-                -1.0,
-                -17.0,
-                6.0
-            ]
+            "type": "1x1"
         },
         {
-            "type": "1x1",
-            "lightMapIndex": 7,
+            "position": [
+                -2.968493938446045,
+                -11.69473934173584,
+                6.003246307373047
+            ],
+            "lightMapIndex": 4,
             "name": "1x1.000",
+            "type": "1x1"
+        },
+        {
             "position": [
                 -3.0,
-                -13.0,
+                17.0,
                 5.0
-            ]
-        },
-        {
-            "type": "1x1",
+            ],
+            "lightMapIndex": 5,
+            "name": "1x1.003",
             "movement": [
                 2,
                 0,
                 0
             ],
-            "lightMapIndex": 8,
-            "name": "1x1.003",
-            "position": [
-                -3.0,
-                17.0,
-                5.0
-            ]
+            "type": "1x1"
         },
         {
-            "type": "2x2",
-            "lightMapIndex": 9,
+            "position": [
+                -5.0,
+                -16.0,
+                10.0
+            ],
+            "lightMapIndex": 6,
             "name": "2x2.006",
-            "position": [
-                7.0,
-                -20.0,
-                7.0
-            ]
+            "type": "2x2"
         },
         {
-            "type": "2x2",
+            "position": [
+                -5.0,
+                -3.0,
+                3.0
+            ],
+            "lightMapIndex": 7,
+            "name": "2x2.005",
             "movement": [
                 0,
                 0,
                 2
             ],
-            "lightMapIndex": 10,
-            "name": "2x2.005",
-            "position": [
-                -5.0,
-                -3.0,
-                3.0
-            ]
+            "type": "2x2"
         },
         {
-            "type": "2x2",
-            "lightMapIndex": 11,
-            "name": "2x2.004",
             "position": [
                 -3.0,
                 -1.0,
                 5.0
-            ]
+            ],
+            "lightMapIndex": 8,
+            "name": "2x2.004",
+            "type": "2x2"
         },
         {
-            "type": "2x2",
-            "lightMapIndex": 12,
-            "name": "2x2.003",
             "position": [
                 -3.0,
                 -3.0,
                 5.0
-            ]
+            ],
+            "lightMapIndex": 9,
+            "name": "2x2.003",
+            "type": "2x2"
         },
         {
-            "type": "2x2",
-            "lightMapIndex": 13,
+            "position": [
+                -15.981600761413574,
+                -31.546436309814453,
+                13.313433647155762
+            ],
+            "lightMapIndex": 10,
             "name": "2x2.030",
-            "position": [
-                31.0,
-                -21.0,
-                7.0
-            ]
+            "type": "2x2"
         },
         {
-            "type": "2x2",
-            "lightMapIndex": 14,
+            "position": [
+                -13.981599807739258,
+                -31.546436309814453,
+                13.313433647155762
+            ],
+            "lightMapIndex": 11,
             "name": "2x2.029",
-            "position": [
-                33.0,
-                -21.0,
-                7.0
-            ]
+            "type": "2x2"
         },
         {
-            "type": "2x2",
-            "lightMapIndex": 15,
+            "position": [
+                -13.981599807739258,
+                -29.546436309814453,
+                13.313433647155762
+            ],
+            "lightMapIndex": 12,
             "name": "2x2.028",
-            "position": [
-                33.0,
-                -19.0,
-                7.0
-            ]
+            "type": "2x2"
         },
         {
-            "type": "2x2",
-            "lightMapIndex": 16,
+            "position": [
+                -15.981600761413574,
+                -29.546436309814453,
+                13.313433647155762
+            ],
+            "lightMapIndex": 13,
             "name": "2x2.027",
-            "position": [
-                31.0,
-                -19.0,
-                7.0
-            ]
+            "type": "2x2"
         },
         {
-            "type": "2x2",
-            "lightMapIndex": 17,
-            "name": "switchableB2",
             "position": [
                 -3.0,
                 -7.0,
                 5.0
-            ]
+            ],
+            "lightMapIndex": 14,
+            "name": "switchableB2",
+            "type": "2x2"
         },
         {
-            "type": "2x2",
-            "lightMapIndex": 18,
-            "name": "switchableB1",
             "position": [
                 -3.0,
                 -9.0,
                 5.0
-            ]
+            ],
+            "lightMapIndex": 15,
+            "name": "switchableB1",
+            "type": "2x2"
         },
         {
-            "type": "2x2",
-            "lightMapIndex": 19,
+            "position": [
+                -3.0,
+                3.0,
+                0.0
+            ],
+            "lightMapIndex": 16,
             "name": "2x2.014",
-            "position": [
-                -3.0,
-                3.0,
-                0.0
-            ]
+            "type": "2x2"
         },
         {
-            "type": "2x2",
-            "lightMapIndex": 20,
+            "position": [
+                -3.0,
+                5.0,
+                0.0
+            ],
+            "lightMapIndex": 17,
             "name": "2x2.013",
-            "position": [
-                -3.0,
-                5.0,
-                0.0
-            ]
+            "type": "2x2"
         },
         {
-            "type": "2x2",
-            "lightMapIndex": 21,
-            "name": "2x2.012",
             "position": [
                 -5.0,
                 5.0,
                 0.0
-            ]
+            ],
+            "lightMapIndex": 18,
+            "name": "2x2.012",
+            "type": "2x2"
         },
         {
-            "type": "2x2",
-            "lightMapIndex": 22,
-            "name": "2x2.011",
             "position": [
                 -5.0,
                 3.0,
                 0.0
-            ]
+            ],
+            "lightMapIndex": 19,
+            "name": "2x2.011",
+            "type": "2x2"
         },
         {
-            "type": "2x2",
-            "lightMapIndex": 23,
-            "name": "2x2.009",
             "position": [
                 -3.0,
                 1.0,
                 0.0
-            ]
+            ],
+            "lightMapIndex": 20,
+            "name": "2x2.009",
+            "type": "2x2"
         },
         {
-            "type": "2x2",
-            "lightMapIndex": 24,
-            "name": "2x2.008",
             "position": [
                 -5.0,
                 1.0,
                 0.0
-            ]
+            ],
+            "lightMapIndex": 21,
+            "name": "2x2.008",
+            "type": "2x2"
         },
         {
-            "type": "2x2",
-            "lightMapIndex": 25,
-            "name": "2x2.007",
             "position": [
                 -5.0,
                 -1.0,
                 0.0
-            ]
+            ],
+            "lightMapIndex": 22,
+            "name": "2x2.007",
+            "type": "2x2"
         },
         {
-            "type": "2x2",
-            "lightMapIndex": 26,
-            "name": "switchableA4",
             "position": [
                 -3.0,
                 5.0,
                 5.0
-            ]
+            ],
+            "lightMapIndex": 23,
+            "name": "switchableA4",
+            "type": "2x2"
         },
         {
-            "type": "2x2",
-            "lightMapIndex": 27,
-            "name": "switchableA3",
             "position": [
                 -3.0,
                 3.0,
                 5.0
-            ]
+            ],
+            "lightMapIndex": 24,
+            "name": "switchableA3",
+            "type": "2x2"
         },
         {
-            "type": "TriggerStand",
+            "position": [
+                -3.0,
+                17.0,
+                6.159999847412109
+            ],
+            "lightMapIndex": 26,
+            "name": "TriggerStand",
             "movement": [
                 2,
                 0,
                 0
             ],
-            "lightMapIndex": 29,
-            "name": "TriggerStand",
-            "position": [
-                -3.0,
-                17.0,
-                6.159999847412109
-            ]
+            "type": "TriggerStand"
         },
         {
-            "type": "1x1",
-            "lightMapIndex": 32,
-            "name": "1x1.002",
             "position": [
                 -3.0,
                 9.0,
                 5.0
-            ]
+            ],
+            "lightMapIndex": 29,
+            "name": "1x1.002",
+            "type": "1x1"
         },
         {
-            "type": "2x2x4",
-            "lightMapIndex": 33,
-            "name": "2x2x4",
             "position": [
                 -3.0,
                 -1.0,
                 2.5
-            ]
+            ],
+            "lightMapIndex": 30,
+            "name": "2x2x4",
+            "type": "2x2x4"
         },
         {
-            "type": "TriggerStand",
-            "lightMapIndex": 35,
-            "name": "TriggerStand.001",
             "position": [
                 -2.5732319355010986,
                 -0.4461422562599182,
                 6.168803691864014
+            ],
+            "lightMapIndex": 32,
+            "name": "TriggerStand.001",
+            "type": "TriggerStand"
+        },
+        {
+            "position": [
+                -4.404470443725586,
+                -11.69473934173584,
+                7.003246307373047
+            ],
+            "lightMapIndex": 34,
+            "name": "2x2x4.001",
+            "type": "2x2x4"
+        },
+        {
+            "position": [
+                -18.99452781677246,
+                -15.999732971191406,
+                10.004098892211914
+            ],
+            "lightMapIndex": 35,
+            "name": "2x2.000",
+            "movement": [
+                0,
+                0,
+                2
+            ],
+            "type": "2x2"
+        },
+        {
+            "position": [
+                -18.99687385559082,
+                -16.001169204711914,
+                11.174473762512207
+            ],
+            "lightMapIndex": 37,
+            "name": "TriggerStand.002",
+            "movement": [
+                0,
+                0,
+                2
+            ],
+            "type": "TriggerStand"
+        },
+        {
+            "position": [
+                -9.0,
+                -16.0,
+                10.0
+            ],
+            "lightMapIndex": 38,
+            "name": "switchableC1",
+            "type": "2x2"
+        },
+        {
+            "position": [
+                -15.0,
+                -16.0,
+                10.0
+            ],
+            "lightMapIndex": 39,
+            "name": "switchableC2",
+            "type": "2x2"
+        }
+    ],
+    "end": [
+        -14.981599807739258,
+        -30.546436309814453,
+        14.813433647155762
+    ],
+    "triggers": [
+        {
+            "position": [
+                -3.0,
+                17.0,
+                6.630000114440918
+            ],
+            "movement": [
+                2,
+                0,
+                0
+            ],
+            "isTriggered": 0,
+            "lightMapIndex": 27,
+            "type": "TriggerDiamond",
+            "triggers": [
+                "switchableB1",
+                "switchableB2"
             ]
+        },
+        {
+            "position": [
+                -2.57377028465271,
+                -0.44583457708358765,
+                6.630120277404785
+            ],
+            "isTriggered": 0,
+            "triggers": [
+                "switchableA3",
+                "switchableA4"
+            ],
+            "type": "TriggerDiamond",
+            "lightMapIndex": 33
+        },
+        {
+            "position": [
+                -18.997411727905273,
+                -16.00086212158203,
+                11.63578987121582
+            ],
+            "movement": [
+                0,
+                0,
+                2
+            ],
+            "isTriggered": 0,
+            "lightMapIndex": 36,
+            "type": "TriggerDiamond",
+            "triggers": [
+                "switchableC1",
+                "switchableC2"
+            ]
+        }
+    ],
+    "lightMapPath": "level1_lightmap.png",
+    "pressurePlates": [
+        {
+            "position": [
+                -14.99951457977295,
+                -21.8608455657959,
+                7.112873554229736
+            ],
+            "lightMapIndex": 25,
+            "givesAbility": 0,
+            "type": "PressurePlate"
         }
     ]
 }
