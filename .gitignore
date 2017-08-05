@@ -20,8 +20,4 @@
 
 !.gitattributes
 
-!/libs/**
-!*.sln
-!*.vcxproj*
-
 !/audio/**

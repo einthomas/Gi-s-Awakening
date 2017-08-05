@@ -72,16 +72,16 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>libs\glew_1.12.0\include;libs\glfw_3.2\include;libs\glm_0.9.8.4;libs\nlohmannJson;libs\freetype_2.7.1\include;libs\SOIL\include;libs\irrKlang_1.5.0\include;$(IncludePath)</IncludePath>
-    <LibraryPath>libs\glew_1.12.0\lib\Release\Win32;libs\glfw_3.2\lib-vc2015;libs\freetype_2.7.1\lib;libs\SOIL\lib;libs\irrKlang_1.5.0\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Users\Thomas\Documents\dev\cpplibs\glew_1.12.0\include;C:\Users\Thomas\Documents\dev\cpplibs\glfw_3.2\include;C:\Users\Thomas\Documents\dev\cpplibs\glm_0.9.8.4;C:\Users\Thomas\Documents\dev\cpplibs\nlohmannJson;C:\Users\Thomas\Documents\dev\cpplibs\freetype_2.7.1\include;C:\Users\Thomas\Documents\dev\cpplibs\SOIL\include;C:\Users\Thomas\Documents\dev\cpplibs\irrKlang_1.5.0\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\Thomas\Documents\dev\cpplibs\glew_1.12.0\lib\Release\Win32;C:\Users\Thomas\Documents\dev\cpplibs\glfw_3.2\lib-vc2015;C:\Users\Thomas\Documents\dev\cpplibs\freetype_2.7.1\lib;C:\Users\Thomas\Documents\dev\cpplibs\SOIL\lib;C:\Users\Thomas\Documents\dev\cpplibs\irrKlang_1.5.0\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>libs\glew_1.12.0\include;libs\glfw_3.2\include;libs\glm_0.9.8.4;libs\nlohmannJson;libs\freetype_2.7.1\include;libs\SOIL\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);libs\irrKlang_1.5.0\include</IncludePath>
-    <LibraryPath>libs\glew_1.12.0\lib\Release\Win32;libs\glfw_3.2\lib-vc2015;libs\freetype_2.7.1\lib;libs\SOIL\lib;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(NETFXKitsDir)Lib\um\x86;libs\irrKlang_1.5.0\lib</LibraryPath>
+    <IncludePath>C:\Users\Thomas\Documents\dev\cpplibs\glew_1.12.0\include;C:\Users\Thomas\Documents\dev\cpplibs\glfw_3.2\include;C:\Users\Thomas\Documents\dev\cpplibs\glm_0.9.8.4;C:\Users\Thomas\Documents\dev\cpplibs\nlohmannJson;C:\Users\Thomas\Documents\dev\cpplibs\freetype_2.7.1\include;C:\Users\Thomas\Documents\dev\cpplibs\SOIL\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);C:\Users\Thomas\Documents\dev\cpplibs\irrKlang_1.5.0\include</IncludePath>
+    <LibraryPath>C:\Users\Thomas\Documents\dev\cpplibs\glew_1.12.0\lib\Release\Win32;C:\Users\Thomas\Documents\dev\cpplibs\glfw_3.2\lib-vc2015;C:\Users\Thomas\Documents\dev\cpplibs\freetype_2.7.1\lib;C:\Users\Thomas\Documents\dev\cpplibs\SOIL\lib;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(NETFXKitsDir)Lib\um\x86;C:\Users\Thomas\Documents\dev\cpplibs\irrKlang_1.5.0\lib</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
