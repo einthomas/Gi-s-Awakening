@@ -1,1 +1,1 @@
-# Gi'S Awakening
+# Gi's Awakening
